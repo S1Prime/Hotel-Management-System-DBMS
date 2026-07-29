@@ -206,7 +206,7 @@ Include screenshots of:
 
 # 👨‍💻 Authors
 
-**Prathijna**
+**Prathijna Mahalingan**
 **Praful Singh**
 **Lasya C**
 **Vaishnav Venu**
