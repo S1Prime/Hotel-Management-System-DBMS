@@ -89,8 +89,10 @@
           <select id="roomFilterType" class="form-select form-select-sm rounded-pill" style="width: 170px;" onchange="renderRoomsCatalog()">
             <option value="">All Categories</option>
             <option value="Suite">Suites</option>
-            <option value="Deluxe">Deluxe Rooms</option>
-            <option value="Penthouse">Penthouse</option>
+            <option value="AC with Balcony">AC with Balcony</option>
+            <option value="AC Family">Family AC Rooms</option>
+            <option value="AC">Standard AC Rooms</option>
+            <option value="Non-AC">Economy Non-AC</option>
           </select>
         </div>
       </div>
@@ -251,35 +253,40 @@
       const filtered = rooms.filter(r => typeFilter === '' || r.type === typeFilter);
 
       const grid = document.getElementById('roomsCatalogGrid');
-      grid.innerHTML = filtered.map(r => `
-        <div class="col-md-6 col-lg-4">
-          <div class="room-card h-100 d-flex flex-column justify-content-between">
-            <div>
-              <img src="${r.image}" class="room-card-img" alt="${r.category}">
-              <div class="room-card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="badge ${r.status === 'Available' ? 'badge-available' : 'badge-gold'}">${r.status}</span>
-                  <span class="text-muted small"><i class="fa-solid fa-user me-1"></i> Up to ${r.capacity} Guests</span>
-                </div>
-                <h4 class="font-serif fs-5 text-dark mb-1">${r.category}</h4>
-                <p class="text-muted small mb-2"><i class="fa-solid fa-bed me-1 text-gold"></i> ${r.bed} &bull; ${r.view}</p>
-                <div class="d-flex flex-wrap gap-1 mb-3">
-                  ${r.amenities.map(a => `<span class="badge bg-light text-secondary border font-weight-normal">${a}</span>`).join('')}
-                </div>
-              </div>
-            </div>
-            <div class="p-3 border-top bg-light d-flex align-items-center justify-content-between">
+      grid.innerHTML = filtered.map(r => {
+        const isFamily = r.category === 'Family AC Room';
+        const cardClass = isFamily ? 'room-card card-spotlight-family h-100 d-flex flex-column justify-content-between' : 'room-card h-100 d-flex flex-column justify-content-between';
+        return `
+          <div class="col-md-6 col-lg-4">
+            <div class="${cardClass}">
               <div>
-                <span class="room-card-price">Rs. ${r.price}</span>
-                <span class="text-muted small">/ night</span>
+                <img src="${r.image}" class="room-card-img" alt="${r.category}">
+                <div class="room-card-body">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge ${r.status === 'Available' ? 'badge-available' : 'badge-gold'}">${r.status}</span>
+                    <span class="text-muted small"><i class="fa-solid fa-user me-1"></i> Up to ${r.capacity} Guests</span>
+                  </div>
+                  ${isFamily ? `<div class="mb-2"><span class="badge badge-family-deal">Best Family Deal</span></div>` : ''}
+                  <h4 class="font-serif fs-5 text-dark mb-1">${r.category}</h4>
+                  <p class="text-muted small mb-2"><i class="fa-solid fa-bed me-1 text-gold"></i> ${r.bed} &bull; ${r.view}</p>
+                  <div class="d-flex flex-wrap gap-1 mb-3">
+                    ${r.amenities.map(a => `<span class="badge bg-light text-secondary border font-weight-normal">${a}</span>`).join('')}
+                  </div>
+                </div>
               </div>
-              <button class="btn btn-sm btn-gold rounded-pill px-3 py-2" onclick="openBookModal('${r.number}', '${r.category}', ${r.price})">
-                <i class="fa-solid fa-calendar-plus me-1"></i> Book Now
-              </button>
+              <div class="p-3 border-top bg-light d-flex align-items-center justify-content-between">
+                <div>
+                  <span class="room-card-price">Rs. ${r.price}</span>
+                  <span class="text-muted small">/ night</span>
+                </div>
+                <button class="btn btn-sm btn-gold rounded-pill px-3 py-2" onclick="openBookModal('${r.number}', '${r.category}', ${r.price})">
+                  <i class="fa-solid fa-calendar-plus me-1"></i> Book Now
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     let selectedRoomPrice = 2000;

@@ -529,3 +529,48 @@ body {
   box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(212, 175, 55, 0.4);
 }
 
+/* Creative UI - Spotlight elements */
+.card-spotlight-family {
+  position: relative;
+  overflow: hidden;
+  border: 1.5px solid transparent !important;
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(135deg, var(--accent-gold) 0%, var(--warning-amber) 100%) border-box !important;
+  box-shadow: 0 15px 30px rgba(245, 158, 11, 0.08), var(--shadow-sm) !important;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.card-spotlight-family:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 25px 45px rgba(245, 158, 11, 0.15), 0 0 15px rgba(212, 175, 55, 0.25) !important;
+}
+
+.card-spotlight-family::before {
+  content: 'FAMILY DEAL';
+  position: absolute;
+  top: 15px;
+  right: -30px;
+  background: linear-gradient(135deg, var(--accent-gold-dark) 0%, var(--warning-amber) 100%);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.25rem 2rem;
+  transform: rotate(45deg);
+  box-shadow: var(--shadow-sm);
+  z-index: 100;
+  letter-spacing: 0.5px;
+}
+
+.badge-family-deal {
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  padding: 0.3em 0.8em;
+  border-radius: 50rem;
+}
+
+

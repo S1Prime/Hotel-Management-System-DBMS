@@ -5,15 +5,9 @@
 const INITIAL_ROOMS = [
   { id: 101, number: "101", category: "Luxury Suite", floor: 1, price: 6000, status: "Occupied", type: "Suite", capacity: 2, bed: "King Bed", view: "City Skyline", amenities: ["Wi-Fi", "Minibar", "Jacuzzi", "Smart TV", "City View"], image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80" },
   { id: 102, number: "102", category: "Standard AC Room", floor: 1, price: 3500, status: "Available", type: "AC", capacity: 2, bed: "King Bed", view: "Garden View", amenities: ["Wi-Fi", "Coffee Maker", "Smart TV", "Balcony"], image: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80" },
-  { id: 103, number: "103", category: "Economy Non-AC Room", floor: 1, price: 2000, status: "Cleaning", type: "Non-AC", capacity: 3, bed: "2 Twin Beds", view: "Courtyard View", amenities: ["Wi-Fi", "Work Desk", "Mini Fridge"], image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=800&q=80" },
-  { id: 104, number: "104", category: "Luxury Suite", floor: 1, price: 6000, status: "Available", type: "Suite", capacity: 2, bed: "King Bed", view: "City Skyline", amenities: ["Wi-Fi", "Minibar", "Jacuzzi", "Balcony"], image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80" },
+  { id: 103, number: "103", category: "Economy Non-AC Room", floor: 1, price: 2000, status: "Cleaning", type: "Non-AC", capacity: 2, bed: "2 Twin Beds", view: "Courtyard View", amenities: ["Wi-Fi", "Work Desk", "Mini Fridge"], image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=800&q=80" },
   { id: 201, number: "201", category: "AC Room with Balcony", floor: 2, price: 4500, status: "Occupied", type: "AC with Balcony", capacity: 4, bed: "King Bed + Sofa Bed", view: "Ocean View", amenities: ["Wi-Fi", "Private Balcony", "Ocean Panorama", "Espresso Bar"], image: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=800&q=80" },
-  { id: 202, number: "202", category: "Economy Non-AC Room", floor: 2, price: 2000, status: "Maintenance", type: "Non-AC", capacity: 2, bed: "King Bed", view: "Garden View", amenities: ["Wi-Fi", "Coffee Maker", "Smart TV"], image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=800&q=80" },
-  { id: 203, number: "203", category: "AC Room with Balcony", floor: 2, price: 4500, status: "Available", type: "AC with Balcony", capacity: 4, bed: "2 Queen Beds", view: "Pool View", amenities: ["Wi-Fi", "Kitchenette", "Living Area", "2 Smart TVs"], image: "https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=800&q=80" },
-  { id: 204, number: "204", category: "Standard AC Room", floor: 2, price: 3500, status: "Occupied", type: "AC", capacity: 2, bed: "King Bed", view: "City Skyline", amenities: ["Wi-Fi", "Coffee Maker", "Smart TV"], image: "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=800&q=80" },
-  { id: 301, number: "301", category: "Luxury Suite", floor: 3, price: 6000, status: "Available", type: "Suite", capacity: 4, bed: "Super King Bed", view: "Panoromic Ocean & City", amenities: ["Private Pool", "Personal Butler", "Full Kitchen", "Private Elevator", "Helipad Access"], image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80" },
-  { id: 302, number: "302", category: "AC Room with Balcony", floor: 3, price: 4500, status: "Cleaning", type: "AC with Balcony", capacity: 3, bed: "King Bed", view: "Ocean View", amenities: ["Wi-Fi", "Private Balcony", "Ocean Panorama"], image: "https://images.unsplash.com/photo-1595576508898-0ad5c879a061?auto=format&fit=crop&w=800&q=80" },
-  { id: 401, number: "401", category: "Luxury Suite", floor: 4, price: 6000, status: "Available", type: "Suite", capacity: 2, bed: "King Bed", view: "High Skyline", amenities: ["Wi-Fi", "Executive Lounge Access", "Jacuzzi"], image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=800&q=80" }
+  { id: 202, number: "202", category: "Family AC Room", floor: 2, price: 4000, status: "Available", type: "AC Family", capacity: 4, bed: "2 Double Beds", view: "Garden View", amenities: ["Wi-Fi", "Mini Fridge", "Smart TV"], image: "https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=800&q=80" }
 ];
 
 const INITIAL_BOOKINGS = [
@@ -51,7 +45,7 @@ const INITIAL_BOOKINGS = [
   },
   {
     id: "BK-1003",
-    roomNumber: "204",
+    roomNumber: "102",
     guestName: "Sophia Loren",
     guestEmail: "sophia@loren.com",
     guestPhone: "+1 (555) 998-1122",
@@ -76,7 +70,12 @@ const INITIAL_SERVICES = [
 // Initialize Database in localStorage
 function initDatabase() {
   const existingBookings = localStorage.getItem('cp_bookings');
-  const needsReset = !existingBookings || !JSON.parse(existingBookings)[0]?.hasOwnProperty('wifiPassword');
+  const existingRooms = localStorage.getItem('cp_rooms');
+  
+  // Reset database if it's missing the Wi-Fi property OR has old room counts (more than 5 rooms)
+  const needsReset = !existingBookings || 
+                     !JSON.parse(existingBookings)[0]?.hasOwnProperty('wifiPassword') ||
+                     (existingRooms && JSON.parse(existingRooms).length > 5);
 
   if (needsReset) {
     localStorage.setItem('cp_rooms', JSON.stringify(INITIAL_ROOMS));
