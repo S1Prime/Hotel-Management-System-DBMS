@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reception Staff Login - Crowne Plaza Hotel</title>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom Luxury Stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div class="hero-wrapper">
+    <div class="container" style="max-width: 520px;">
+      <div class="card-luxury-dark text-center">
+        
+        <div class="brand-logo-badge mx-auto" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); color: white;">
+          <i class="fa-solid fa-concierge-bell"></i>
+        </div>
+
+        <h2 class="brand-title mb-1">Front Desk Staff Portal</h2>
+        <p class="brand-subtitle mb-4 text-warning">Crowne Plaza Reception & Management</p>
+
+        <div id="loginAlert" class="alert alert-danger d-none py-2 px-3 small rounded-3" role="alert"></div>
+
+        <form id="receptionLoginForm" onsubmit="event.preventDefault(); handleReceptionLogin();">
+          
+          <div class="form-group text-start mb-3">
+            <label class="form-label-custom" for="staffEmail">Staff Email / Employee ID</label>
+            <div class="input-group">
+              <span class="input-group-text bg-dark border-secondary text-gold"><i class="fa-solid fa-user-shield"></i></span>
+              <input id="staffEmail" type="email" class="form-control form-control-luxury text-white bg-dark border-secondary" placeholder="staff@crowneplaza.com" required value="reception@crowneplaza.com">
+            </div>
+          </div>
+
+          <div class="form-group text-start mb-3">
+            <label class="form-label-custom" for="staffPassword">Access Code / Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-dark border-secondary text-gold"><i class="fa-solid fa-lock"></i></span>
+              <input id="staffPassword" type="password" class="form-control form-control-luxury text-white bg-dark border-secondary" placeholder="••••••••" required value="admin123">
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="form-check text-start">
+              <input class="form-check-input bg-dark border-secondary" type="checkbox" id="rememberStaff" checked>
+              <label class="form-check-label text-slate-300 small" for="rememberStaff">Keep staff session active</label>
+            </div>
+            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 small px-2 py-1">
+              <i class="fa-solid fa-shield-halved me-1"></i> Front Desk Secure
+            </span>
+          </div>
+
+          <button type="submit" class="btn btn-gold py-3 w-100 fs-6 mb-3">
+            <i class="fa-solid fa-right-to-bracket me-2"></i> Sign In to Front Desk Dashboard
+          </button>
+        </form>
+
+        <div class="border-top border-secondary pt-3 mt-2">
+          <p class="text-slate-400 small mb-2">Need quick evaluation testing?</p>
+          <button type="button" class="btn btn-outline-warning btn-sm w-100 rounded-pill py-2" onclick="quickDemoLogin('reception')">
+            <i class="fa-solid fa-bolt me-1"></i> One-Click Demo Staff Login
+          </button>
+        </div>
+
+        <div class="d-flex justify-content-between border-top border-secondary pt-3 mt-4 text-start">
+          <a href="login.html" class="text-gold text-decoration-none small">
+            <i class="fa-solid fa-arrow-left me-1"></i> Change Portal
+          </a>
+          <a href="customer-login.html" class="text-slate-300 text-decoration-none small">
+            Guest Login <i class="fa-solid fa-user me-1"></i>
+          </a>
+        </div>
+
+      </div>
+
+      <div class="footer-text mt-3">
+        &copy; 2026 Crowne Plaza Hotel &bull; Internal Front Desk System
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/auth.js"></script>
+  <script>
+    function handleReceptionLogin() {
+      const email = document.getElementById('staffEmail').value.trim();
+      const password = document.getElementById('staffPassword').value.trim();
+      const alertBox = document.getElementById('loginAlert');
+
+      if (!email || !password) {
+        alertBox.textContent = 'Please provide both staff email and access code.';
+        alertBox.classList.remove('d-none');
+        return;
+      }
+
+      loginUser(email, 'receptionist', 'Arthur Pendelton', { staffId: 'CP-STAFF-902', title: 'Senior Front Desk Officer' });
+      window.location.href = 'reception-dashboard.html';
+    }
+  </script>
+</body>
+</html>

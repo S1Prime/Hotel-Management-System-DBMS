@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guest Portal - Crowne Plaza Hotel</title>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom Luxury Stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body style="background-color: #f8fafc;">
+
+  <!-- Guest Header Navbar -->
+  <nav class="dashboard-navbar">
+    <a href="index.html" class="dashboard-brand">
+      <i class="fa-solid fa-crown text-warning me-2"></i>
+      <span>Crowne Plaza &bull; Guest Portal</span>
+    </a>
+    <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2 text-white small">
+        <div class="rounded-circle bg-gold text-dark font-weight-bold d-flex align-items-center justify-content-center" style="width:36px; height:36px;">
+          G
+        </div>
+        <div>
+          <strong class="d-block text-white" id="navGuestName">Valued Guest</strong>
+          <span class="badge bg-success text-white style="font-size:0.65rem;" id="navGuestRoom">Room #101</span>
+        </div>
+      </div>
+      <button onclick="logoutUser()" class="btn btn-sm btn-outline-light rounded-pill px-3 ms-2">
+        <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
+      </button>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    
+    <!-- Active Stay Card Banner -->
+    <div class="card p-4 border-0 shadow-sm rounded-4 bg-navy text-white mb-4" style="background: linear-gradient(135deg, #0b1329 0%, #1a294d 100%);">
+      <div class="row align-items-center g-3">
+        <div class="col-lg-8">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge bg-gold text-dark px-3 py-1 rounded-pill fw-bold">ACTIVE STAY</span>
+            <span class="text-gold small"><i class="fa-solid fa-star"></i> VIP Guest Service</span>
+          </div>
+          <h2 class="font-serif fs-2 text-white mb-1" id="activeSuiteTitle">Crowne Executive Suite (#101)</h2>
+          <p class="text-slate-300 mb-3" id="activeDates">Check-In: Jul 28, 2026 &bull; Check-Out: Aug 02, 2026</p>
+          
+          <div class="d-flex flex-wrap gap-4 pt-2 border-top border-secondary">
+            <div>
+              <span class="text-slate-400 small d-block">Digital Key Access Code</span>
+              <strong class="text-gold fs-5 font-monospace"><i class="fa-solid fa-key me-1"></i> CP-8842</strong>
+            </div>
+            <div>
+              <span class="text-slate-400 small d-block">High-Speed Wi-Fi</span>
+              <strong class="text-white fs-6"><i class="fa-solid fa-wifi text-success me-1"></i> CrowneGuest2026</strong>
+            </div>
+            <div>
+              <span class="text-slate-400 small d-block">Breakfast Plan</span>
+              <strong class="text-white fs-6"><i class="fa-solid fa-utensils text-warning me-1"></i> Executive Buffet Included</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4 text-lg-end">
+          <button class="btn btn-gold py-2.5 px-4 rounded-pill shadow mb-2 w-100" data-bs-toggle="modal" data-bs-target="#serviceModal">
+            <i class="fa-solid fa-bell-concierge me-2"></i> Request Room Service
+          </button>
+          <button class="btn btn-outline-light py-2 px-4 rounded-pill w-100" onclick="scrollToRooms()">
+            <i class="fa-solid fa-plus me-1"></i> Book Another Suite
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Suite Reservations Hub -->
+    <div class="mb-5" id="roomsSection">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <div>
+          <h3 class="font-serif fs-3 text-dark mb-1">Explore & Reserve Luxury Suites</h3>
+          <p class="text-muted mb-0">Select from our signature rooms and book your upcoming stay with real-time confirmation.</p>
+        </div>
+        <div class="d-flex gap-2">
+          <select id="roomFilterType" class="form-select form-select-sm rounded-pill" style="width: 170px;" onchange="renderRoomsCatalog()">
+            <option value="">All Categories</option>
+            <option value="Suite">Suites</option>
+            <option value="Deluxe">Deluxe Rooms</option>
+            <option value="Penthouse">Penthouse</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row g-4" id="roomsCatalogGrid">
+        <!-- Rooms Catalog Rendered via JS -->
+      </div>
+    </div>
+
+    <!-- In-Room Services & History Split -->
+    <div class="row g-4 mb-4">
+      
+      <!-- Room Service Quick Order Form -->
+      <div class="col-lg-5">
+        <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
+          <h3 class="font-serif fs-4 mb-1 text-dark">
+            <i class="fa-solid fa-utensils text-gold me-2"></i> In-Room Dining & Amenities
+          </h3>
+          <p class="text-muted small mb-4">Order dining or request housekeeping delivered straight to your suite.</p>
+
+          <form id="guestServiceForm" onsubmit="event.preventDefault(); handleGuestServiceOrder();">
+            <div class="mb-3">
+              <label class="form-label-custom">Select Service Item</label>
+              <select id="svcName" class="form-select form-control-luxury" required>
+                <option value="Gourmet Breakfast Basket|45">Gourmet Breakfast Basket ($45)</option>
+                <option value="Champagne & Fruit Platter|85">Champagne & Fruit Platter ($85)</option>
+                <option value="Luxury Spa Aromatherapy|120">Luxury Spa Aromatherapy ($120)</option>
+                <option value="Extra Goose Down Pillows|0">Extra Goose Down Pillows (Complimentary)</option>
+                <option value="Express Housekeeping & Towels|0">Express Housekeeping & Towels (Complimentary)</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label-custom">Special Delivery Notes</label>
+              <textarea id="svcNotes" class="form-control form-control-luxury" rows="2" placeholder="e.g. Please deliver at 8:30 AM..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-navy w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-paper-plane me-2"></i> Submit Service Order to Desk
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- My Booking History & Charges -->
+      <div class="col-lg-7">
+        <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
+          <h3 class="font-serif fs-4 mb-1 text-dark">
+            <i class="fa-solid fa-receipt text-gold me-2"></i> Stay History & Service Orders
+          </h3>
+          <p class="text-muted small mb-3">View all your current and past reservations and service charges.</p>
+
+          <div class="table-luxury-wrapper mb-3">
+            <table class="table-luxury">
+              <thead>
+                <tr>
+                  <th>Item / Stay</th>
+                  <th>Dates / Time</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="guestHistoryTableBody">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
+            <span class="text-muted small">Total Folio Charge Accrued:</span>
+            <strong class="text-navy fs-5 font-serif" id="guestTotalFolio">$0</strong>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Book Suite Modal -->
+  <div class="modal fade" id="bookModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-calendar-check me-2"></i> Reserve Suite</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="bookSuiteForm" onsubmit="event.preventDefault(); handleConfirmBooking();">
+            <input type="hidden" id="bmRoomNumber">
+            
+            <div class="mb-3">
+              <label class="form-label-custom">Selected Suite</label>
+              <input type="text" id="bmRoomCategory" class="form-control form-control-luxury bg-light" readonly>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label-custom">Check-In Date</label>
+                <input type="date" id="bmCheckIn" class="form-control form-control-luxury" onchange="calculateModalTotal()" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label-custom">Check-Out Date</label>
+                <input type="date" id="bmCheckOut" class="form-control form-control-luxury" onchange="calculateModalTotal()" required>
+              </div>
+            </div>
+
+            <div class="p-3 bg-gold bg-opacity-10 border border-gold rounded-3 text-center mb-4">
+              <span class="text-muted small d-block">Estimated Total Tariff</span>
+              <strong class="text-gold fs-3 font-serif" id="bmEstimatedTotal">$0</strong>
+            </div>
+
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-credit-card me-2"></i> Confirm Reservation
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script>
+    // Route Guard
+    checkAuth('customer');
+
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      document.getElementById('navGuestName').textContent = currentUser.name;
+    }
+
+    function scrollToRooms() {
+      document.getElementById('roomsSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function renderGuestDashboard() {
+      renderActiveStay();
+      renderRoomsCatalog();
+      renderGuestHistory();
+    }
+
+    function renderActiveStay() {
+      const bookings = HotelDB.getBookings();
+      const active = bookings.find(b => b.guestEmail === (currentUser?.email || 'guest@crowneplaza.com') && b.status === 'Occupied');
+      if (active) {
+        document.getElementById('activeSuiteTitle').textContent = `${active.category} (#${active.roomNumber})`;
+        document.getElementById('activeDates').textContent = `Check-In: ${active.checkIn} \u2022 Check-Out: ${active.checkOut}`;
+        document.getElementById('navGuestRoom').textContent = `Room #${active.roomNumber}`;
+      }
+    }
+
+    function renderRoomsCatalog() {
+      const rooms = HotelDB.getRooms();
+      const typeFilter = document.getElementById('roomFilterType').value;
+      const filtered = rooms.filter(r => typeFilter === '' || r.type === typeFilter);
+
+      const grid = document.getElementById('roomsCatalogGrid');
+      grid.innerHTML = filtered.map(r => `
+        <div class="col-md-6 col-lg-4">
+          <div class="room-card h-100 d-flex flex-column justify-content-between">
+            <div>
+              <img src="${r.image}" class="room-card-img" alt="${r.category}">
+              <div class="room-card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="badge ${r.status === 'Available' ? 'badge-available' : 'badge-gold'}">${r.status}</span>
+                  <span class="text-muted small"><i class="fa-solid fa-user me-1"></i> Up to ${r.capacity} Guests</span>
+                </div>
+                <h4 class="font-serif fs-5 text-dark mb-1">${r.category}</h4>
+                <p class="text-muted small mb-2"><i class="fa-solid fa-bed me-1 text-gold"></i> ${r.bed} &bull; ${r.view}</p>
+                <div class="d-flex flex-wrap gap-1 mb-3">
+                  ${r.amenities.map(a => `<span class="badge bg-light text-secondary border font-weight-normal">${a}</span>`).join('')}
+                </div>
+              </div>
+            </div>
+            <div class="p-3 border-top bg-light d-flex align-items-center justify-content-between">
+              <div>
+                <span class="room-card-price">$${r.price}</span>
+                <span class="text-muted small">/ night</span>
+              </div>
+              <button class="btn btn-sm btn-gold rounded-pill px-3 py-2" onclick="openBookModal('${r.number}', '${r.category}', ${r.price})">
+                <i class="fa-solid fa-calendar-plus me-1"></i> Book Now
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    let selectedRoomPrice = 200;
+
+    function openBookModal(roomNumber, category, price) {
+      selectedRoomPrice = price;
+      document.getElementById('bmRoomNumber').value = roomNumber;
+      document.getElementById('bmRoomCategory').value = `${category} (#${roomNumber})`;
+      
+      const today = new Date().toISOString().split('T')[0];
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 3);
+      document.getElementById('bmCheckIn').value = today;
+      document.getElementById('bmCheckOut').value = tomorrow.toISOString().split('T')[0];
+      
+      calculateModalTotal();
+      const modal = new bootstrap.Modal(document.getElementById('bookModal'));
+      modal.show();
+    }
+
+    function calculateModalTotal() {
+      const ci = document.getElementById('bmCheckIn').value;
+      const co = document.getElementById('bmCheckOut').value;
+      const nights = Math.max(1, Math.ceil((new Date(co) - new Date(ci)) / (1000 * 60 * 60 * 24)));
+      const total = selectedRoomPrice * nights;
+      document.getElementById('bmEstimatedTotal').textContent = `$${total}`;
+    }
+
+    function handleConfirmBooking() {
+      const roomNumber = document.getElementById('bmRoomNumber').value;
+      const checkIn = document.getElementById('bmCheckIn').value;
+      const checkOut = document.getElementById('bmCheckOut').value;
+      const category = document.getElementById('bmRoomCategory').value.split(' (')[0];
+      const nights = Math.max(1, Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)));
+      const totalAmount = selectedRoomPrice * nights;
+
+      HotelDB.createBooking({
+        roomNumber,
+        guestName: currentUser?.name || 'Valued Guest',
+        guestEmail: currentUser?.email || 'guest@crowneplaza.com',
+        guestPhone: currentUser?.phone || '+1 (555) 234-5678',
+        checkIn,
+        checkOut,
+        guestsCount: 2,
+        category,
+        totalAmount
+      });
+
+      const modalEl = document.getElementById('bookModal');
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+
+      alert(`Reservation Confirmed! Room #${roomNumber} has been reserved for your stay.`);
+      renderGuestDashboard();
+    }
+
+    function handleGuestServiceOrder() {
+      const selectVal = document.getElementById('svcName').value;
+      const [svcName, priceStr] = selectVal.split('|');
+      const amount = parseInt(priceStr, 10);
+      const notes = document.getElementById('svcNotes').value.trim();
+
+      HotelDB.addServiceRequest({
+        roomNumber: '101',
+        guestName: currentUser?.name || 'Valued Guest',
+        serviceName: notes ? `${svcName} (${notes})` : svcName,
+        type: amount > 0 ? 'Dining' : 'Housekeeping',
+        amount: amount
+      });
+
+      alert(`Service order "${svcName}" submitted to Front Desk! Our staff will fulfill it promptly.`);
+      document.getElementById('svcNotes').value = '';
+      renderGuestDashboard();
+    }
+
+    function renderGuestHistory() {
+      const bookings = HotelDB.getBookings().filter(b => b.guestEmail === (currentUser?.email || 'guest@crowneplaza.com'));
+      const services = HotelDB.getServices().filter(s => s.roomNumber === '101');
+
+      const tbody = document.getElementById('guestHistoryTableBody');
+      let html = '';
+      let totalFolio = 0;
+
+      bookings.forEach(b => {
+        totalFolio += (b.totalAmount || 0);
+        html += `
+          <tr>
+            <td><strong>${b.category}</strong> (#${b.roomNumber})</td>
+            <td>${b.checkIn} &bull; ${b.checkOut}</td>
+            <td class="fw-bold text-gold">$${b.totalAmount}</td>
+            <td><span class="badge-luxury badge-gold">${b.status}</span></td>
+          </tr>
+        `;
+      });
+
+      services.forEach(s => {
+        totalFolio += (s.amount || 0);
+        html += `
+          <tr>
+            <td><strong>${s.serviceName}</strong></td>
+            <td>Today &bull; ${s.time}</td>
+            <td class="fw-bold text-gold">${s.amount > 0 ? '$' + s.amount : 'Free'}</td>
+            <td><span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 rounded-pill px-2 py-0.5 small">${s.status}</span></td>
+          </tr>
+        `;
+      });
+
+      if (!html) {
+        html = `<tr><td colspan="4" class="text-center text-muted py-3">No stay history found.</td></tr>`;
+      }
+
+      tbody.innerHTML = html;
+      document.getElementById('guestTotalFolio').textContent = `$${totalFolio.toLocaleString()}`;
+    }
+
+    // Initial render
+    renderGuestDashboard();
+  </script>
+</body>
+</html>

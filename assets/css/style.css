@@ -1,0 +1,431 @@
+/* ==========================================================================
+   Crowne Plaza Hotel Management System - Core Luxury Design System
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap');
+
+:root {
+  --primary-navy: #0b1329;
+  --secondary-navy: #141f36;
+  --dark-surface: #0a0f1d;
+  --accent-gold: #d4af37;
+  --accent-gold-dark: #b89320;
+  --accent-gold-light: #f4e8c1;
+  --gold-gradient: linear-gradient(135deg, #d4af37 0%, #b89320 100%);
+  --navy-gradient: linear-gradient(135deg, #0b1329 0%, #1a294d 100%);
+  --success-green: #10b981;
+  --warning-amber: #f59e0b;
+  --danger-red: #ef4444;
+  --info-blue: #3b82f6;
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-600: #475569;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 10px 25px -5px rgba(11, 19, 41, 0.08);
+  --shadow-lg: 0 20px 35px -10px rgba(11, 19, 41, 0.15);
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--slate-50);
+  color: var(--slate-900);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+/* Hero Background & Wrapper */
+.hero-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, rgba(11, 19, 41, 0.92) 0%, rgba(20, 31, 54, 0.95) 100%),
+              url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+}
+
+/* Luxury Cards */
+.card-luxury {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  box-shadow: var(--shadow-lg);
+  padding: 2.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-luxury-dark {
+  background: rgba(20, 31, 54, 0.95);
+  backdrop-filter: blur(12px);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 2.5rem;
+}
+
+/* Brand Logos & Titles */
+.brand-logo-badge {
+  width: 64px;
+  height: 64px;
+  background: var(--gold-gradient);
+  color: var(--primary-navy);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.85rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 8px 20px rgba(212, 175, 55, 0.4);
+}
+
+.brand-title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--primary-navy);
+  letter-spacing: -0.5px;
+}
+
+.card-luxury-dark .brand-title {
+  color: white;
+}
+
+.brand-subtitle {
+  color: var(--accent-gold-dark);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* Buttons */
+.btn-gold {
+  background: var(--gold-gradient);
+  color: var(--primary-navy);
+  font-weight: 600;
+  border: none;
+  border-radius: 50rem;
+  padding: 0.75rem 1.75rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+}
+
+.btn-gold:hover {
+  background: linear-gradient(135deg, #e5c158 0%, #cfa62d 100%);
+  color: var(--primary-navy);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.45);
+}
+
+.btn-navy {
+  background: var(--primary-navy);
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 50rem;
+  padding: 0.75rem 1.75rem;
+  transition: all 0.25s ease;
+}
+
+.btn-navy:hover {
+  background: var(--secondary-navy);
+  color: var(--accent-gold);
+  transform: translateY(-2px);
+}
+
+.btn-secondary-luxury {
+  background: transparent;
+  border: 2px solid var(--accent-gold);
+  color: var(--primary-navy);
+  font-weight: 600;
+  border-radius: 50rem;
+  padding: 0.7rem 1.75rem;
+  transition: all 0.25s ease;
+}
+
+.btn-secondary-luxury:hover {
+  background: var(--accent-gold);
+  color: var(--primary-navy);
+  transform: translateY(-2px);
+}
+
+.card-luxury-dark .btn-secondary-luxury {
+  color: var(--accent-gold);
+}
+.card-luxury-dark .btn-secondary-luxury:hover {
+  color: var(--primary-navy);
+}
+
+/* Forms */
+.form-control-luxury {
+  background-color: var(--slate-50);
+  border: 1.5px solid var(--slate-200);
+  border-radius: 0.75rem;
+  padding: 0.8rem 1.1rem;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.form-control-luxury:focus {
+  background-color: white;
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15);
+  outline: none;
+}
+
+.form-label-custom {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--slate-600);
+  margin-bottom: 0.4rem;
+}
+
+.card-luxury-dark .form-label-custom {
+  color: var(--slate-200);
+}
+
+/* Role Cards for Gateway Selection */
+.portal-card-select {
+  border: 2px solid rgba(212, 175, 55, 0.2);
+  border-radius: 1.25rem;
+  padding: 2rem 1.5rem;
+  background: white;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  height: 100%;
+}
+
+.portal-card-select:hover {
+  transform: translateY(-6px);
+  border-color: var(--accent-gold);
+  box-shadow: 0 15px 30px rgba(11, 19, 41, 0.12);
+}
+
+.portal-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  margin: 0 auto 1.25rem auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  transition: transform 0.3s ease;
+}
+
+.portal-card-select:hover .portal-icon {
+  transform: scale(1.1);
+}
+
+.portal-icon-reception {
+  background: rgba(11, 19, 41, 0.08);
+  color: var(--primary-navy);
+}
+
+.portal-icon-customer {
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--accent-gold-dark);
+}
+
+/* Navbar */
+.dashboard-navbar {
+  background: var(--primary-navy);
+  color: white;
+  padding: 0.9rem 2rem;
+  border-bottom: 2px solid var(--accent-gold);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-md);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.dashboard-brand {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: white;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.dashboard-brand:hover {
+  color: var(--accent-gold);
+}
+
+/* Badges */
+.badge-luxury {
+  padding: 0.35em 0.8em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 50rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-occupied { background-color: rgba(239, 68, 68, 0.15); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); }
+.badge-available { background-color: rgba(16, 185, 129, 0.15); color: #047857; border: 1px solid rgba(16, 185, 129, 0.3); }
+.badge-cleaning { background-color: rgba(245, 158, 11, 0.15); color: #b45309; border: 1px solid rgba(245, 158, 11, 0.3); }
+.badge-maintenance { background-color: rgba(100, 116, 139, 0.15); color: #334155; border: 1px solid rgba(100, 116, 139, 0.3); }
+.badge-gold { background-color: rgba(212, 175, 55, 0.2); color: var(--accent-gold-dark); border: 1px solid rgba(212, 175, 55, 0.4); }
+
+/* Main Content Wrapper */
+.main-content {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Stats Cards */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  border: 1px solid var(--slate-200);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.stat-info h4 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--slate-600);
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-family: var(--font-serif);
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--slate-900);
+  margin-top: 0.2rem;
+}
+
+/* Room Cards Grid */
+.room-card {
+  background: white;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  border: 1px solid var(--slate-200);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.room-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-gold);
+}
+
+.room-card-img {
+  height: 190px;
+  object-fit: cover;
+  width: 100%;
+}
+
+.room-card-body {
+  padding: 1.25rem;
+}
+
+.room-card-price {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--primary-navy);
+}
+
+/* Luxury Tables */
+.table-luxury-wrapper {
+  overflow-x: auto;
+  border-radius: 1rem;
+  border: 1px solid var(--slate-200);
+}
+
+.table-luxury {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.table-luxury th {
+  background: var(--slate-100);
+  color: var(--slate-600);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 1rem 1.25rem;
+  border-bottom: 1.5px solid var(--slate-200);
+}
+
+.table-luxury td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--slate-200);
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+.table-luxury tbody tr:hover {
+  background-color: var(--slate-50);
+}
+
+/* Service Requests List */
+.service-item {
+  border-left: 4px solid var(--accent-gold);
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Footer */
+.footer-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  text-align: center;
+}

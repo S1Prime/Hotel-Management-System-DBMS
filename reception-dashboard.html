@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Front Desk Control - Crowne Plaza Hotel</title>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom Luxury Stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body style="background-color: #f8fafc;">
+
+  <!-- Receptionist Header Navbar -->
+  <nav class="dashboard-navbar">
+    <a href="index.html" class="dashboard-brand">
+      <i class="fa-solid fa-crown text-warning me-2"></i>
+      <span>Crowne Plaza &bull; Front Desk Control</span>
+    </a>
+    <div class="d-flex align-items-center gap-3">
+      <a href="customer-dashboard.html" class="btn btn-sm btn-outline-warning rounded-pill px-3 text-white">
+        <i class="fa-solid fa-eye me-1"></i> Preview Guest View
+      </a>
+      <div class="d-flex align-items-center gap-2 text-white small">
+        <div class="rounded-circle bg-warning text-dark font-weight-bold d-flex align-items-center justify-content-center" style="width:36px; height:36px;">
+          R
+        </div>
+        <div>
+          <strong class="d-block text-white" id="navStaffName">Front Desk Officer</strong>
+          <span class="badge bg-gold text-dark p-0 px-1 style="font-size:0.65rem;">STAFF</span>
+        </div>
+      </div>
+      <button onclick="logoutUser()" class="btn btn-sm btn-outline-light rounded-pill px-3 ms-2">
+        <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
+      </button>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    
+    <!-- Top Header Title Row -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+      <div>
+        <h2 class="font-serif fs-2 mb-1 text-dark">Front Desk & Room Allocation Management</h2>
+        <p class="text-muted mb-0">Manage guest check-ins, room statuses, housekeeping, and front-desk service orders.</p>
+      </div>
+      <button class="btn btn-gold px-4 py-2.5 shadow-sm" data-bs-toggle="modal" data-bs-target="#checkInModal">
+        <i class="fa-solid fa-user-plus me-2"></i> New Walk-In Check-In
+      </button>
+    </div>
+
+    <!-- Live Metrics Grid -->
+    <div class="stats-grid mb-4">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(239, 68, 68, 0.12); color: #dc2626;">
+          <i class="fa-solid fa-door-closed"></i>
+        </div>
+        <div class="stat-info">
+          <h4>Occupied Rooms</h4>
+          <div class="stat-value" id="metricOccupied">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.12); color: #047857;">
+          <i class="fa-solid fa-door-open"></i>
+        </div>
+        <div class="stat-info">
+          <h4>Vacant & Ready</h4>
+          <div class="stat-value" id="metricAvailable">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.12); color: #b45309;">
+          <i class="fa-solid fa-broom"></i>
+        </div>
+        <div class="stat-info">
+          <h4>Housekeeping</h4>
+          <div class="stat-value" id="metricCleaning">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(212, 175, 55, 0.15); color: #b89320;">
+          <i class="fa-solid fa-vault"></i>
+        </div>
+        <div class="stat-info">
+          <h4>Total Revenue</h4>
+          <div class="stat-value" id="metricRevenue">$0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Room Layout Map & Quick Status Controls -->
+    <div class="card p-4 border-0 shadow-sm rounded-4 bg-white mb-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <h3 class="font-serif fs-4 mb-0 text-dark">
+          <i class="fa-solid fa-building me-2 text-gold"></i> Live Room Status Map (Floors 1 - 4)
+        </h3>
+        <span class="text-muted small">Click any room card to change status</span>
+      </div>
+
+      <div class="row g-3" id="roomGridContainer">
+        <!-- Room Cards Rendered via JS -->
+      </div>
+    </div>
+
+    <!-- Active Guest Bookings Table -->
+    <div class="card p-4 border-0 shadow-sm rounded-4 bg-white mb-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
+        <h3 class="font-serif fs-4 mb-0 text-dark">
+          <i class="fa-solid fa-clipboard-list me-2 text-gold"></i> Active Guest Bookings
+        </h3>
+        
+        <div class="d-flex gap-2">
+          <input type="text" id="bookingSearchInput" class="form-control form-control-sm rounded-pill px-3" placeholder="Search by guest or room..." style="width: 240px;" onkeyup="renderBookingsTable()">
+          <select id="bookingStatusFilter" class="form-select form-select-sm rounded-pill" style="width: 160px;" onchange="renderBookingsTable()">
+            <option value="">All Statuses</option>
+            <option value="Occupied">Occupied</option>
+            <option value="Completed">Checked Out</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-luxury-wrapper">
+        <table class="table-luxury">
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Room #</th>
+              <th>Suite Type</th>
+              <th>Guest Name</th>
+              <th>Check-In & Out</th>
+              <th>Total Bill</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bookingsTableBody">
+            <!-- Bookings Rendered via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- In-Room Service Requests Desk -->
+    <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="font-serif fs-4 mb-0 text-dark">
+          <i class="fa-solid fa-bell-concierge me-2 text-gold"></i> Guest Room Service Orders
+        </h3>
+        <span class="badge bg-warning text-dark px-3 py-1 rounded-pill" id="pendingServiceBadge">0 Pending</span>
+      </div>
+
+      <div id="serviceOrdersContainer">
+        <!-- Service Requests Rendered via JS -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Walk-In Check-In Modal -->
+  <div class="modal fade" id="checkInModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-user-check me-2"></i> Walk-In Guest Check-In</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="checkInForm" onsubmit="event.preventDefault(); handleNewCheckIn();">
+            <div class="mb-3">
+              <label class="form-label-custom">Guest Full Name</label>
+              <input type="text" id="ciGuestName" class="form-control form-control-luxury" placeholder="e.g. Jonathan Harker" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Guest Email</label>
+              <input type="email" id="ciGuestEmail" class="form-control form-control-luxury" placeholder="name@domain.com" required>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label-custom">Check-In Date</label>
+                <input type="date" id="ciCheckInDate" class="form-control form-control-luxury" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label-custom">Check-Out Date</label>
+                <input type="date" id="ciCheckOutDate" class="form-control form-control-luxury" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Assign Available Room</label>
+              <select id="ciRoomSelect" class="form-select form-control-luxury" required>
+                <!-- Available rooms options -->
+              </select>
+            </div>
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-key me-2"></i> Complete Check-In & Issue Key
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script>
+    // Route guard
+    checkAuth('receptionist');
+
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      document.getElementById('navStaffName').textContent = currentUser.name;
+    }
+
+    // Set default check-in date picker values
+    const todayStr = new Date().toISOString().split('T')[0];
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 3);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    document.getElementById('ciCheckInDate').value = todayStr;
+    document.getElementById('ciCheckOutDate').value = tomorrowStr;
+
+    function renderDashboard() {
+      renderMetrics();
+      renderRoomGrid();
+      renderBookingsTable();
+      renderServiceOrders();
+      populateAvailableRoomsSelect();
+    }
+
+    function renderMetrics() {
+      const metrics = HotelDB.getMetrics();
+      document.getElementById('metricOccupied').textContent = metrics.occupied;
+      document.getElementById('metricAvailable').textContent = metrics.available;
+      document.getElementById('metricCleaning').textContent = metrics.cleaning;
+      document.getElementById('metricRevenue').textContent = `$${metrics.totalRevenue.toLocaleString()}`;
+    }
+
+    function renderRoomGrid() {
+      const rooms = HotelDB.getRooms();
+      const container = document.getElementById('roomGridContainer');
+      container.innerHTML = rooms.map(room => {
+        let badgeClass = 'badge-available';
+        if (room.status === 'Occupied') badgeClass = 'badge-occupied';
+        if (room.status === 'Cleaning') badgeClass = 'badge-cleaning';
+        if (room.status === 'Maintenance') badgeClass = 'badge-maintenance';
+
+        return `
+          <div class="col-6 col-md-4 col-lg-3">
+            <div class="p-3 border rounded-4 bg-white h-100 d-flex flex-column justify-content-between shadow-sm">
+              <div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h4 class="font-serif mb-0 text-navy fw-bold">Room ${room.number}</h4>
+                  <span class="badge-luxury ${badgeClass}">${room.status}</span>
+                </div>
+                <div class="small text-muted mb-2">${room.category}</div>
+                <div class="small fw-semibold text-primary mb-2">$${room.price} / night</div>
+              </div>
+              <div class="dropdown mt-2">
+                <button class="btn btn-sm btn-outline-secondary w-100 rounded-pill dropdown-toggle py-1" type="button" data-bs-toggle="dropdown">
+                  Set Status
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                  <li><a class="dropdown-item text-success" href="#" onclick="changeStatus('${room.number}', 'Available')"><i class="fa-solid fa-check me-2"></i>Available / Ready</a></li>
+                  <li><a class="dropdown-item text-danger" href="#" onclick="changeStatus('${room.number}', 'Occupied')"><i class="fa-solid fa-user-lock me-2"></i>Occupied</a></li>
+                  <li><a class="dropdown-item text-warning" href="#" onclick="changeStatus('${room.number}', 'Cleaning')"><i class="fa-solid fa-broom me-2"></i>Needs Cleaning</a></li>
+                  <li><a class="dropdown-item text-secondary" href="#" onclick="changeStatus('${room.number}', 'Maintenance')"><i class="fa-solid fa-wrench me-2"></i>Under Maintenance</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function changeStatus(roomNumber, status) {
+      HotelDB.updateRoomStatus(roomNumber, status);
+      renderDashboard();
+    }
+
+    function renderBookingsTable() {
+      const bookings = HotelDB.getBookings();
+      const search = document.getElementById('bookingSearchInput').value.toLowerCase();
+      const filter = document.getElementById('bookingStatusFilter').value;
+
+      const filtered = bookings.filter(b => {
+        const matchesSearch = b.guestName.toLowerCase().includes(search) || b.roomNumber.includes(search);
+        const matchesFilter = filter === '' || b.status === filter;
+        return matchesSearch && matchesFilter;
+      });
+
+      const tbody = document.getElementById('bookingsTableBody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">No matching guest bookings found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(b => `
+        <tr>
+          <td><span class="badge bg-light text-dark font-monospace">${b.id}</span></td>
+          <td><strong class="text-navy">#${b.roomNumber}</strong></td>
+          <td>${b.category}</td>
+          <td><strong>${b.guestName}</strong><div class="small text-muted">${b.guestEmail}</div></td>
+          <td>${b.checkIn} &bull; ${b.checkOut}</td>
+          <td><strong class="text-gold">$${b.totalAmount}</strong></td>
+          <td>
+            <span class="badge-luxury ${b.status === 'Occupied' ? 'badge-occupied' : 'badge-gold'}">${b.status}</span>
+          </td>
+          <td>
+            ${b.status === 'Occupied' ? `
+              <button class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1" onclick="handleCheckOut('${b.id}')">
+                <i class="fa-solid fa-right-from-bracket me-1"></i> Check Out
+              </button>
+            ` : `<span class="text-muted small">Checked Out</span>`}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderServiceOrders() {
+      const services = HotelDB.getServices();
+      const container = document.getElementById('serviceOrdersContainer');
+      const pendingCount = services.filter(s => s.status === 'Pending').length;
+      document.getElementById('pendingServiceBadge').textContent = `${pendingCount} Pending`;
+
+      if (services.length === 0) {
+        container.innerHTML = `<p class="text-muted text-center py-3">No room service requests.</p>`;
+        return;
+      }
+
+      container.innerHTML = services.map(s => `
+        <div class="service-item d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="badge bg-navy text-white fw-bold">Room #${s.roomNumber}</span>
+              <strong class="text-dark">${s.guestName}</strong>
+              <span class="text-muted small">&bull; ${s.time}</span>
+            </div>
+            <div class="text-secondary small">Request: <strong>${s.serviceName}</strong> (${s.type})</div>
+          </div>
+          <div class="d-flex align-items-center gap-3">
+            <span class="fw-bold text-gold">${s.amount > 0 ? '$' + s.amount : 'Free Complimentary'}</span>
+            ${s.status === 'Pending' ? `
+              <button class="btn btn-sm btn-success rounded-pill px-3" onclick="fulfillService('${s.id}')">
+                <i class="fa-solid fa-check me-1"></i> Fulfill Request
+              </button>
+            ` : `<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1">Completed</span>`}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function fulfillService(serviceId) {
+      HotelDB.updateServiceStatus(serviceId, 'Completed');
+      renderDashboard();
+    }
+
+    function populateAvailableRoomsSelect() {
+      const rooms = HotelDB.getRooms();
+      const available = rooms.filter(r => r.status === 'Available');
+      const select = document.getElementById('ciRoomSelect');
+      if (available.length === 0) {
+        select.innerHTML = `<option value="">No vacant rooms available</option>`;
+        return;
+      }
+      select.innerHTML = available.map(r => `
+        <option value="${r.number}">Room ${r.number} - ${r.category} ($${r.price}/night)</option>
+      `).join('');
+    }
+
+    function handleNewCheckIn() {
+      const guestName = document.getElementById('ciGuestName').value.trim();
+      const guestEmail = document.getElementById('ciGuestEmail').value.trim();
+      const checkIn = document.getElementById('ciCheckInDate').value;
+      const checkOut = document.getElementById('ciCheckOutDate').value;
+      const roomNumber = document.getElementById('ciRoomSelect').value;
+
+      if (!roomNumber) {
+        alert('Please select an available room.');
+        return;
+      }
+
+      const room = HotelDB.getRooms().find(r => r.number === String(roomNumber));
+      const nights = Math.max(1, Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)));
+      const totalAmount = room ? room.price * nights : 500;
+
+      HotelDB.createBooking({
+        roomNumber,
+        guestName,
+        guestEmail,
+        guestPhone: '+1 (555) 123-9900',
+        checkIn,
+        checkOut,
+        guestsCount: 2,
+        category: room ? room.category : 'Executive Suite',
+        totalAmount
+      });
+
+      // Close modal
+      const modalEl = document.getElementById('checkInModal');
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+
+      alert(`Guest ${guestName} successfully checked into Room #${roomNumber}! Key card active.`);
+      renderDashboard();
+    }
+
+    function handleCheckOut(bookingId) {
+      const booking = HotelDB.getBookings().find(b => b.id === bookingId);
+      if (!booking) return;
+
+      if (confirm(`Confirm check-out for ${booking.guestName} from Room #${booking.roomNumber}?\nTotal Folio: $${booking.totalAmount}`)) {
+        HotelDB.checkOutBooking(bookingId);
+        alert(`Check-out completed for Room #${booking.roomNumber}. Room status updated to Cleaning.`);
+        renderDashboard();
+      }
+    }
+
+    // Initial render
+    renderDashboard();
+  </script>
+</body>
+</html>
