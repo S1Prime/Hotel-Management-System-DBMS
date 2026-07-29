@@ -49,11 +49,11 @@ function logoutUser() {
 }
 
 function quickDemoLogin(role) {
-  if (role === 'receptionist') {
+  if (role === 'receptionist' || role === 'reception') {
     loginUser('reception@crowneplaza.com', 'receptionist', 'Arthur Pendelton', { staffId: 'CP-STAFF-902', title: 'Senior Front Desk Officer' });
     window.location.href = 'reception-dashboard.html';
   } else if (role === 'customer') {
-    loginUser('guest@crowneplaza.com', 'customer', 'Eleanor Vance', { phone: '+1 (555) 234-5678', roomNumber: '101' });
+    loginUser('guest@crowneplaza.com', 'customer', 'Eleanor Vance', { phone: '+1 (555) 234-5678', roomNumber: '101', bookingId: 'BK-1001' });
     window.location.href = 'customer-dashboard.html';
   }
 }

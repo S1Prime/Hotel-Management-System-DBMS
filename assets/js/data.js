@@ -3,17 +3,17 @@
    ========================================================================== */
 
 const INITIAL_ROOMS = [
-  { id: 101, number: "101", category: "Crowne Executive Suite", floor: 1, price: 250, status: "Occupied", type: "Suite", capacity: 2, bed: "King Bed", view: "City Skyline", amenities: ["Wi-Fi", "Minibar", "Jacuzzi", "Smart TV", "City View"], image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80" },
-  { id: 102, number: "102", category: "Crowne Deluxe King", floor: 1, price: 180, status: "Available", type: "Deluxe", capacity: 2, bed: "King Bed", view: "Garden View", amenities: ["Wi-Fi", "Coffee Maker", "Smart TV", "Balcony"], image: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80" },
-  { id: 103, number: "103", category: "Crowne Twin Deluxe", floor: 1, price: 160, status: "Cleaning", type: "Deluxe", capacity: 3, bed: "2 Twin Beds", view: "Courtyard View", amenities: ["Wi-Fi", "Work Desk", "Mini Fridge"], image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=800&q=80" },
-  { id: 104, number: "104", category: "Crowne Executive Suite", floor: 1, price: 250, status: "Available", type: "Suite", capacity: 2, bed: "King Bed", view: "City Skyline", amenities: ["Wi-Fi", "Minibar", "Jacuzzi", "Balcony"], image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80" },
-  { id: 201, number: "201", category: "Ocean View Luxury Suite", floor: 2, price: 320, status: "Occupied", type: "Suite", capacity: 4, bed: "King Bed + Sofa Bed", view: "Ocean View", amenities: ["Wi-Fi", "Private Balcony", "Ocean Panorama", "Espresso Bar"], image: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=800&q=80" },
-  { id: 202, number: "202", category: "Crowne Deluxe King", floor: 2, price: 180, status: "Maintenance", type: "Deluxe", capacity: 2, bed: "King Bed", view: "Garden View", amenities: ["Wi-Fi", "Coffee Maker", "Smart TV"], image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=800&q=80" },
-  { id: 203, number: "203", category: "Crowne Family Suite", floor: 2, price: 290, status: "Available", type: "Suite", capacity: 4, bed: "2 Queen Beds", view: "Pool View", amenities: ["Wi-Fi", "Kitchenette", "Living Area", "2 Smart TVs"], image: "https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=800&q=80" },
-  { id: 204, number: "204", category: "Crowne Deluxe King", floor: 2, price: 180, status: "Occupied", type: "Deluxe", capacity: 2, bed: "King Bed", view: "City Skyline", amenities: ["Wi-Fi", "Coffee Maker", "Smart TV"], image: "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=800&q=80" },
-  { id: 301, number: "301", category: "Presidential Royal Penthouse", floor: 3, price: 650, status: "Available", type: "Penthouse", capacity: 4, bed: "Super King Bed", view: "Panoromic Ocean & City", amenities: ["Private Pool", "Personal Butler", "Full Kitchen", "Private Elevator", "Helipad Access"], image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80" },
-  { id: 302, number: "302", category: "Ocean View Luxury Suite", floor: 3, price: 320, status: "Cleaning", type: "Suite", capacity: 3, bed: "King Bed", view: "Ocean View", amenities: ["Wi-Fi", "Private Balcony", "Ocean Panorama"], image: "https://images.unsplash.com/photo-1595576508898-0ad5c879a061?auto=format&fit=crop&w=800&q=80" },
-  { id: 401, number: "401", category: "Crowne Executive Suite", floor: 4, price: 260, status: "Available", type: "Suite", capacity: 2, bed: "King Bed", view: "High Skyline", amenities: ["Wi-Fi", "Executive Lounge Access", "Jacuzzi"], image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=800&q=80" }
+  { id: 101, number: "101", category: "Luxury Suite", floor: 1, price: 6000, status: "Occupied", type: "Suite", capacity: 2, bed: "King Bed", view: "City Skyline", amenities: ["Wi-Fi", "Minibar", "Jacuzzi", "Smart TV", "City View"], image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80" },
+  { id: 102, number: "102", category: "Standard AC Room", floor: 1, price: 3500, status: "Available", type: "AC", capacity: 2, bed: "King Bed", view: "Garden View", amenities: ["Wi-Fi", "Coffee Maker", "Smart TV", "Balcony"], image: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80" },
+  { id: 103, number: "103", category: "Economy Non-AC Room", floor: 1, price: 2000, status: "Cleaning", type: "Non-AC", capacity: 3, bed: "2 Twin Beds", view: "Courtyard View", amenities: ["Wi-Fi", "Work Desk", "Mini Fridge"], image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=800&q=80" },
+  { id: 104, number: "104", category: "Luxury Suite", floor: 1, price: 6000, status: "Available", type: "Suite", capacity: 2, bed: "King Bed", view: "City Skyline", amenities: ["Wi-Fi", "Minibar", "Jacuzzi", "Balcony"], image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80" },
+  { id: 201, number: "201", category: "AC Room with Balcony", floor: 2, price: 4500, status: "Occupied", type: "AC with Balcony", capacity: 4, bed: "King Bed + Sofa Bed", view: "Ocean View", amenities: ["Wi-Fi", "Private Balcony", "Ocean Panorama", "Espresso Bar"], image: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=800&q=80" },
+  { id: 202, number: "202", category: "Economy Non-AC Room", floor: 2, price: 2000, status: "Maintenance", type: "Non-AC", capacity: 2, bed: "King Bed", view: "Garden View", amenities: ["Wi-Fi", "Coffee Maker", "Smart TV"], image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=800&q=80" },
+  { id: 203, number: "203", category: "AC Room with Balcony", floor: 2, price: 4500, status: "Available", type: "AC with Balcony", capacity: 4, bed: "2 Queen Beds", view: "Pool View", amenities: ["Wi-Fi", "Kitchenette", "Living Area", "2 Smart TVs"], image: "https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=800&q=80" },
+  { id: 204, number: "204", category: "Standard AC Room", floor: 2, price: 3500, status: "Occupied", type: "AC", capacity: 2, bed: "King Bed", view: "City Skyline", amenities: ["Wi-Fi", "Coffee Maker", "Smart TV"], image: "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=800&q=80" },
+  { id: 301, number: "301", category: "Luxury Suite", floor: 3, price: 6000, status: "Available", type: "Suite", capacity: 4, bed: "Super King Bed", view: "Panoromic Ocean & City", amenities: ["Private Pool", "Personal Butler", "Full Kitchen", "Private Elevator", "Helipad Access"], image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80" },
+  { id: 302, number: "302", category: "AC Room with Balcony", floor: 3, price: 4500, status: "Cleaning", type: "AC with Balcony", capacity: 3, bed: "King Bed", view: "Ocean View", amenities: ["Wi-Fi", "Private Balcony", "Ocean Panorama"], image: "https://images.unsplash.com/photo-1595576508898-0ad5c879a061?auto=format&fit=crop&w=800&q=80" },
+  { id: 401, number: "401", category: "Luxury Suite", floor: 4, price: 6000, status: "Available", type: "Suite", capacity: 2, bed: "King Bed", view: "High Skyline", amenities: ["Wi-Fi", "Executive Lounge Access", "Jacuzzi"], image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=800&q=80" }
 ];
 
 const INITIAL_BOOKINGS = [
@@ -26,10 +26,11 @@ const INITIAL_BOOKINGS = [
     checkIn: "2026-07-28",
     checkOut: "2026-08-02",
     guestsCount: 2,
-    category: "Crowne Executive Suite",
-    totalAmount: 1250,
+    category: "Luxury Suite",
+    totalAmount: 30000,
     status: "Occupied",
     paymentStatus: "Paid",
+    wifiPassword: "hotelmanagement",
     createdAt: "2026-07-25"
   },
   {
@@ -41,10 +42,11 @@ const INITIAL_BOOKINGS = [
     checkIn: "2026-07-27",
     checkOut: "2026-07-31",
     guestsCount: 3,
-    category: "Ocean View Luxury Suite",
-    totalAmount: 1280,
+    category: "AC Room with Balcony",
+    totalAmount: 18000,
     status: "Occupied",
     paymentStatus: "Paid",
+    wifiPassword: "hotelmanagement",
     createdAt: "2026-07-26"
   },
   {
@@ -56,30 +58,37 @@ const INITIAL_BOOKINGS = [
     checkIn: "2026-07-29",
     checkOut: "2026-08-03",
     guestsCount: 2,
-    category: "Crowne Deluxe King",
-    totalAmount: 900,
+    category: "Standard AC Room",
+    totalAmount: 17500,
     status: "Occupied",
     paymentStatus: "Pending Desk",
+    wifiPassword: "hotelmanagement",
     createdAt: "2026-07-28"
   }
 ];
 
 const INITIAL_SERVICES = [
-  { id: "SR-501", roomNumber: "101", guestName: "Eleanor Vance", serviceName: "Gourmet Breakfast in Bed", type: "Dining", amount: 45, status: "Pending", time: "08:30 AM" },
+  { id: "SR-501", roomNumber: "101", guestName: "Eleanor Vance", serviceName: "Gourmet Breakfast in Bed", type: "Dining", amount: 1200, status: "Pending", time: "08:30 AM" },
   { id: "SR-502", roomNumber: "201", guestName: "Marcus Sterling", serviceName: "Extra Feather Pillows & Linens", type: "Housekeeping", amount: 0, status: "Completed", time: "10:15 AM" },
-  { id: "SR-503", roomNumber: "101", guestName: "Eleanor Vance", serviceName: "Luxury Spa Aromatherapy Massage", type: "Spa", amount: 120, status: "Completed", time: "02:00 PM" }
+  { id: "SR-503", roomNumber: "101", guestName: "Eleanor Vance", serviceName: "Luxury Spa Aromatherapy Massage", type: "Spa", amount: 3500, status: "Completed", time: "02:00 PM" }
 ];
 
 // Initialize Database in localStorage
 function initDatabase() {
-  if (!localStorage.getItem('cp_rooms')) {
+  const existingBookings = localStorage.getItem('cp_bookings');
+  const needsReset = !existingBookings || !JSON.parse(existingBookings)[0]?.hasOwnProperty('wifiPassword');
+
+  if (needsReset) {
     localStorage.setItem('cp_rooms', JSON.stringify(INITIAL_ROOMS));
-  }
-  if (!localStorage.getItem('cp_bookings')) {
     localStorage.setItem('cp_bookings', JSON.stringify(INITIAL_BOOKINGS));
-  }
-  if (!localStorage.getItem('cp_services')) {
     localStorage.setItem('cp_services', JSON.stringify(INITIAL_SERVICES));
+  } else {
+    if (!localStorage.getItem('cp_rooms')) {
+      localStorage.setItem('cp_rooms', JSON.stringify(INITIAL_ROOMS));
+    }
+    if (!localStorage.getItem('cp_services')) {
+      localStorage.setItem('cp_services', JSON.stringify(INITIAL_SERVICES));
+    }
   }
 }
 
@@ -112,12 +121,29 @@ const HotelDB = {
     localStorage.setItem('cp_bookings', JSON.stringify(bookings));
   },
 
+  findActiveBookingByRoom(roomNumber) {
+    const bookings = this.getBookings();
+    return bookings.find(b => String(b.roomNumber) === String(roomNumber) && b.status === 'Occupied');
+  },
+
+  updateWifiPassword(bookingId, newPassword) {
+    const bookings = this.getBookings();
+    const booking = bookings.find(b => b.id === bookingId);
+    if (booking) {
+      booking.wifiPassword = newPassword;
+      this.saveBookings(bookings);
+      return true;
+    }
+    return false;
+  },
+
   createBooking(bookingData) {
     const bookings = this.getBookings();
     const newBooking = {
       id: 'BK-' + (1000 + bookings.length + 1),
       status: 'Occupied',
       paymentStatus: bookingData.paymentStatus || 'Paid',
+      wifiPassword: 'hotelmanagement',
       createdAt: new Date().toISOString().split('T')[0],
       ...bookingData
     };

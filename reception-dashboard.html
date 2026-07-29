@@ -89,7 +89,7 @@
         </div>
         <div class="stat-info">
           <h4>Total Revenue</h4>
-          <div class="stat-value" id="metricRevenue">$0</div>
+          <div class="stat-value" id="metricRevenue">Rs. 0</div>
         </div>
       </div>
     </div>
@@ -238,7 +238,7 @@
       document.getElementById('metricOccupied').textContent = metrics.occupied;
       document.getElementById('metricAvailable').textContent = metrics.available;
       document.getElementById('metricCleaning').textContent = metrics.cleaning;
-      document.getElementById('metricRevenue').textContent = `$${metrics.totalRevenue.toLocaleString()}`;
+      document.getElementById('metricRevenue').textContent = `Rs. ${metrics.totalRevenue.toLocaleString()}`;
     }
 
     function renderRoomGrid() {
@@ -259,7 +259,7 @@
                   <span class="badge-luxury ${badgeClass}">${room.status}</span>
                 </div>
                 <div class="small text-muted mb-2">${room.category}</div>
-                <div class="small fw-semibold text-primary mb-2">$${room.price} / night</div>
+                <div class="small fw-semibold text-primary mb-2">Rs. ${room.price} / night</div>
               </div>
               <div class="dropdown mt-2">
                 <button class="btn btn-sm btn-outline-secondary w-100 rounded-pill dropdown-toggle py-1" type="button" data-bs-toggle="dropdown">
@@ -307,15 +307,20 @@
           <td>${b.category}</td>
           <td><strong>${b.guestName}</strong><div class="small text-muted">${b.guestEmail}</div></td>
           <td>${b.checkIn} &bull; ${b.checkOut}</td>
-          <td><strong class="text-gold">$${b.totalAmount}</strong></td>
+          <td><strong class="text-gold">Rs. ${b.totalAmount}</strong></td>
           <td>
             <span class="badge-luxury ${b.status === 'Occupied' ? 'badge-occupied' : 'badge-gold'}">${b.status}</span>
           </td>
           <td>
             ${b.status === 'Occupied' ? `
-              <button class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1" onclick="handleCheckOut('${b.id}')">
-                <i class="fa-solid fa-right-from-bracket me-1"></i> Check Out
-              </button>
+              <div class="d-flex gap-1">
+                <button class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1" onclick="handleCheckOut('${b.id}')">
+                  <i class="fa-solid fa-right-from-bracket me-1"></i> Check Out
+                </button>
+                <button class="btn btn-sm btn-outline-warning rounded-pill px-2.5 py-1 text-warning border-warning" onclick="changeWifiPassword('${b.id}', '${b.roomNumber}')">
+                  <i class="fa-solid fa-wifi me-1"></i> Wi-Fi
+                </button>
+              </div>
             ` : `<span class="text-muted small">Checked Out</span>`}
           </td>
         </tr>
@@ -344,7 +349,7 @@
             <div class="text-secondary small">Request: <strong>${s.serviceName}</strong> (${s.type})</div>
           </div>
           <div class="d-flex align-items-center gap-3">
-            <span class="fw-bold text-gold">${s.amount > 0 ? '$' + s.amount : 'Free Complimentary'}</span>
+            <span class="fw-bold text-gold">${s.amount > 0 ? 'Rs. ' + s.amount : 'Free Complimentary'}</span>
             ${s.status === 'Pending' ? `
               <button class="btn btn-sm btn-success rounded-pill px-3" onclick="fulfillService('${s.id}')">
                 <i class="fa-solid fa-check me-1"></i> Fulfill Request
@@ -369,7 +374,7 @@
         return;
       }
       select.innerHTML = available.map(r => `
-        <option value="${r.number}">Room ${r.number} - ${r.category} ($${r.price}/night)</option>
+        <option value="${r.number}">Room ${r.number} - ${r.category} (Rs. ${r.price}/night)</option>
       `).join('');
     }
 
@@ -387,7 +392,7 @@
 
       const room = HotelDB.getRooms().find(r => r.number === String(roomNumber));
       const nights = Math.max(1, Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)));
-      const totalAmount = room ? room.price * nights : 500;
+      const totalAmount = room ? room.price * nights : 2000;
 
       HotelDB.createBooking({
         roomNumber,
@@ -414,11 +419,30 @@
       const booking = HotelDB.getBookings().find(b => b.id === bookingId);
       if (!booking) return;
 
-      if (confirm(`Confirm check-out for ${booking.guestName} from Room #${booking.roomNumber}?\nTotal Folio: $${booking.totalAmount}`)) {
+      if (confirm(`Confirm check-out for ${booking.guestName} from Room #${booking.roomNumber}?\nTotal Folio: Rs. ${booking.totalAmount}`)) {
         HotelDB.checkOutBooking(bookingId);
         alert(`Check-out completed for Room #${booking.roomNumber}. Room status updated to Cleaning.`);
         renderDashboard();
       }
+    }
+
+    function changeWifiPassword(bookingId, roomNumber) {
+      const bookings = HotelDB.getBookings();
+      const booking = bookings.find(b => b.id === bookingId);
+      if (!booking) return;
+
+      const newPwd = prompt(`Enter new Wi-Fi password for Room #${roomNumber}:`, booking.wifiPassword || "hotelmanagement");
+      if (newPwd === null) return; // User cancelled
+
+      const cleanedPwd = newPwd.trim();
+      if (cleanedPwd.length < 4) {
+        alert("Wi-Fi password must be at least 4 characters long.");
+        return;
+      }
+
+      HotelDB.updateWifiPassword(bookingId, cleanedPwd);
+      alert(`Wi-Fi password for Room #${roomNumber} updated successfully to: ${cleanedPwd}`);
+      renderDashboard();
     }
 
     // Initial render

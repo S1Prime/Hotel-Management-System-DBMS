@@ -34,10 +34,10 @@
         <form id="customerLoginForm" onsubmit="event.preventDefault(); handleCustomerLogin();">
           
           <div class="form-group text-start mb-3">
-            <label class="form-label-custom" for="guestEmail">Email Address or Phone</label>
+            <label class="form-label-custom" for="guestEmail">Email, Phone, or Room ID</label>
             <div class="input-group">
-              <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-envelope"></i></span>
-              <input id="guestEmail" type="email" class="form-control form-control-luxury border-start-0 ps-0" placeholder="name@example.com" required value="guest@crowneplaza.com">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-user"></i></span>
+              <input id="guestEmail" type="text" class="form-control form-control-luxury border-start-0 ps-0" placeholder="Email, Phone, or Room ID (e.g. 101)" required value="guest@crowneplaza.com">
             </div>
           </div>
 
@@ -86,22 +86,62 @@
     </div>
   </div>
 
+  <script src="assets/js/data.js"></script>
   <script src="assets/js/auth.js"></script>
   <script>
     function handleCustomerLogin() {
-      const email = document.getElementById('guestEmail').value.trim();
+      const emailOrRoom = document.getElementById('guestEmail').value.trim();
       const password = document.getElementById('guestPassword').value.trim();
       const alertBox = document.getElementById('loginAlert');
 
-      if (!email || !password) {
-        alertBox.textContent = 'Please enter your email and password.';
+      if (!emailOrRoom || !password) {
+        alertBox.textContent = 'Please enter your login details.';
         alertBox.classList.remove('d-none');
         return;
       }
 
-      const guestName = email.split('@')[0];
-      loginUser(email, 'customer', guestName.charAt(0).toUpperCase() + guestName.slice(1), { phone: '+1 (555) 234-5678', roomNumber: '101' });
-      window.location.href = 'customer-dashboard.html';
+      // Check if it is a Room ID (a number)
+      const isRoomId = /^\d+$/.test(emailOrRoom);
+
+      if (isRoomId) {
+        // Authenticate by Room ID and Wi-Fi password
+        const booking = HotelDB.findActiveBookingByRoom(emailOrRoom);
+        if (!booking) {
+          alertBox.textContent = `No active reservation found for Room #${emailOrRoom}.`;
+          alertBox.classList.remove('d-none');
+          return;
+        }
+
+        const expectedPwd = booking.wifiPassword || 'hotelmanagement';
+        if (password !== expectedPwd) {
+          alertBox.textContent = 'Invalid Wi-Fi password for this Room ID.';
+          alertBox.classList.remove('d-none');
+          return;
+        }
+
+        // Login success!
+        loginUser(booking.guestEmail, 'customer', booking.guestName, { 
+          phone: booking.guestPhone, 
+          roomNumber: booking.roomNumber,
+          bookingId: booking.id,
+          isRoomIdLogin: true
+        });
+        window.location.href = 'customer-dashboard.html';
+      } else {
+        // Standard email login (always succeeds for guest experience or validates against booking)
+        const bookings = HotelDB.getBookings();
+        const active = bookings.find(b => b.guestEmail.toLowerCase() === emailOrRoom.toLowerCase() && b.status === 'Occupied');
+        
+        const guestName = emailOrRoom.split('@')[0];
+        const formattedName = guestName.charAt(0).toUpperCase() + guestName.slice(1);
+        
+        loginUser(emailOrRoom, 'customer', active ? active.guestName : formattedName, { 
+          phone: active ? active.guestPhone : '+1 (555) 234-5678', 
+          roomNumber: active ? active.roomNumber : '101',
+          bookingId: active ? active.id : 'BK-1001'
+        });
+        window.location.href = 'customer-dashboard.html';
+      }
     }
   </script>
 </body>
