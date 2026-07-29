@@ -573,4 +573,34 @@ body {
   border-radius: 50rem;
 }
 
+/* Twinkling particle snow background effect */
+.particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: radial-gradient(circle, var(--accent-gold) 0%, rgba(212, 175, 55, 0.2) 70%);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+  animation: driftParticles 12s infinite linear;
+}
+
+@keyframes driftParticles {
+  0% {
+    transform: translateY(105vh) translateX(0) scale(0.5);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.6;
+  }
+  85% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-10vh) translateX(100px) scale(1.2);
+    opacity: 0;
+  }
+}
+
 

@@ -143,6 +143,32 @@
         window.location.href = 'customer-dashboard.html';
       }
     }
+
+    // Creative Background Particles & Mouse Parallax
+    function initCreativeEffects() {
+      const container = document.querySelector('.orb-container');
+      if (container) {
+        for (let i = 0; i < 25; i++) {
+          const p = document.createElement('div');
+          p.className = 'particle';
+          p.style.left = Math.random() * 100 + 'vw';
+          p.style.animationDelay = Math.random() * 12 + 's';
+          p.style.animationDuration = (8 + Math.random() * 8) + 's';
+          p.style.transform = `scale(${0.3 + Math.random() * 0.8})`;
+          container.appendChild(p);
+        }
+      }
+
+      document.addEventListener('mousemove', (e) => {
+        const x = (window.innerWidth / 2 - e.clientX) / 45;
+        const y = (window.innerHeight / 2 - e.clientY) / 45;
+        const gold = document.querySelector('.orb-gold');
+        const navy = document.querySelector('.orb-navy');
+        if (gold) gold.style.transform = `translate(${x}px, ${y}px)`;
+        if (navy) navy.style.transform = `translate(${-x}px, ${-y}px)`;
+      });
+    }
+    document.addEventListener('DOMContentLoaded', initCreativeEffects);
   </script>
 </body>
 </html>
