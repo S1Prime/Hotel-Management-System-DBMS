@@ -12,9 +12,15 @@
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-  <div class="hero-wrapper">
-    <div class="container" style="max-width: 520px;">
-      <div class="card-luxury-dark text-center">
+  <div class="hero-wrapper position-relative">
+    <!-- Ambient Floating Background Accents -->
+    <div class="orb-container">
+      <div class="floating-orb orb-gold" style="opacity: 0.12;"></div>
+      <div class="floating-orb orb-navy" style="opacity: 0.2;"></div>
+    </div>
+
+    <div class="container position-relative" style="max-width: 520px; z-index: 10;">
+      <div class="card-luxury-dark text-center fade-in-up">
         
         <div class="brand-logo-badge mx-auto" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); color: white;">
           <i class="fa-solid fa-concierge-bell"></i>
@@ -60,7 +66,7 @@
 
         <div class="border-top border-secondary pt-3 mt-2">
           <p class="text-slate-400 small mb-2">Need quick evaluation testing?</p>
-          <button type="button" class="btn btn-outline-warning btn-sm w-100 rounded-pill py-2" onclick="quickDemoLogin('reception')">
+          <button type="button" class="btn btn-outline-warning btn-sm w-100 rounded-pill py-2" onclick="quickDemoLogin('receptionist')">
             <i class="fa-solid fa-bolt me-1"></i> One-Click Demo Staff Login
           </button>
         </div>
