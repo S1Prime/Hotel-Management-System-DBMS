@@ -208,6 +208,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="assets/js/data.js"></script>
   <script src="assets/js/auth.js"></script>
+  <script src="assets/js/ui-helpers.js"></script>
   <script>
     // Route guard
     checkAuth('receptionist');
@@ -259,7 +260,7 @@
                   <span class="badge-luxury ${badgeClass}">${room.status}</span>
                 </div>
                 <div class="small text-muted mb-2">${room.category}</div>
-                <div class="small fw-semibold text-primary mb-2">Rs. ${room.price} / night</div>
+                <div class="small fw-semibold text-primary mb-2">Rs. ${room.price.toLocaleString()} / night</div>
               </div>
               <div class="dropdown mt-2">
                 <button class="btn btn-sm btn-outline-secondary w-100 rounded-pill dropdown-toggle py-1" type="button" data-bs-toggle="dropdown">
@@ -280,6 +281,7 @@
 
     function changeStatus(roomNumber, status) {
       HotelDB.updateRoomStatus(roomNumber, status);
+      showToast(`Room #${roomNumber} status changed to "${status}"`, 'Room Status Updated', 'info');
       renderDashboard();
     }
 
@@ -307,21 +309,26 @@
           <td>${b.category}</td>
           <td><strong>${b.guestName}</strong><div class="small text-muted">${b.guestEmail}</div></td>
           <td>${b.checkIn} &bull; ${b.checkOut}</td>
-          <td><strong class="text-gold">Rs. ${b.totalAmount}</strong></td>
+          <td><strong class="text-gold">Rs. ${b.totalAmount.toLocaleString()}</strong></td>
           <td>
             <span class="badge-luxury ${b.status === 'Occupied' ? 'badge-occupied' : 'badge-gold'}">${b.status}</span>
           </td>
           <td>
-            ${b.status === 'Occupied' ? `
-              <div class="d-flex gap-1">
+            <div class="d-flex gap-1">
+              ${b.status === 'Occupied' ? `
                 <button class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1" onclick="handleCheckOut('${b.id}')">
                   <i class="fa-solid fa-right-from-bracket me-1"></i> Check Out
                 </button>
-                <button class="btn btn-sm btn-outline-warning rounded-pill px-2.5 py-1 text-warning border-warning" onclick="changeWifiPassword('${b.id}', '${b.roomNumber}')">
-                  <i class="fa-solid fa-wifi me-1"></i> Wi-Fi
+              ` : ''}
+              <button class="btn btn-sm btn-outline-gold rounded-pill px-2.5 py-1 text-gold border-gold" onclick="openInvoiceModal('${b.id}')" title="Print Invoice / Folio">
+                <i class="fa-solid fa-file-invoice me-1"></i> Invoice
+              </button>
+              ${b.status === 'Occupied' ? `
+                <button class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1" onclick="changeWifiPassword('${b.id}', '${b.roomNumber}')" title="Wi-Fi Password">
+                  <i class="fa-solid fa-wifi me-1"></i>
                 </button>
-              </div>
-            ` : `<span class="text-muted small">Checked Out</span>`}
+              ` : ''}
+            </div>
           </td>
         </tr>
       `).join('');
@@ -349,7 +356,7 @@
             <div class="text-secondary small">Request: <strong>${s.serviceName}</strong> (${s.type})</div>
           </div>
           <div class="d-flex align-items-center gap-3">
-            <span class="fw-bold text-gold">${s.amount > 0 ? 'Rs. ' + s.amount : 'Free Complimentary'}</span>
+            <span class="fw-bold text-gold">${s.amount > 0 ? 'Rs. ' + s.amount.toLocaleString() : 'Free Complimentary'}</span>
             ${s.status === 'Pending' ? `
               <button class="btn btn-sm btn-success rounded-pill px-3" onclick="fulfillService('${s.id}')">
                 <i class="fa-solid fa-check me-1"></i> Fulfill Request
@@ -362,6 +369,7 @@
 
     function fulfillService(serviceId) {
       HotelDB.updateServiceStatus(serviceId, 'Completed');
+      showToast('Room service order marked as fulfilled.', 'Service Completed', 'success');
       renderDashboard();
     }
 
@@ -374,7 +382,7 @@
         return;
       }
       select.innerHTML = available.map(r => `
-        <option value="${r.number}">Room ${r.number} - ${r.category} (Rs. ${r.price}/night)</option>
+        <option value="${r.number}">Room ${r.number} - ${r.category} (Rs. ${r.price.toLocaleString()}/night)</option>
       `).join('');
     }
 
@@ -386,15 +394,22 @@
       const roomNumber = document.getElementById('ciRoomSelect').value;
 
       if (!roomNumber) {
-        alert('Please select an available room.');
+        showToast('Please select an available room.', 'Check-In Error', 'warning');
         return;
       }
 
       const room = HotelDB.getRooms().find(r => r.number === String(roomNumber));
-      const nights = Math.max(1, Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)));
+      const ci = new Date(checkIn);
+      const co = new Date(checkOut);
+      if (co <= ci) {
+        showToast('Check-out date must be after check-in date.', 'Date Error', 'danger');
+        return;
+      }
+
+      const nights = Math.max(1, Math.ceil((co - ci) / (1000 * 60 * 60 * 24)));
       const totalAmount = room ? room.price * nights : 2000;
 
-      HotelDB.createBooking({
+      const newBooking = HotelDB.createBooking({
         roomNumber,
         guestName,
         guestEmail,
@@ -411,7 +426,7 @@
       const modal = bootstrap.Modal.getInstance(modalEl);
       if (modal) modal.hide();
 
-      alert(`Guest ${guestName} successfully checked into Room #${roomNumber}! Key card active.`);
+      showToast(`Guest ${guestName} checked into Room #${roomNumber}!`, 'Check-In Complete', 'success');
       renderDashboard();
     }
 
@@ -419,11 +434,12 @@
       const booking = HotelDB.getBookings().find(b => b.id === bookingId);
       if (!booking) return;
 
-      if (confirm(`Confirm check-out for ${booking.guestName} from Room #${booking.roomNumber}?\nTotal Folio: Rs. ${booking.totalAmount}`)) {
-        HotelDB.checkOutBooking(bookingId);
-        alert(`Check-out completed for Room #${booking.roomNumber}. Room status updated to Cleaning.`);
-        renderDashboard();
-      }
+      HotelDB.checkOutBooking(bookingId);
+      showToast(`Check-out completed for Room #${booking.roomNumber}. Room status updated to Housekeeping Cleaning.`, 'Guest Checked Out', 'success');
+      renderDashboard();
+      
+      // Auto open printable invoice modal
+      openInvoiceModal(bookingId);
     }
 
     function changeWifiPassword(bookingId, roomNumber) {
@@ -436,12 +452,12 @@
 
       const cleanedPwd = newPwd.trim();
       if (cleanedPwd.length < 4) {
-        alert("Wi-Fi password must be at least 4 characters long.");
+        showToast("Wi-Fi password must be at least 4 characters long.", "Validation Error", "warning");
         return;
       }
 
       HotelDB.updateWifiPassword(bookingId, cleanedPwd);
-      alert(`Wi-Fi password for Room #${roomNumber} updated successfully to: ${cleanedPwd}`);
+      showToast(`Wi-Fi password for Room #${roomNumber} updated to: ${cleanedPwd}`, 'Wi-Fi Updated', 'success');
       renderDashboard();
     }
 

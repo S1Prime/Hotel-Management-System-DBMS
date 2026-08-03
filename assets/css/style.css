@@ -603,4 +603,158 @@ body {
   }
 }
 
+/* ==========================================================================
+   Luxury Toast Notification System
+   ========================================================================== */
+.toast-container-luxury {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 1095;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 380px;
+  width: 100%;
+  pointer-events: none;
+}
+
+.toast-luxury {
+  pointer-events: auto;
+  background: rgba(11, 19, 41, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--accent-gold);
+  border-radius: 1rem;
+  color: white;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  position: relative;
+  overflow: hidden;
+}
+
+.toast-luxury.toast-success { border-left: 5px solid var(--success-green); }
+.toast-luxury.toast-danger { border-left: 5px solid var(--danger-red); }
+.toast-luxury.toast-warning { border-left: 5px solid var(--warning-amber); }
+.toast-luxury.toast-info { border-left: 5px solid var(--accent-gold); }
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.toast-luxury-icon {
+  font-size: 1.25rem;
+  margin-top: 0.1rem;
+}
+
+.toast-success .toast-luxury-icon { color: var(--success-green); }
+.toast-danger .toast-luxury-icon { color: var(--danger-red); }
+.toast-warning .toast-luxury-icon { color: var(--warning-amber); }
+.toast-info .toast-luxury-icon { color: var(--accent-gold); }
+
+.toast-luxury-content {
+  flex-grow: 1;
+}
+
+.toast-luxury-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 0.15rem;
+  color: white;
+}
+
+.toast-luxury-message {
+  font-size: 0.825rem;
+  color: var(--slate-200);
+  line-height: 1.35;
+}
+
+.toast-luxury-close {
+  background: none;
+  border: none;
+  color: var(--slate-400);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.toast-luxury-close:hover {
+  color: white;
+}
+
+/* ==========================================================================
+   Printable Invoice Modal & Print CSS
+   ========================================================================== */
+.invoice-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 2.5rem;
+  color: var(--slate-900);
+  border: 1px solid var(--slate-200);
+  box-shadow: var(--shadow-sm);
+}
+
+.invoice-header-brand {
+  border-bottom: 2px solid var(--accent-gold);
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+.invoice-table th {
+  background: var(--slate-100);
+  color: var(--slate-700);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--slate-200);
+}
+
+.invoice-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--slate-200);
+  font-size: 0.9rem;
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  #printableInvoiceArea, #printableInvoiceArea * {
+    visibility: visible !important;
+  }
+  #printableInvoiceArea {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .modal-header, .modal-footer, .btn, .dashboard-navbar {
+    display: none !important;
+  }
+}
+
+
 
