@@ -1,0 +1,90 @@
+================================================================================
+HOTEL MANAGEMENT SYSTEM - SETUP & RUN COMMANDS
+================================================================================
+
+--------------------------------------------------------------------------------
+1. LIBRARIES NEEDED TO INSTALL (PREREQUISITES)
+--------------------------------------------------------------------------------
+The backend requires Python 3.x and the following essential libraries:
+- flask          (Web framework for the REST API)
+- flask-cors     (Handles Cross-Origin Resource Sharing for frontend requests)
+- psycopg2-binary(PostgreSQL database adapter for Python)
+
+Run ONE of the following commands in your terminal:
+
+Option A (Direct installation - recommended):
+pip install flask flask-cors psycopg2-binary
+
+Option B (Using the backend requirements file):
+# From the project root:
+pip install -r backend/requirements.txt
+# Or if inside the backend folder:
+pip install -r requirements.txt
+
+
+--------------------------------------------------------------------------------
+2. (OPTIONAL BUT RECOMMENDED) VIRTUAL ENVIRONMENT SETUP
+--------------------------------------------------------------------------------
+# Create a virtual environment:
+python -m venv venv
+
+# Activate the virtual environment:
+# Windows (PowerShell):
+.\venv\Scripts\Activate.ps1
+
+# Windows (Command Prompt - CMD):
+.\venv\Scripts\activate.bat
+
+# Linux / macOS:
+source venv/bin/activate
+
+# Install the required libraries inside the virtual environment:
+pip install flask flask-cors psycopg2-binary
+
+
+--------------------------------------------------------------------------------
+3. TEST DATABASE CONNECTION
+--------------------------------------------------------------------------------
+# Ensure your PostgreSQL service is running and credentials in backend/database.py match.
+# Run the database test script:
+# From the project root:
+python backend/test_db.py
+in case if it is not working run:
+pip install psycopg2
+
+# Or from inside the backend directory:
+cd backend
+python test_db.py
+cd ..
+
+
+--------------------------------------------------------------------------------
+4. RUN THE BACKEND SERVER
+--------------------------------------------------------------------------------
+# Start the Flask API server:
+# From the project root:
+python backend/app.py
+
+# Or from inside the backend directory:
+cd backend
+python app.py
+
+# The backend server runs at:
+http://127.0.0.1:5000/
+
+
+--------------------------------------------------------------------------------
+5. RUN THE FRONTEND
+--------------------------------------------------------------------------------
+Option A: Open directly in your browser:
+Double-click "index.html" (or "Hotel-Management-System-DBMS/index.html")
+
+Option B: Run using Python HTTP server:
+# From project root:
+python -m http.server 8000
+# Or from inside Hotel-Management-System-DBMS directory:
+python -m http.server 8000
+
+Then open in your browser:
+http://localhost:8000/
+================================================================================
