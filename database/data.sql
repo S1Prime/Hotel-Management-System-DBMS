@@ -14,4 +14,3 @@ VALUES
 ('201', 'Suite', 8000, 'Available'),
 ('202', 'Suite', 8000, 'Available');
 
-
