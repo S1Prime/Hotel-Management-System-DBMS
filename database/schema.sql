@@ -30,3 +30,4 @@ CREATE TABLE reservations (
     FOREIGN KEY (room_id)
         REFERENCES rooms(room_id)
 );
+
