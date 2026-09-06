@@ -1,6 +1,5 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-
 from database import get_db_connection
 
 app = Flask(__name__)
@@ -16,7 +15,6 @@ def home():
 
 @app.route("/api/rooms")
 def get_rooms():
-
     connection = get_db_connection()
     cursor = connection.cursor()
 

@@ -6,7 +6,6 @@ CREATE TABLE customers (
     password_hash TEXT NOT NULL
 );
 
-
 CREATE TABLE rooms (
     room_id SERIAL PRIMARY KEY,
     room_number VARCHAR(10) UNIQUE NOT NULL,
@@ -14,7 +13,6 @@ CREATE TABLE rooms (
     price_per_night NUMERIC(10,2) NOT NULL,
     status VARCHAR(20) DEFAULT 'Available'
 );
-
 
 CREATE TABLE reservations (
     reservation_id SERIAL PRIMARY KEY,
@@ -30,4 +28,3 @@ CREATE TABLE reservations (
     FOREIGN KEY (room_id)
         REFERENCES rooms(room_id)
 );
-
