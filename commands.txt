@@ -29,9 +29,6 @@ pip install -r requirements.txt
 python -m venv venv
 
 # Activate the virtual environment:
-# Windows (PowerShell):
-.\venv\Scripts\Activate.ps1
-
 # Windows (Command Prompt - CMD):
 .\venv\Scripts\activate.bat
 
