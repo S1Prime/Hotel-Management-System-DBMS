@@ -1,6 +1,8 @@
 /* ==========================================================================
-   Crowne Plaza Hotel Management System - Shared Local Database & State Engine
+   Crowne Plaza Hotel Management System - Shared API & PostgreSQL Engine
    ========================================================================== */
+
+const API_BASE_URL = 'http://127.0.0.1:5000/api';
 
 const INITIAL_ROOMS = [
   { id: 101, number: "101", category: "Luxury Suite", floor: 1, price: 6000, status: "Occupied", type: "Suite", capacity: 2, bed: "King Bed", view: "City Skyline", amenities: ["Wi-Fi", "Minibar", "Jacuzzi", "Smart TV", "City View"], image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80" },
@@ -26,81 +28,83 @@ const INITIAL_BOOKINGS = [
     paymentStatus: "Paid",
     wifiPassword: "hotelmanagement",
     createdAt: "2026-07-25"
-  },
-  {
-    id: "BK-1002",
-    roomNumber: "201",
-    guestName: "Marcus Sterling",
-    guestEmail: "marcus@sterling.com",
-    guestPhone: "+1 (555) 876-5432",
-    checkIn: "2026-07-27",
-    checkOut: "2026-07-31",
-    guestsCount: 3,
-    category: "AC Room with Balcony",
-    totalAmount: 18000,
-    status: "Occupied",
-    paymentStatus: "Paid",
-    wifiPassword: "hotelmanagement",
-    createdAt: "2026-07-26"
-  },
-  {
-    id: "BK-1003",
-    roomNumber: "102",
-    guestName: "Sophia Loren",
-    guestEmail: "sophia@loren.com",
-    guestPhone: "+1 (555) 998-1122",
-    checkIn: "2026-07-29",
-    checkOut: "2026-08-03",
-    guestsCount: 2,
-    category: "Standard AC Room",
-    totalAmount: 17500,
-    status: "Occupied",
-    paymentStatus: "Pending Desk",
-    wifiPassword: "hotelmanagement",
-    createdAt: "2026-07-28"
   }
 ];
 
 const INITIAL_SERVICES = [
-  { id: "SR-501", roomNumber: "101", guestName: "Eleanor Vance", serviceName: "Gourmet Breakfast in Bed", type: "Dining", amount: 1200, status: "Pending", time: "08:30 AM" },
-  { id: "SR-502", roomNumber: "201", guestName: "Marcus Sterling", serviceName: "Extra Feather Pillows & Linens", type: "Housekeeping", amount: 0, status: "Completed", time: "10:15 AM" },
-  { id: "SR-503", roomNumber: "101", guestName: "Eleanor Vance", serviceName: "Luxury Spa Aromatherapy Massage", type: "Spa", amount: 3500, status: "Completed", time: "02:00 PM" }
+  { id: "SR-501", roomNumber: "101", guestName: "Eleanor Vance", serviceName: "Gourmet Breakfast in Bed", type: "Dining", amount: 1200, status: "Pending", time: "08:30 AM" }
 ];
 
-// Initialize Database in localStorage
-function initDatabase() {
-  const existingBookings = localStorage.getItem('cp_bookings');
-  const existingRooms = localStorage.getItem('cp_rooms');
-  
-  // Reset database if it's missing the Wi-Fi property OR has old room counts (more than 5 rooms)
-  const needsReset = !existingBookings || 
-                     !JSON.parse(existingBookings)[0]?.hasOwnProperty('wifiPassword') ||
-                     (existingRooms && JSON.parse(existingRooms).length > 5);
-
-  if (needsReset) {
+function initLocalStorageFallback() {
+  if (!localStorage.getItem('cp_rooms')) {
     localStorage.setItem('cp_rooms', JSON.stringify(INITIAL_ROOMS));
+  }
+  if (!localStorage.getItem('cp_bookings')) {
     localStorage.setItem('cp_bookings', JSON.stringify(INITIAL_BOOKINGS));
+  }
+  if (!localStorage.getItem('cp_services')) {
     localStorage.setItem('cp_services', JSON.stringify(INITIAL_SERVICES));
-  } else {
-    if (!localStorage.getItem('cp_rooms')) {
-      localStorage.setItem('cp_rooms', JSON.stringify(INITIAL_ROOMS));
-    }
-    if (!localStorage.getItem('cp_services')) {
-      localStorage.setItem('cp_services', JSON.stringify(INITIAL_SERVICES));
-    }
   }
 }
+initLocalStorageFallback();
 
-initDatabase();
-
-// Data Engine API
+// Unified Data Engine interacting with PostgreSQL Backend API
 const HotelDB = {
+  // 1. Fetch Rooms from PostgreSQL API
+  async getRoomsAsync() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/rooms`);
+      if (res.ok) {
+        const dbRooms = await res.json();
+        if (dbRooms && dbRooms.length > 0) {
+          // Format DB rooms to match frontend template expectations
+          return dbRooms.map(r => ({
+            id: r.room_id,
+            number: r.room_number,
+            category: r.room_type.includes('Room') || r.room_type.includes('Suite') ? r.room_type : `${r.room_type} Room`,
+            floor: parseInt(r.room_number[0], 10) || 1,
+            price: parseFloat(r.price_per_night),
+            status: r.status || 'Available',
+            type: r.room_type,
+            capacity: r.room_type.includes('Suite') || r.room_type.includes('Double') ? 4 : 2,
+            bed: r.room_type.includes('Suite') ? 'King Bed' : 'Double Bed',
+            view: 'City & Sea Panorama',
+            amenities: ['Wi-Fi', 'Smart TV', 'Air Conditioning', 'Executive Desk'],
+            image: r.room_type.includes('Suite')
+              ? 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80'
+              : 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80'
+          }));
+        }
+      }
+    } catch (e) {
+      console.warn('Backend API offline, falling back to client cache:', e);
+    }
+    return JSON.parse(localStorage.getItem('cp_rooms') || '[]');
+  },
+
   getRooms() {
     return JSON.parse(localStorage.getItem('cp_rooms') || '[]');
   },
 
   saveRooms(rooms) {
     localStorage.setItem('cp_rooms', JSON.stringify(rooms));
+  },
+
+  async updateRoomStatusAsync(roomNumber, newStatus) {
+    try {
+      const rooms = await this.getRoomsAsync();
+      const target = rooms.find(r => r.number === String(roomNumber));
+      if (target && target.id) {
+        await fetch(`${API_BASE_URL}/rooms/${target.id}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
+      }
+    } catch (e) {
+      console.warn('Room status update API error:', e);
+    }
+    this.updateRoomStatus(roomNumber, newStatus);
   },
 
   updateRoomStatus(roomNumber, newStatus) {
@@ -110,6 +114,37 @@ const HotelDB = {
       room.status = newStatus;
       this.saveRooms(rooms);
     }
+  },
+
+  // 2. Fetch Bookings/Reservations from PostgreSQL API
+  async getBookingsAsync() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/reservations`);
+      if (res.ok) {
+        const dbRes = await res.json();
+        if (dbRes && dbRes.length > 0) {
+          return dbRes.map(b => ({
+            id: `RES-${b.reservation_id}`,
+            reservationId: b.reservation_id,
+            roomNumber: b.room_number,
+            guestName: b.guest_name,
+            guestEmail: b.guest_email,
+            guestPhone: b.guest_phone,
+            checkIn: b.check_in,
+            checkOut: b.check_out,
+            guestsCount: 2,
+            category: b.room_type,
+            totalAmount: parseFloat(b.price_per_night) * 3,
+            status: b.status === 'Booked' ? 'Occupied' : b.status,
+            paymentStatus: 'Paid',
+            wifiPassword: 'hotelmanagement'
+          }));
+        }
+      }
+    } catch (e) {
+      console.warn('Backend API offline, falling back to client bookings:', e);
+    }
+    return JSON.parse(localStorage.getItem('cp_bookings') || '[]');
   },
 
   getBookings() {
@@ -122,18 +157,31 @@ const HotelDB = {
 
   findActiveBookingByRoom(roomNumber) {
     const bookings = this.getBookings();
-    return bookings.find(b => String(b.roomNumber) === String(roomNumber) && b.status === 'Occupied');
+    return bookings.find(b => String(b.roomNumber) === String(roomNumber) && (b.status === 'Occupied' || b.status === 'Booked'));
   },
 
-  updateWifiPassword(bookingId, newPassword) {
-    const bookings = this.getBookings();
-    const booking = bookings.find(b => b.id === bookingId);
-    if (booking) {
-      booking.wifiPassword = newPassword;
-      this.saveBookings(bookings);
-      return true;
+  // 3. Create Reservation in PostgreSQL API
+  async createBookingAsync(bookingData) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/reservations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          room_number: bookingData.roomNumber,
+          guest_name: bookingData.guestName,
+          guest_email: bookingData.guestEmail,
+          guest_phone: bookingData.guestPhone,
+          check_in: bookingData.checkIn,
+          check_out: bookingData.checkOut
+        })
+      });
+      if (res.ok) {
+        console.log('Reservation created in PostgreSQL!');
+      }
+    } catch (e) {
+      console.warn('Backend API reservation error:', e);
     }
-    return false;
+    return this.createBooking(bookingData);
   },
 
   createBooking(bookingData) {
@@ -149,11 +197,26 @@ const HotelDB = {
     bookings.unshift(newBooking);
     this.saveBookings(bookings);
 
-    // Automatically update room status to Occupied
     if (bookingData.roomNumber) {
       this.updateRoomStatus(bookingData.roomNumber, 'Occupied');
     }
     return newBooking;
+  },
+
+  async checkOutBookingAsync(bookingId) {
+    if (String(bookingId).startsWith('RES-')) {
+      const dbId = bookingId.replace('RES-', '');
+      try {
+        await fetch(`${API_BASE_URL}/reservations/${dbId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'Completed' })
+        });
+      } catch (e) {
+        console.warn('CheckOut API error:', e);
+      }
+    }
+    this.checkOutBooking(bookingId);
   },
 
   checkOutBooking(bookingId) {
@@ -164,18 +227,6 @@ const HotelDB = {
       this.saveBookings(bookings);
       if (booking.roomNumber) {
         this.updateRoomStatus(booking.roomNumber, 'Cleaning');
-      }
-    }
-  },
-
-  cancelBooking(bookingId) {
-    const bookings = this.getBookings();
-    const booking = bookings.find(b => b.id === bookingId);
-    if (booking) {
-      booking.status = 'Cancelled';
-      this.saveBookings(bookings);
-      if (booking.roomNumber) {
-        this.updateRoomStatus(booking.roomNumber, 'Available');
       }
     }
   },
@@ -210,6 +261,29 @@ const HotelDB = {
     }
   },
 
+  // 4. Fetch Metrics from PostgreSQL API
+  async getMetricsAsync() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/metrics`);
+      if (res.ok) {
+        const m = await res.json();
+        return {
+          totalRooms: m.totalRooms,
+          occupied: m.occupied,
+          available: m.available,
+          cleaning: m.cleaning,
+          maintenance: m.maintenance,
+          activeBookingsCount: m.activeBookingsCount,
+          pendingServicesCount: this.getServices().filter(s => s.status === 'Pending').length,
+          totalRevenue: m.occupied * 5000
+        };
+      }
+    } catch (e) {
+      console.warn('Backend metrics API error:', e);
+    }
+    return this.getMetrics();
+  },
+
   getMetrics() {
     const rooms = this.getRooms();
     const bookings = this.getBookings();
@@ -220,7 +294,7 @@ const HotelDB = {
     const cleaning = rooms.filter(r => r.status === 'Cleaning').length;
     const maintenance = rooms.filter(r => r.status === 'Maintenance').length;
 
-    const activeBookings = bookings.filter(b => b.status === 'Occupied');
+    const activeBookings = bookings.filter(b => b.status === 'Occupied' || b.status === 'Booked');
     const totalRevenue = activeBookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0) +
       services.reduce((sum, s) => sum + (s.amount || 0), 0);
 

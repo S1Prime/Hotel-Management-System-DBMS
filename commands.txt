@@ -1,87 +1,80 @@
 ================================================================================
-HOTEL MANAGEMENT SYSTEM - SETUP & RUN COMMANDS
+HOTEL MANAGEMENT SYSTEM - COMPLETE STEP-BY-STEP EXECUTION GUIDE
 ================================================================================
 
---------------------------------------------------------------------------------
-1. LIBRARIES NEEDED TO INSTALL (PREREQUISITES)
---------------------------------------------------------------------------------
-The backend requires Python 3.x and the following essential libraries:
-- flask          (Web framework for the REST API)
-- flask-cors     (Handles Cross-Origin Resource Sharing for frontend requests)
-- psycopg2-binary(PostgreSQL database adapter for Python)
+IMPORTANT NOTE ON DIRECTORY PATHS:
+- All commands below are meant to be run from the main project folder:
+  `Hotel-Management-System-DBMS`
+- If your terminal is already inside the `backend` subfolder, either:
+  a) Type `cd ..` to return to `Hotel-Management-System-DBMS`, OR
+  b) Run `python app.py` (without typing `backend/`).
 
-Run ONE of the following commands in your terminal:
 
-Option A (Direct installation - recommended):
+--------------------------------------------------------------------------------
+STEP 1: INSTALL REQUIRED PYTHON LIBRARIES
+--------------------------------------------------------------------------------
+Open terminal in the project directory and run:
+
 pip install flask flask-cors psycopg2-binary
 
-Option B (Using the backend requirements file):
-# From the project root:
-pip install -r backend/requirements.txt
-# Or if inside the backend folder:
-pip install -r requirements.txt
-
-
---------------------------------------------------------------------------------
-2. (OPTIONAL BUT RECOMMENDED) VIRTUAL ENVIRONMENT SETUP
---------------------------------------------------------------------------------
-# Create a virtual environment:
+(Optional: If using a Virtual Environment)
 python -m venv venv
-
-# Activate the virtual environment:
-# Windows (Command Prompt - CMD):
 .\venv\Scripts\activate.bat
-
-# Linux / macOS:
-source venv/bin/activate
-
-# Install the required libraries inside the virtual environment:
 pip install flask flask-cors psycopg2-binary
 
 
 --------------------------------------------------------------------------------
-3. TEST DATABASE CONNECTION
+STEP 2: SETUP & INITIALIZE THE POSTGRESQL DATABASE
 --------------------------------------------------------------------------------
-# Ensure your PostgreSQL service is running and credentials in backend/database.py match.
-# Run the database test script:
-# From the project root:
+Make sure PostgreSQL is running on your computer.
+
+Command 2A (Creates 'hotel_management' database & tables automatically):
+python backend/init_db.py
+
+Command 2B (Verifies database connections & sample query execution):
 python backend/test_db.py
-in case if it is not working run:
-pip install psycopg2
-
-# Or from inside the backend directory:
-cd backend
-python test_db.py
-cd ..
 
 
 --------------------------------------------------------------------------------
-4. RUN THE BACKEND SERVER
+STEP 3: START THE BACKEND FLASK API SERVER
 --------------------------------------------------------------------------------
-# Start the Flask API server:
-# From the project root:
+Start the backend server:
+
+If you are in project root (Hotel-Management-System-DBMS):
 python backend/app.py
 
-# Or from inside the backend directory:
-cd backend
+If you are inside the backend directory (Hotel-Management-System-DBMS\backend):
 python app.py
 
-# The backend server runs at:
+Backend will start running at:
 http://127.0.0.1:5000/
 
+Keep this terminal window running in the background!
+
 
 --------------------------------------------------------------------------------
-5. RUN THE FRONTEND
+STEP 4: OPEN & RUN THE FRONTEND WEBSITE
 --------------------------------------------------------------------------------
-Option A: Open directly in your browser:
-Double-click "index.html" (or "Hotel-Management-System-DBMS/index.html")
+Open a NEW terminal window or file explorer:
 
-Option B: Run using Python HTTP server:
-# From project root:
-python -m http.server 8000
-# Or from inside Hotel-Management-System-DBMS directory:
+Option A (Direct Browser):
+Double-click "index.html" (or open "register.html" / "login.html") in your browser.
+
+Option B (Using Local Web Server):
 python -m http.server 8000
 
 Then open in your browser:
 http://localhost:8000/
+
+
+--------------------------------------------------------------------------------
+STEP 5: VERIFY SAVED CUSTOMER DATA IN DATABASE
+--------------------------------------------------------------------------------
+After registering a new guest on the frontend website:
+
+Option A (Run terminal verification script):
+python backend/verify_customers.py
+
+Option B (Check live API endpoint in browser):
+http://127.0.0.1:5000/api/customers
 ================================================================================

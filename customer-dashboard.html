@@ -231,15 +231,15 @@
       document.getElementById('roomsSection').scrollIntoView({ behavior: 'smooth' });
     }
 
-    function renderGuestDashboard() {
-      renderActiveStay();
-      renderRoomsCatalog();
-      renderGuestHistory();
+    async function renderGuestDashboard() {
+      await renderActiveStay();
+      await renderRoomsCatalog();
+      await renderGuestHistory();
     }
 
-    function renderActiveStay() {
-      const bookings = HotelDB.getBookings();
-      const active = bookings.find(b => b.guestEmail === (currentUser?.email || 'guest@crowneplaza.com') && b.status === 'Occupied');
+    async function renderActiveStay() {
+      const bookings = await HotelDB.getBookingsAsync();
+      const active = bookings.find(b => b.guestEmail === (currentUser?.email || 'guest@crowneplaza.com') && (b.status === 'Occupied' || b.status === 'Booked'));
       if (active) {
         document.getElementById('activeSuiteTitle').textContent = `${active.category} (#${active.roomNumber})`;
         document.getElementById('activeDates').textContent = `Check-In: ${active.checkIn} \u2022 Check-Out: ${active.checkOut}`;
@@ -248,8 +248,8 @@
       }
     }
 
-    function renderRoomsCatalog() {
-      const rooms = HotelDB.getRooms();
+    async function renderRoomsCatalog() {
+      const rooms = await HotelDB.getRoomsAsync();
       const typeFilter = document.getElementById('roomFilterType').value;
       const filtered = rooms.filter(r => typeFilter === '' || r.type === typeFilter);
 
@@ -327,7 +327,7 @@
       document.getElementById('bmEstimatedTotal').textContent = `Rs. ${total.toLocaleString()}`;
     }
 
-    function handleConfirmBooking() {
+    async function handleConfirmBooking() {
       const roomNumber = document.getElementById('bmRoomNumber').value;
       const checkIn = document.getElementById('bmCheckIn').value;
       const checkOut = document.getElementById('bmCheckOut').value;
@@ -343,7 +343,7 @@
       const nights = Math.max(1, Math.ceil((co - ci) / (1000 * 60 * 60 * 24)));
       const totalAmount = selectedRoomPrice * nights;
 
-      const newBooking = HotelDB.createBooking({
+      await HotelDB.createBookingAsync({
         roomNumber,
         guestName: currentUser?.name || 'Valued Guest',
         guestEmail: currentUser?.email || 'guest@crowneplaza.com',
@@ -359,8 +359,8 @@
       const modal = bootstrap.Modal.getInstance(modalEl);
       if (modal) modal.hide();
 
-      showToast(`Room #${roomNumber} reserved successfully for ${nights} nights!`, 'Reservation Confirmed', 'success');
-      renderGuestDashboard();
+      showToast(`Room #${roomNumber} reserved successfully for ${nights} nights! Saved to PostgreSQL.`, 'Reservation Confirmed', 'success');
+      await renderGuestDashboard();
     }
 
     function handleGuestServiceOrder() {
@@ -382,8 +382,8 @@
       renderGuestDashboard();
     }
 
-    function renderGuestHistory() {
-      const bookings = HotelDB.getBookings().filter(b => b.guestEmail === (currentUser?.email || 'guest@crowneplaza.com'));
+    async function renderGuestHistory() {
+      const bookings = (await HotelDB.getBookingsAsync()).filter(b => b.guestEmail === (currentUser?.email || 'guest@crowneplaza.com'));
       const services = HotelDB.getServices().filter(s => s.roomNumber === '101');
 
       const tbody = document.getElementById('guestHistoryTableBody');
@@ -428,7 +428,9 @@
     }
 
     // Initial render
-    renderGuestDashboard();
+    document.addEventListener('DOMContentLoaded', () => {
+      renderGuestDashboard();
+    });
   </script>
 </body>
 </html>

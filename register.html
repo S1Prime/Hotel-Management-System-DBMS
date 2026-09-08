@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
   <!-- Custom Luxury Stylesheet -->
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
   <div class="hero-wrapper position-relative">
     <!-- Ambient Floating Background Accents -->
@@ -21,7 +23,7 @@
 
     <div class="container position-relative" style="max-width: 540px; z-index: 10;">
       <div class="card-luxury fade-in-up">
-        
+
         <div class="brand-logo-badge mx-auto">
           <i class="fa-solid fa-user-plus"></i>
         </div>
@@ -32,31 +34,35 @@
         <div id="registerAlert" class="alert alert-danger d-none py-2 px-3 small rounded-3" role="alert"></div>
 
         <form id="registerForm" onsubmit="event.preventDefault(); handleRegister();">
-          
+
           <div class="row g-3 mb-3">
             <div class="col-sm-6">
               <label class="form-label-custom" for="regFirstName">First Name</label>
-              <input id="regFirstName" type="text" class="form-control form-control-luxury" placeholder="Eleanor" required>
+              <input id="regFirstName" type="text" class="form-control form-control-luxury" placeholder="Rahul"
+                required>
             </div>
             <div class="col-sm-6">
               <label class="form-label-custom" for="regLastName">Last Name</label>
-              <input id="regLastName" type="text" class="form-control form-control-luxury" placeholder="Vance" required>
+              <input id="regLastName" type="text" class="form-control form-control-luxury" placeholder="Kumar" required>
             </div>
           </div>
 
           <div class="form-group text-start mb-3">
             <label class="form-label-custom" for="regEmail">Email Address</label>
-            <input id="regEmail" type="email" class="form-control form-control-luxury" placeholder="eleanor@example.com" required>
+            <input id="regEmail" type="email" class="form-control form-control-luxury"
+              placeholder="rahulkumar@example.com" required>
           </div>
 
           <div class="form-group text-start mb-3">
             <label class="form-label-custom" for="regPhone">Phone Number</label>
-            <input id="regPhone" type="tel" class="form-control form-control-luxury" placeholder="+1 (555) 000-0000" required>
+            <input id="regPhone" type="tel" class="form-control form-control-luxury" placeholder="+1 (555) 000-0000"
+              required>
           </div>
 
           <div class="form-group text-start mb-4">
             <label class="form-label-custom" for="regPassword">Password</label>
-            <input id="regPassword" type="password" class="form-control form-control-luxury" placeholder="Minimum 6 characters" minlength="6" required>
+            <input id="regPassword" type="password" class="form-control form-control-luxury"
+              placeholder="Minimum 6 characters" minlength="6" required>
           </div>
 
           <button type="submit" class="btn btn-gold py-3 w-100 fs-6 mb-3">
@@ -83,7 +89,7 @@
 
   <script src="assets/js/auth.js"></script>
   <script>
-    function handleRegister() {
+    async function handleRegister() {
       const firstName = document.getElementById('regFirstName').value.trim();
       const lastName = document.getElementById('regLastName').value.trim();
       const email = document.getElementById('regEmail').value.trim();
@@ -91,17 +97,57 @@
       const password = document.getElementById('regPassword').value.trim();
       const alertBox = document.getElementById('registerAlert');
 
+      alertBox.classList.add('d-none');
+
       if (!firstName || !lastName || !email || !password) {
         alertBox.textContent = 'Please fill out all required fields.';
         alertBox.classList.remove('d-none');
         return;
       }
 
-      const fullName = `${firstName} ${lastName}`;
-      loginUser(email, 'customer', fullName, { phone: phone });
-      alert(`Welcome to Crowne Plaza, ${fullName}! Your guest account has been created.`);
-      window.location.href = 'customer-dashboard.html';
+      const submitBtn = document.querySelector('#registerForm button[type="submit"]');
+      const originalBtnText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Registering...';
+
+      try {
+        const response = await fetch('http://127.0.0.1:5000/api/customers', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: `${firstName} ${lastName}`,
+            email: email,
+            phone: phone,
+            password: password
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Registration failed. Please try again.');
+        }
+
+        const customer = result.customer;
+        loginUser(customer.email, 'customer', customer.name, {
+          phone: customer.phone,
+          customerId: customer.customer_id
+        });
+
+        alert(`Welcome to Crowne Plaza, ${customer.name}! Your account has been saved to PostgreSQL.`);
+        window.location.href = 'customer-dashboard.html';
+
+      } catch (err) {
+        alertBox.textContent = err.message;
+        alertBox.classList.remove('d-none');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+      }
     }
   </script>
 </body>
+
 </html>

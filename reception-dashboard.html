@@ -239,11 +239,19 @@
       document.getElementById('metricOccupied').textContent = metrics.occupied;
       document.getElementById('metricAvailable').textContent = metrics.available;
       document.getElementById('metricCleaning').textContent = metrics.cleaning;
-      document.getElementById('metricRevenue').textContent = `Rs. ${metrics.totalRevenue.toLocaleString()}`;
+      await populateAvailableRoomsSelect();
     }
 
-    function renderRoomGrid() {
-      const rooms = HotelDB.getRooms();
+    async function renderMetricsCards() {
+      const m = await HotelDB.getMetricsAsync();
+      document.getElementById('metricOccupied').textContent = m.occupied;
+      document.getElementById('metricAvailable').textContent = m.available;
+      document.getElementById('metricCleaning').textContent = m.cleaning;
+      document.getElementById('metricRevenue').textContent = `Rs. ${m.totalRevenue.toLocaleString()}`;
+    }
+
+    async function renderRoomGrid() {
+      const rooms = await HotelDB.getRoomsAsync();
       const container = document.getElementById('roomGridContainer');
       container.innerHTML = rooms.map(room => {
         let badgeClass = 'badge-available';
@@ -279,19 +287,19 @@
       }).join('');
     }
 
-    function changeStatus(roomNumber, status) {
-      HotelDB.updateRoomStatus(roomNumber, status);
+    async function changeStatus(roomNumber, status) {
+      await HotelDB.updateRoomStatusAsync(roomNumber, status);
       showToast(`Room #${roomNumber} status changed to "${status}"`, 'Room Status Updated', 'info');
-      renderDashboard();
+      await renderDashboard();
     }
 
-    function renderBookingsTable() {
-      const bookings = HotelDB.getBookings();
+    async function renderBookingsTable() {
+      const bookings = await HotelDB.getBookingsAsync();
       const search = document.getElementById('bookingSearchInput').value.toLowerCase();
       const filter = document.getElementById('bookingStatusFilter').value;
 
       const filtered = bookings.filter(b => {
-        const matchesSearch = b.guestName.toLowerCase().includes(search) || b.roomNumber.includes(search);
+        const matchesSearch = b.guestName.toLowerCase().includes(search) || String(b.roomNumber).includes(search);
         const matchesFilter = filter === '' || b.status === filter;
         return matchesSearch && matchesFilter;
       });
@@ -323,11 +331,6 @@
               <button class="btn btn-sm btn-outline-gold rounded-pill px-2.5 py-1 text-gold border-gold" onclick="openInvoiceModal('${b.id}')" title="Print Invoice / Folio">
                 <i class="fa-solid fa-file-invoice me-1"></i> Invoice
               </button>
-              ${b.status === 'Occupied' ? `
-                <button class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1" onclick="changeWifiPassword('${b.id}', '${b.roomNumber}')" title="Wi-Fi Password">
-                  <i class="fa-solid fa-wifi me-1"></i>
-                </button>
-              ` : ''}
             </div>
           </td>
         </tr>
@@ -430,15 +433,15 @@
       renderDashboard();
     }
 
-    function handleCheckOut(bookingId) {
-      const booking = HotelDB.getBookings().find(b => b.id === bookingId);
+    async function handleCheckOut(bookingId) {
+      const bookings = await HotelDB.getBookingsAsync();
+      const booking = bookings.find(b => b.id === bookingId);
       if (!booking) return;
 
-      HotelDB.checkOutBooking(bookingId);
-      showToast(`Check-out completed for Room #${booking.roomNumber}. Room status updated to Housekeeping Cleaning.`, 'Guest Checked Out', 'success');
-      renderDashboard();
+      await HotelDB.checkOutBookingAsync(bookingId);
+      showToast(`Check-out completed for Room #${booking.roomNumber}. Room status updated to Housekeeping Cleaning in PostgreSQL.`, 'Guest Checked Out', 'success');
+      await renderDashboard();
       
-      // Auto open printable invoice modal
       openInvoiceModal(bookingId);
     }
 
@@ -448,7 +451,7 @@
       if (!booking) return;
 
       const newPwd = prompt(`Enter new Wi-Fi password for Room #${roomNumber}:`, booking.wifiPassword || "hotelmanagement");
-      if (newPwd === null) return; // User cancelled
+      if (newPwd === null) return;
 
       const cleanedPwd = newPwd.trim();
       if (cleanedPwd.length < 4) {
@@ -462,7 +465,9 @@
     }
 
     // Initial render
-    renderDashboard();
+    document.addEventListener('DOMContentLoaded', () => {
+      renderDashboard();
+    });
   </script>
 </body>
 </html>

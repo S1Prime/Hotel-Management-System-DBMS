@@ -1,12 +1,12 @@
-CREATE TABLE customers (
+CREATE TABLE IF NOT EXISTS customers (
     customer_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    phone VARCHAR(15),
+    phone VARCHAR(30),
     password_hash TEXT NOT NULL
 );
 
-CREATE TABLE rooms (
+CREATE TABLE IF NOT EXISTS rooms (
     room_id SERIAL PRIMARY KEY,
     room_number VARCHAR(10) UNIQUE NOT NULL,
     room_type VARCHAR(50) NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE rooms (
     status VARCHAR(20) DEFAULT 'Available'
 );
 
-CREATE TABLE reservations (
+CREATE TABLE IF NOT EXISTS reservations (
     reservation_id SERIAL PRIMARY KEY,
     customer_id INT NOT NULL,
     room_id INT NOT NULL,

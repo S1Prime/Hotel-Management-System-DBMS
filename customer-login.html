@@ -89,10 +89,12 @@
   <script src="assets/js/data.js"></script>
   <script src="assets/js/auth.js"></script>
   <script>
-    function handleCustomerLogin() {
+    async function handleCustomerLogin() {
       const emailOrRoom = document.getElementById('guestEmail').value.trim();
       const password = document.getElementById('guestPassword').value.trim();
       const alertBox = document.getElementById('loginAlert');
+
+      alertBox.classList.add('d-none');
 
       if (!emailOrRoom || !password) {
         alertBox.textContent = 'Please enter your login details.';
@@ -128,7 +130,32 @@
         });
         window.location.href = 'customer-dashboard.html';
       } else {
-        // Standard email login (always succeeds for guest experience or validates against booking)
+        // Try backend DB login first
+        try {
+          const response = await fetch('http://127.0.0.1:5000/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: emailOrRoom, password: password })
+          });
+          const result = await response.json();
+          if (response.ok && result.customer) {
+            loginUser(result.customer.email, 'customer', result.customer.name, {
+              phone: result.customer.phone,
+              customerId: result.customer.customer_id
+            });
+            window.location.href = 'customer-dashboard.html';
+            return;
+          } else if (response.status === 401) {
+            alertBox.textContent = result.error || 'Invalid email or password.';
+            alertBox.classList.remove('d-none');
+            return;
+          }
+        } catch(e) {
+          // Backend server offline - fallback to client demo login
+          console.warn('Backend offline, using client session login:', e);
+        }
+
+        // Fallback email login
         const bookings = HotelDB.getBookings();
         const active = bookings.find(b => b.guestEmail.toLowerCase() === emailOrRoom.toLowerCase() && b.status === 'Occupied');
         
