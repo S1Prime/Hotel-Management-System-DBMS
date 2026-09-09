@@ -5,9 +5,7 @@ HOTEL MANAGEMENT SYSTEM - COMPLETE STEP-BY-STEP EXECUTION GUIDE
 IMPORTANT NOTE ON DIRECTORY PATHS:
 - All commands below are meant to be run from the main project folder:
   `Hotel-Management-System-DBMS`
-- If your terminal is already inside the `backend` subfolder, either:
-  a) Type `cd ..` to return to `Hotel-Management-System-DBMS`, OR
-  b) Run `python app.py` (without typing `backend/`).
+- If your terminal is already inside the `backend` subfolder, type `cd ..` first.
 
 
 --------------------------------------------------------------------------------
@@ -15,11 +13,6 @@ STEP 1: INSTALL REQUIRED PYTHON LIBRARIES
 --------------------------------------------------------------------------------
 Open terminal in the project directory and run:
 
-pip install flask flask-cors psycopg2-binary
-
-(Optional: If using a Virtual Environment)
-python -m venv venv
-.\venv\Scripts\activate.bat
 pip install flask flask-cors psycopg2-binary
 
 
@@ -40,11 +33,7 @@ STEP 3: START THE BACKEND FLASK API SERVER
 --------------------------------------------------------------------------------
 Start the backend server:
 
-If you are in project root (Hotel-Management-System-DBMS):
 python backend/app.py
-
-If you are inside the backend directory (Hotel-Management-System-DBMS\backend):
-python app.py
 
 Backend will start running at:
 http://127.0.0.1:5000/
@@ -68,13 +57,22 @@ http://localhost:8000/
 
 
 --------------------------------------------------------------------------------
-STEP 5: VERIFY SAVED CUSTOMER DATA IN DATABASE
+STEP 5: VERIFY DATABASE RECORDS (CUSTOMERS, ROOMS, & RESERVATIONS)
 --------------------------------------------------------------------------------
-After registering a new guest on the frontend website:
+Run any of the following commands in terminal to inspect PostgreSQL data:
 
-Option A (Run terminal verification script):
-python backend/verify_customers.py
+1. Inspect Full Database (Customers + Rooms + Reservations):
+   python backend/verify_all.py
 
-Option B (Check live API endpoint in browser):
-http://127.0.0.1:5000/api/customers
+2. Inspect Registered Customers:
+   python backend/verify_customers.py
+   (Browser API: http://127.0.0.1:5000/api/customers)
+
+3. Inspect Rooms Inventory:
+   python backend/verify_rooms.py
+   (Browser API: http://127.0.0.1:5000/api/rooms)
+
+4. Inspect Bookings & Reservations:
+   python backend/verify_reservations.py
+   (Browser API: http://127.0.0.1:5000/api/reservations)
 ================================================================================
