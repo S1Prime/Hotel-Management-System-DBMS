@@ -51,7 +51,7 @@ This project demonstrates the practical application of **web development** and *
 
 ### Database
 
-* SQL
+* PgAdmin for SQL
 * Relational Database Management System (RDBMS)
 
 ### Development Tools
