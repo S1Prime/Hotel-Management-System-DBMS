@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Unauthorized Access - Crowne Plaza Hotel</title>
+  <title>Access Restricted - Crowne Plaza Hotel</title>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Bootstrap 5 CSS -->
@@ -14,27 +14,31 @@
 <body>
   <div class="hero-wrapper">
     <div class="container" style="max-width: 520px;">
-      <div class="card-luxury text-center">
+      <div class="card-luxury text-center shadow-lg">
         
-        <div class="brand-logo-badge mx-auto" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: white;">
-          <i class="fa-solid fa-lock"></i>
+        <div class="brand-logo-badge mx-auto mb-3" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: white;">
+          <i class="fa-solid fa-lock fs-3"></i>
         </div>
 
         <h2 class="brand-title mb-2 text-danger">Access Restricted</h2>
-        <p class="text-muted mb-4">
-          You do not have permission to view this page with your current session role.
+        <p class="text-muted mb-2">
+          You do not have permission to view this page with your current session.
         </p>
 
-        <div class="d-grid gap-2 mb-4">
-          <a href="login.html" class="btn btn-gold py-2.5">
+        <div id="sessionInfo" class="alert alert-warning py-2 px-3 small mb-4 d-none">
+          Current Session: <strong id="currentRoleDisplay">Guest</strong> (<span id="currentUserDisplay">User</span>)
+        </div>
+
+        <div class="d-grid gap-2 mb-3">
+          <button onclick="switchPortal('login.html')" class="btn btn-gold py-2.5">
             <i class="fa-solid fa-right-to-bracket me-2"></i> Return to Portal Selector
-          </a>
-          <a href="reception-login.html" class="btn btn-navy py-2.5">
-            <i class="fa-solid fa-concierge-bell me-2"></i> Log in as Receptionist Staff
-          </a>
-          <a href="customer-login.html" class="btn btn-secondary-luxury py-2.5">
+          </button>
+          <button onclick="switchPortal('reception-login.html')" class="btn btn-navy py-2.5">
+            <i class="fa-solid fa-concierge-bell me-2"></i> Log in as Staff Portal
+          </button>
+          <button onclick="switchPortal('customer-login.html')" class="btn btn-secondary-luxury py-2.5">
             <i class="fa-solid fa-user me-2"></i> Log in as Guest
-          </a>
+          </button>
         </div>
 
       </div>
@@ -44,5 +48,22 @@
       </div>
     </div>
   </div>
+
+  <script src="assets/js/auth.js"></script>
+  <script>
+    // Display active session role if any
+    const user = getCurrentUser();
+    if (user) {
+      document.getElementById('sessionInfo').classList.remove('d-none');
+      document.getElementById('currentRoleDisplay').textContent = user.role || 'Guest';
+      document.getElementById('currentUserDisplay').textContent = user.name || user.email || 'User';
+    }
+
+    function switchPortal(targetUrl) {
+      // Clear active session to allow logging in under a new role
+      sessionStorage.removeItem('cp_user');
+      window.location.href = targetUrl;
+    }
+  </script>
 </body>
 </html>

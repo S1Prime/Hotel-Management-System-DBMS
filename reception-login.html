@@ -45,7 +45,7 @@
             <label class="form-label-custom" for="staffPassword">Access Code / Password</label>
             <div class="input-group">
               <span class="input-group-text bg-dark border-secondary text-gold"><i class="fa-solid fa-lock"></i></span>
-              <input id="staffPassword" type="password" class="form-control form-control-luxury text-white bg-dark border-secondary" placeholder="••••••••" required value="admin123">
+              <input id="staffPassword" type="password" class="form-control form-control-luxury text-white bg-dark border-secondary" placeholder="••••••••" required value="staff123">
             </div>
           </div>
 
@@ -63,13 +63,6 @@
             <i class="fa-solid fa-right-to-bracket me-2"></i> Sign In to Front Desk Dashboard
           </button>
         </form>
-
-        <div class="border-top border-secondary pt-3 mt-2">
-          <p class="text-slate-400 small mb-2">Need quick evaluation testing?</p>
-          <button type="button" class="btn btn-outline-warning btn-sm w-100 rounded-pill py-2" onclick="quickDemoLogin('receptionist')">
-            <i class="fa-solid fa-bolt me-1"></i> One-Click Demo Staff Login
-          </button>
-        </div>
 
         <div class="d-flex justify-content-between border-top border-secondary pt-3 mt-4 text-start">
           <a href="login.html" class="text-gold text-decoration-none small">
@@ -90,7 +83,7 @@
 
   <script src="assets/js/auth.js"></script>
   <script>
-    function handleReceptionLogin() {
+    async function handleReceptionLogin() {
       const email = document.getElementById('staffEmail').value.trim();
       const password = document.getElementById('staffPassword').value.trim();
       const alertBox = document.getElementById('loginAlert');
@@ -101,8 +94,18 @@
         return;
       }
 
-      loginUser(email, 'receptionist', 'Arthur Pendelton', { staffId: 'CP-STAFF-902', title: 'Senior Front Desk Officer' });
-      window.location.href = 'reception-dashboard.html';
+      alertBox.classList.add('d-none');
+      const result = await performStaffLogin(email, password);
+      if (result.success) {
+        if (result.staff && result.staff.role === 'Admin') {
+          window.location.href = 'admin.html';
+        } else {
+          window.location.href = 'reception-dashboard.html';
+        }
+      } else {
+        alertBox.textContent = result.error || 'Authentication failed.';
+        alertBox.classList.remove('d-none');
+      }
     }
 
     // Creative Background Particles & Mouse Parallax

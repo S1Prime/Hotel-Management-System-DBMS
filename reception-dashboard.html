@@ -44,11 +44,19 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
       <div>
         <h2 class="font-serif fs-2 mb-1 text-dark">Front Desk & Room Allocation Management</h2>
-        <p class="text-muted mb-0">Manage guest check-ins, room statuses, housekeeping, and front-desk service orders.</p>
+        <p class="text-muted mb-0">Manage guest check-ins, PostgreSQL room status triggers, housekeeping, and billing.</p>
       </div>
-      <button class="btn btn-gold px-4 py-2.5 shadow-sm" data-bs-toggle="modal" data-bs-target="#checkInModal">
-        <i class="fa-solid fa-user-plus me-2"></i> New Walk-In Check-In
-      </button>
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-outline-navy border-2 px-3 py-2 rounded-pill shadow-sm" onclick="openReportsModal()">
+          <i class="fa-solid fa-chart-pie me-1 text-primary"></i> DBMS Analytics & Reports
+        </button>
+        <button class="btn btn-outline-success border-2 px-3 py-2 rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#addRoomModal">
+          <i class="fa-solid fa-plus me-1"></i> Add Room (Admin)
+        </button>
+        <button class="btn btn-gold px-4 py-2 rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#checkInModal">
+          <i class="fa-solid fa-user-plus me-2"></i> New Walk-In Check-In
+        </button>
+      </div>
     </div>
 
     <!-- Live Metrics Grid -->
@@ -120,7 +128,9 @@
           <select id="bookingStatusFilter" class="form-select form-select-sm rounded-pill" style="width: 160px;" onchange="renderBookingsTable()">
             <option value="">All Statuses</option>
             <option value="Occupied">Occupied</option>
-            <option value="Completed">Checked Out</option>
+            <option value="Checked-in">Checked-in</option>
+            <option value="Confirmed">Confirmed</option>
+            <option value="Checked-out">Checked-out</option>
           </select>
         </div>
       </div>
@@ -141,6 +151,64 @@
           </thead>
           <tbody id="bookingsTableBody">
             <!-- Bookings Rendered via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Housekeeping Task Management Desk (PostgreSQL Trigger Automation) -->
+    <div class="card p-4 border-0 shadow-sm rounded-4 bg-white mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="font-serif fs-4 mb-0 text-dark">
+          <i class="fa-solid fa-broom me-2 text-warning"></i> Housekeeping Tasks (Auto-Triggered on Checkout)
+        </h3>
+        <span class="badge bg-warning text-dark px-3 py-1 rounded-pill" id="pendingCleaningBadge">0 Pending Tasks</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Task ID</th>
+              <th>Room #</th>
+              <th>Room Type</th>
+              <th>Task Type</th>
+              <th>Status</th>
+              <th>Created At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="housekeepingTableBody">
+            <!-- Housekeeping tasks rendered via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PostgreSQL Bills & Invoices Desk -->
+    <div class="card p-4 border-0 shadow-sm rounded-4 bg-white mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="font-serif fs-4 mb-0 text-dark">
+          <i class="fa-solid fa-file-invoice-dollar me-2 text-success"></i> Customer Bills & Payment Status
+        </h3>
+        <span class="badge bg-success text-white px-3 py-1 rounded-pill" id="pendingBillsBadge">0 Pending Payments</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Bill ID</th>
+              <th>Guest Name</th>
+              <th>Room #</th>
+              <th>Room Charge</th>
+              <th>Service Charge</th>
+              <th>Tax (5%)</th>
+              <th>Total Amount</th>
+              <th>Payment Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="billsTableBody">
+            <!-- Bills rendered via JS -->
           </tbody>
         </table>
       </div>
@@ -183,7 +251,7 @@
             <div class="row g-2 mb-3">
               <div class="col-6">
                 <label class="form-label-custom">Check-In Date</label>
-                <input type="date" id="ciCheckInDate" class="form-control form-control-luxury" required>
+                <input type="date" id="ciCheckInDate" class="form-control form-control-luxury" onchange="onCiCheckInChange()" required>
               </div>
               <div class="col-6">
                 <label class="form-label-custom">Check-Out Date</label>
@@ -200,6 +268,58 @@
               <i class="fa-solid fa-key me-2"></i> Complete Check-In & Issue Key
             </button>
           </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Add Room Modal -->
+  <div class="modal fade" id="addRoomModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-plus me-2"></i> Add New Room (Admin Control)</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="addRoomForm" onsubmit="event.preventDefault(); handleAddRoom();">
+            <div class="mb-3">
+              <label class="form-label-custom">Room Number (Unique)</label>
+              <input type="text" id="addRoomNumber" class="form-control form-control-luxury" placeholder="e.g. 301" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Room Category / Type</label>
+              <select id="addRoomType" class="form-select form-control-luxury" required>
+                <option value="Luxury Suite">Luxury Suite</option>
+                <option value="Standard AC Room">Standard AC Room</option>
+                <option value="AC Room with Balcony">AC Room with Balcony</option>
+                <option value="Family AC Room">Family AC Room</option>
+                <option value="Economy Non-AC Room">Economy Non-AC Room</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Price Per Night (Rs.)</label>
+              <input type="number" id="addRoomPrice" class="form-control form-control-luxury" placeholder="4500" min="500" required>
+            </div>
+            <button type="submit" class="btn btn-success w-100 py-3 font-weight-bold rounded-pill">
+              <i class="fa-solid fa-check me-2"></i> Add Room to PostgreSQL Inventory
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DBMS Analytics & Reports Modal -->
+  <div class="modal fade" id="reportsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-chart-line me-2"></i> PostgreSQL DBMS Reports & Financial Analytics</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4" id="reportsModalBody">
+          <!-- Rendered dynamically -->
         </div>
       </div>
     </div>
@@ -226,19 +346,26 @@
     document.getElementById('ciCheckInDate').value = todayStr;
     document.getElementById('ciCheckOutDate').value = tomorrowStr;
 
-    function renderDashboard() {
-      renderMetrics();
-      renderRoomGrid();
-      renderBookingsTable();
-      renderServiceOrders();
-      populateAvailableRoomsSelect();
+    function onCiCheckInChange() {
+      const ciVal = document.getElementById('ciCheckInDate').value;
+      if (!ciVal) return;
+      const ciDate = new Date(ciVal);
+      const coInput = document.getElementById('ciCheckOutDate');
+      const currentCo = coInput.value;
+      if (!currentCo || new Date(currentCo) <= ciDate) {
+        const autoCo = new Date(ciDate);
+        autoCo.setDate(autoCo.getDate() + 3);
+        coInput.value = autoCo.toISOString().split('T')[0];
+      }
     }
 
-    function renderMetrics() {
-      const metrics = HotelDB.getMetrics();
-      document.getElementById('metricOccupied').textContent = metrics.occupied;
-      document.getElementById('metricAvailable').textContent = metrics.available;
-      document.getElementById('metricCleaning').textContent = metrics.cleaning;
+    async function renderDashboard() {
+      await renderMetricsCards();
+      await renderRoomGrid();
+      await renderBookingsTable();
+      await renderHousekeepingTable();
+      await renderBillsTable();
+      await renderServiceOrders();
       await populateAvailableRoomsSelect();
     }
 
@@ -270,16 +397,21 @@
                 <div class="small text-muted mb-2">${room.category}</div>
                 <div class="small fw-semibold text-primary mb-2">Rs. ${room.price.toLocaleString()} / night</div>
               </div>
-              <div class="dropdown mt-2">
-                <button class="btn btn-sm btn-outline-secondary w-100 rounded-pill dropdown-toggle py-1" type="button" data-bs-toggle="dropdown">
-                  Set Status
+              <div class="d-flex gap-1 mt-2">
+                <div class="dropdown flex-grow-1">
+                  <button class="btn btn-sm btn-outline-secondary w-100 rounded-pill dropdown-toggle py-1" type="button" data-bs-toggle="dropdown">
+                    Status
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                    <li><a class="dropdown-item text-success" href="#" onclick="changeStatus('${room.number}', 'Available')"><i class="fa-solid fa-check me-2"></i>Available</a></li>
+                    <li><a class="dropdown-item text-danger" href="#" onclick="changeStatus('${room.number}', 'Occupied')"><i class="fa-solid fa-user-lock me-2"></i>Occupied</a></li>
+                    <li><a class="dropdown-item text-warning" href="#" onclick="changeStatus('${room.number}', 'Cleaning')"><i class="fa-solid fa-broom me-2"></i>Cleaning</a></li>
+                    <li><a class="dropdown-item text-secondary" href="#" onclick="changeStatus('${room.number}', 'Maintenance')"><i class="fa-solid fa-wrench me-2"></i>Maintenance</a></li>
+                  </ul>
+                </div>
+                <button class="btn btn-sm btn-outline-danger rounded-circle p-1" onclick="handleDeactivateRoom(${room.id})" title="Deactivate Room">
+                  <i class="fa-solid fa-trash-can"></i>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                  <li><a class="dropdown-item text-success" href="#" onclick="changeStatus('${room.number}', 'Available')"><i class="fa-solid fa-check me-2"></i>Available / Ready</a></li>
-                  <li><a class="dropdown-item text-danger" href="#" onclick="changeStatus('${room.number}', 'Occupied')"><i class="fa-solid fa-user-lock me-2"></i>Occupied</a></li>
-                  <li><a class="dropdown-item text-warning" href="#" onclick="changeStatus('${room.number}', 'Cleaning')"><i class="fa-solid fa-broom me-2"></i>Needs Cleaning</a></li>
-                  <li><a class="dropdown-item text-secondary" href="#" onclick="changeStatus('${room.number}', 'Maintenance')"><i class="fa-solid fa-wrench me-2"></i>Under Maintenance</a></li>
-                </ul>
               </div>
             </div>
           </div>
@@ -289,7 +421,7 @@
 
     async function changeStatus(roomNumber, status) {
       await HotelDB.updateRoomStatusAsync(roomNumber, status);
-      showToast(`Room #${roomNumber} status changed to "${status}"`, 'Room Status Updated', 'info');
+      showToast(`Room #${roomNumber} status changed to "${status}" in PostgreSQL`, 'Room Status Updated', 'info');
       await renderDashboard();
     }
 
@@ -319,17 +451,17 @@
           <td>${b.checkIn} &bull; ${b.checkOut}</td>
           <td><strong class="text-gold">Rs. ${b.totalAmount.toLocaleString()}</strong></td>
           <td>
-            <span class="badge-luxury ${b.status === 'Occupied' ? 'badge-occupied' : 'badge-gold'}">${b.status}</span>
+            <span class="badge-luxury ${b.status === 'Checked-in' || b.status === 'Occupied' ? 'badge-occupied' : 'badge-gold'}">${b.status}</span>
           </td>
           <td>
             <div class="d-flex gap-1">
-              ${b.status === 'Occupied' ? `
+              ${(b.status === 'Checked-in' || b.status === 'Occupied' || b.status === 'Confirmed') ? `
                 <button class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1" onclick="handleCheckOut('${b.id}')">
                   <i class="fa-solid fa-right-from-bracket me-1"></i> Check Out
                 </button>
               ` : ''}
-              <button class="btn btn-sm btn-outline-gold rounded-pill px-2.5 py-1 text-gold border-gold" onclick="openInvoiceModal('${b.id}')" title="Print Invoice / Folio">
-                <i class="fa-solid fa-file-invoice me-1"></i> Invoice
+              <button class="btn btn-sm btn-outline-gold rounded-pill px-2.5 py-1 text-gold border-gold" onclick="openInvoiceModal('${b.id}')" title="Print Invoice">
+                <i class="fa-solid fa-file-invoice me-1"></i> Folio
               </button>
             </div>
           </td>
@@ -337,32 +469,110 @@
       `).join('');
     }
 
-    function renderServiceOrders() {
-      const services = HotelDB.getServices();
+    async function renderHousekeepingTable() {
+      const tasks = await HotelDB.getHousekeepingAsync();
+      const tbody = document.getElementById('housekeepingTableBody');
+      const pendingTasks = tasks.filter(t => t.status !== 'Completed');
+      document.getElementById('pendingCleaningBadge').textContent = `${pendingTasks.length} Pending Tasks`;
+
+      if (tasks.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-3">No housekeeping tasks recorded.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = tasks.map(t => `
+        <tr>
+          <td><span class="badge bg-secondary font-monospace">HK-${t.task_id}</span></td>
+          <td><strong class="text-navy">#${t.room_number}</strong></td>
+          <td>${t.room_type}</td>
+          <td><span class="badge bg-light text-dark">${t.task_type}</span></td>
+          <td>
+            <span class="badge ${t.status === 'Completed' ? 'bg-success' : 'bg-warning text-dark'}">${t.status}</span>
+          </td>
+          <td><span class="small text-muted">${new Date(t.created_at).toLocaleDateString()}</span></td>
+          <td>
+            ${t.status !== 'Completed' ? `
+              <button class="btn btn-sm btn-success rounded-pill px-3" onclick="handleCompleteHousekeeping(${t.task_id})">
+                <i class="fa-solid fa-check me-1"></i> Mark Completed & Free Room
+              </button>
+            ` : '<span class="text-success small fw-bold"><i class="fa-solid fa-circle-check me-1"></i> Room Clean & Ready</span>'}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function handleCompleteHousekeeping(taskId) {
+      await HotelDB.updateHousekeepingStatusAsync(taskId, 'Completed');
+      showToast('Housekeeping completed! Room status automatically set to Available in PostgreSQL.', 'Cleaning Complete', 'success');
+      await renderDashboard();
+    }
+
+    async function renderBillsTable() {
+      const bills = await HotelDB.getBillsAsync();
+      const tbody = document.getElementById('billsTableBody');
+      const pendingBills = bills.filter(b => b.payment_status === 'Pending');
+      document.getElementById('pendingBillsBadge').textContent = `${pendingBills.length} Pending Payments`;
+
+      if (bills.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-3">No bills issued yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = bills.map(b => `
+        <tr>
+          <td><span class="badge bg-dark font-monospace">INV-${b.bill_id}</span></td>
+          <td><strong>${b.guest_name}</strong></td>
+          <td><strong class="text-navy">#${b.room_number}</strong></td>
+          <td>Rs. ${parseFloat(b.room_charge).toLocaleString()}</td>
+          <td>Rs. ${parseFloat(b.service_charge).toLocaleString()}</td>
+          <td>Rs. ${parseFloat(b.tax).toLocaleString()}</td>
+          <td><strong class="text-gold">Rs. ${parseFloat(b.total_amount).toLocaleString()}</strong></td>
+          <td>
+            <span class="badge ${b.payment_status === 'Paid' ? 'bg-success' : 'bg-danger'}">${b.payment_status}</span>
+          </td>
+          <td>
+            ${b.payment_status === 'Pending' ? `
+              <button class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="handlePayBill(${b.bill_id})">
+                <i class="fa-solid fa-dollar-sign me-1"></i> Mark Paid
+              </button>
+            ` : '<span class="text-success small"><i class="fa-solid fa-check me-1"></i> Paid in Full</span>'}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function handlePayBill(billId) {
+      await HotelDB.payBillAsync(billId);
+      showToast(`Bill INV-${billId} status updated to Paid in PostgreSQL!`, 'Payment Cleared', 'success');
+      await renderDashboard();
+    }
+
+    async function renderServiceOrders() {
+      const requests = await HotelDB.getServiceRequestsAsync();
       const container = document.getElementById('serviceOrdersContainer');
-      const pendingCount = services.filter(s => s.status === 'Pending').length;
+      const pendingCount = requests.filter(s => s.status === 'Requested' || s.status === 'Processing').length;
       document.getElementById('pendingServiceBadge').textContent = `${pendingCount} Pending`;
 
-      if (services.length === 0) {
+      if (requests.length === 0) {
         container.innerHTML = `<p class="text-muted text-center py-3">No room service requests.</p>`;
         return;
       }
 
-      container.innerHTML = services.map(s => `
-        <div class="service-item d-flex flex-wrap justify-content-between align-items-center gap-2">
+      container.innerHTML = requests.map(s => `
+        <div class="service-item d-flex flex-wrap justify-content-between align-items-center gap-2 p-2 border-bottom">
           <div>
             <div class="d-flex align-items-center gap-2 mb-1">
               <span class="badge bg-navy text-white fw-bold">Room #${s.roomNumber}</span>
               <strong class="text-dark">${s.guestName}</strong>
               <span class="text-muted small">&bull; ${s.time}</span>
             </div>
-            <div class="text-secondary small">Request: <strong>${s.serviceName}</strong> (${s.type})</div>
+            <div class="text-secondary small">Service: <strong>${s.serviceName}</strong> (Qty: ${s.quantity})</div>
           </div>
           <div class="d-flex align-items-center gap-3">
-            <span class="fw-bold text-gold">${s.amount > 0 ? 'Rs. ' + s.amount.toLocaleString() : 'Free Complimentary'}</span>
-            ${s.status === 'Pending' ? `
+            <span class="fw-bold text-gold">Rs. ${s.amount.toLocaleString()}</span>
+            ${s.status !== 'Completed' ? `
               <button class="btn btn-sm btn-success rounded-pill px-3" onclick="fulfillService('${s.id}')">
-                <i class="fa-solid fa-check me-1"></i> Fulfill Request
+                <i class="fa-solid fa-check me-1"></i> Fulfill Order
               </button>
             ` : `<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1">Completed</span>`}
           </div>
@@ -370,14 +580,14 @@
       `).join('');
     }
 
-    function fulfillService(serviceId) {
-      HotelDB.updateServiceStatus(serviceId, 'Completed');
-      showToast('Room service order marked as fulfilled.', 'Service Completed', 'success');
-      renderDashboard();
+    async function fulfillService(requestId) {
+      await HotelDB.updateServiceStatusAsync(requestId, 'Completed');
+      showToast('Room service order marked as Completed in PostgreSQL.', 'Order Fulfilled', 'success');
+      await renderDashboard();
     }
 
-    function populateAvailableRoomsSelect() {
-      const rooms = HotelDB.getRooms();
+    async function populateAvailableRoomsSelect() {
+      const rooms = await HotelDB.getRoomsAsync();
       const available = rooms.filter(r => r.status === 'Available');
       const select = document.getElementById('ciRoomSelect');
       if (available.length === 0) {
@@ -389,7 +599,40 @@
       `).join('');
     }
 
-    function handleNewCheckIn() {
+    async function handleAddRoom() {
+      const roomNumber = document.getElementById('addRoomNumber').value.trim();
+      const roomType = document.getElementById('addRoomType').value;
+      const price = parseFloat(document.getElementById('addRoomPrice').value);
+
+      try {
+        await HotelDB.addRoomAsync({
+          room_number: roomNumber,
+          room_type: roomType,
+          price_per_night: price
+        });
+        const modalEl = document.getElementById('addRoomModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+
+        showToast(`Room #${roomNumber} added to PostgreSQL inventory!`, 'Room Created', 'success');
+        await renderDashboard();
+      } catch (err) {
+        showToast(err.message || 'Failed to add room.', 'Database Error', 'danger');
+      }
+    }
+
+    async function handleDeactivateRoom(roomId) {
+      if (!confirm("Are you sure you want to deactivate this room?")) return;
+      try {
+        await HotelDB.deleteRoomAsync(roomId);
+        showToast("Room deactivated in PostgreSQL.", "Room Deactivated", "info");
+        await renderDashboard();
+      } catch (err) {
+        showToast(err.message, "Cannot Deactivate Room", "danger");
+      }
+    }
+
+    async function handleNewCheckIn() {
       const guestName = document.getElementById('ciGuestName').value.trim();
       const guestEmail = document.getElementById('ciGuestEmail').value.trim();
       const checkIn = document.getElementById('ciCheckInDate').value;
@@ -401,67 +644,101 @@
         return;
       }
 
-      const room = HotelDB.getRooms().find(r => r.number === String(roomNumber));
-      const ci = new Date(checkIn);
-      const co = new Date(checkOut);
-      if (co <= ci) {
-        showToast('Check-out date must be after check-in date.', 'Date Error', 'danger');
-        return;
+      try {
+        await HotelDB.createBookingAsync({
+          roomNumber,
+          guestName,
+          guestEmail,
+          guestPhone: '+1 (555) 123-9900',
+          checkIn,
+          checkOut,
+          guestsCount: 2
+        });
+
+        const modalEl = document.getElementById('checkInModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+
+        showToast(`Guest ${guestName} checked into Room #${roomNumber}!`, 'Check-In Complete', 'success');
+        await renderDashboard();
+      } catch (err) {
+        showToast(err.message || 'Failed to create reservation.', 'Double Booking / DB Error', 'danger');
       }
-
-      const nights = Math.max(1, Math.ceil((co - ci) / (1000 * 60 * 60 * 24)));
-      const totalAmount = room ? room.price * nights : 2000;
-
-      const newBooking = HotelDB.createBooking({
-        roomNumber,
-        guestName,
-        guestEmail,
-        guestPhone: '+1 (555) 123-9900',
-        checkIn,
-        checkOut,
-        guestsCount: 2,
-        category: room ? room.category : 'Standard AC Room',
-        totalAmount
-      });
-
-      // Close modal
-      const modalEl = document.getElementById('checkInModal');
-      const modal = bootstrap.Modal.getInstance(modalEl);
-      if (modal) modal.hide();
-
-      showToast(`Guest ${guestName} checked into Room #${roomNumber}!`, 'Check-In Complete', 'success');
-      renderDashboard();
     }
 
     async function handleCheckOut(bookingId) {
-      const bookings = await HotelDB.getBookingsAsync();
-      const booking = bookings.find(b => b.id === bookingId);
-      if (!booking) return;
-
-      await HotelDB.checkOutBookingAsync(bookingId);
-      showToast(`Check-out completed for Room #${booking.roomNumber}. Room status updated to Housekeeping Cleaning in PostgreSQL.`, 'Guest Checked Out', 'success');
-      await renderDashboard();
-      
-      openInvoiceModal(bookingId);
+      try {
+        await HotelDB.checkOutBookingAsync(bookingId);
+        showToast(`Check-out completed! PostgreSQL trigger auto-set room to Cleaning & generated Bill.`, 'Guest Checked Out', 'success');
+        await renderDashboard();
+      } catch (err) {
+        showToast(err.message, 'Check-Out Error', 'danger');
+      }
     }
 
-    function changeWifiPassword(bookingId, roomNumber) {
-      const bookings = HotelDB.getBookings();
-      const booking = bookings.find(b => b.id === bookingId);
-      if (!booking) return;
+    async function openReportsModal() {
+      const reports = await HotelDB.getReportsAsync();
+      const m = reports.metrics || {};
+      const breakdown = reports.revenueByRoomType || [];
 
-      const newPwd = prompt(`Enter new Wi-Fi password for Room #${roomNumber}:`, booking.wifiPassword || "hotelmanagement");
-      if (newPwd === null) return;
+      const body = document.getElementById('reportsModalBody');
+      body.innerHTML = `
+        <div class="row g-3 mb-4 text-center">
+          <div class="col-md-3">
+            <div class="p-3 bg-light rounded-3 border">
+              <div class="text-muted small">Total Rooms</div>
+              <h3 class="text-navy mb-0">${m.totalRooms || 0}</h3>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="col-md-12 p-3 bg-light rounded-3 border">
+              <div class="text-muted small">Occupied / Available</div>
+              <h3 class="text-success mb-0">${m.occupiedRooms || 0} / ${m.availableRooms || 0}</h3>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="p-3 bg-light rounded-3 border">
+              <div class="text-muted small">Total Reservations</div>
+              <h3 class="text-primary mb-0">${m.totalReservations || 0}</h3>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="p-3 bg-light rounded-3 border">
+              <div class="text-muted small">Paid Revenue</div>
+              <h3 class="text-gold mb-0">Rs. ${(m.totalRevenue || 0).toLocaleString()}</h3>
+            </div>
+          </div>
+        </div>
 
-      const cleanedPwd = newPwd.trim();
-      if (cleanedPwd.length < 4) {
-        showToast("Wi-Fi password must be at least 4 characters long.", "Validation Error", "warning");
-        return;
-      }
+        <h5 class="font-serif text-dark mb-3"><i class="fa-solid fa-table me-2 text-gold"></i> Revenue Breakdown by Room Type (PostgreSQL View: <code>vw_revenue_summary</code>)</h5>
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle">
+            <thead class="table-dark">
+              <tr>
+                <th>Room Type</th>
+                <th>Total Bookings</th>
+                <th>Room Revenue</th>
+                <th>Service Revenue</th>
+                <th>Grand Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${breakdown.map(r => `
+                <tr>
+                  <td><strong>${r.room_type}</strong></td>
+                  <td>${r.total_bookings}</td>
+                  <td>Rs. ${parseFloat(r.total_room_revenue).toLocaleString()}</td>
+                  <td>Rs. ${parseFloat(r.total_service_revenue).toLocaleString()}</td>
+                  <td><strong class="text-gold">Rs. ${parseFloat(r.grand_total_revenue).toLocaleString()}</strong></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
 
-      HotelDB.updateWifiPassword(bookingId, cleanedPwd);
-      showToast(`Wi-Fi password for Room #${roomNumber} updated to: ${cleanedPwd}`, 'Wi-Fi Updated', 'success');
-      renderDashboard();
+      const modal = new bootstrap.Modal(document.getElementById('reportsModal'));
+      modal.show();
     }
 
     // Initial render
@@ -471,3 +748,4 @@
   </script>
 </body>
 </html>
+

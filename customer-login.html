@@ -62,13 +62,6 @@
           </button>
         </form>
 
-        <div class="border-top pt-3 mt-2">
-          <p class="text-muted small mb-2">Want to test instantly without credentials?</p>
-          <button type="button" class="btn btn-outline-dark btn-sm w-100 rounded-pill py-2" onclick="quickDemoLogin('customer')">
-            <i class="fa-solid fa-bolt text-gold me-1"></i> One-Click Demo Guest Login
-          </button>
-        </div>
-
         <div class="d-flex justify-content-between border-top pt-3 mt-4 text-start">
           <a href="register.html" class="btn btn-sm btn-secondary-luxury py-1 px-3">
             <i class="fa-solid fa-user-plus me-1"></i> Create Guest Account
@@ -145,29 +138,15 @@
             });
             window.location.href = 'customer-dashboard.html';
             return;
-          } else if (response.status === 401) {
-            alertBox.textContent = result.error || 'Invalid email or password.';
+          } else {
+            alertBox.textContent = result.error || 'Invalid credentials.';
             alertBox.classList.remove('d-none');
             return;
           }
         } catch(e) {
-          // Backend server offline - fallback to client demo login
-          console.warn('Backend offline, using client session login:', e);
+          alertBox.textContent = 'Cannot connect to backend server. Please ensure Flask server is running.';
+          alertBox.classList.remove('d-none');
         }
-
-        // Fallback email login
-        const bookings = HotelDB.getBookings();
-        const active = bookings.find(b => b.guestEmail.toLowerCase() === emailOrRoom.toLowerCase() && b.status === 'Occupied');
-        
-        const guestName = emailOrRoom.split('@')[0];
-        const formattedName = guestName.charAt(0).toUpperCase() + guestName.slice(1);
-        
-        loginUser(emailOrRoom, 'customer', active ? active.guestName : formattedName, { 
-          phone: active ? active.guestPhone : '+1 (555) 234-5678', 
-          roomNumber: active ? active.roomNumber : '101',
-          bookingId: active ? active.id : 'BK-1001'
-        });
-        window.location.href = 'customer-dashboard.html';
       }
     }
 

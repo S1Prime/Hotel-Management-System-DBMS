@@ -192,7 +192,7 @@
             <div class="row g-2 mb-3">
               <div class="col-6">
                 <label class="form-label-custom">Check-In Date</label>
-                <input type="date" id="bmCheckIn" class="form-control form-control-luxury" onchange="calculateModalTotal()" required>
+                <input type="date" id="bmCheckIn" class="form-control form-control-luxury" onchange="onCheckInDateChange()" required>
               </div>
               <div class="col-6">
                 <label class="form-label-custom">Check-Out Date</label>
@@ -306,8 +306,11 @@
       const ciInput = document.getElementById('bmCheckIn');
       const coInput = document.getElementById('bmCheckOut');
       ciInput.min = todayStr;
-      coInput.min = todayStr;
       ciInput.value = todayStr;
+
+      const nextDay = new Date(today);
+      nextDay.setDate(nextDay.getDate() + 1);
+      coInput.min = nextDay.toISOString().split('T')[0];
       coInput.value = tomorrowStr;
       
       calculateModalTotal();
@@ -315,9 +318,35 @@
       modal.show();
     }
 
+    function onCheckInDateChange() {
+      const ciVal = document.getElementById('bmCheckIn').value;
+      if (!ciVal) return;
+
+      const ciDate = new Date(ciVal);
+      const minCo = new Date(ciDate);
+      minCo.setDate(minCo.getDate() + 1);
+
+      const minCoStr = minCo.toISOString().split('T')[0];
+      const coInput = document.getElementById('bmCheckOut');
+      coInput.min = minCoStr;
+
+      const currentCoVal = coInput.value;
+      if (!currentCoVal || new Date(currentCoVal) <= ciDate) {
+        const autoCo = new Date(ciDate);
+        autoCo.setDate(autoCo.getDate() + 3);
+        coInput.value = autoCo.toISOString().split('T')[0];
+      }
+
+      calculateModalTotal();
+    }
+
     function calculateModalTotal() {
-      const ci = new Date(document.getElementById('bmCheckIn').value);
-      const co = new Date(document.getElementById('bmCheckOut').value);
+      const ciVal = document.getElementById('bmCheckIn').value;
+      const coVal = document.getElementById('bmCheckOut').value;
+      if (!ciVal || !coVal) return;
+
+      const ci = new Date(ciVal);
+      const co = new Date(coVal);
       if (isNaN(ci.getTime()) || isNaN(co.getTime()) || co <= ci) {
         document.getElementById('bmEstimatedTotal').textContent = `Invalid Dates`;
         return;
@@ -341,50 +370,67 @@
       }
 
       const nights = Math.max(1, Math.ceil((co - ci) / (1000 * 60 * 60 * 24)));
-      const totalAmount = selectedRoomPrice * nights;
 
-      await HotelDB.createBookingAsync({
-        roomNumber,
-        guestName: currentUser?.name || 'Valued Guest',
-        guestEmail: currentUser?.email || 'guest@crowneplaza.com',
-        guestPhone: currentUser?.phone || '+1 (555) 234-5678',
-        checkIn,
-        checkOut,
-        guestsCount: 2,
-        category,
-        totalAmount
-      });
+      try {
+        await HotelDB.createBookingAsync({
+          roomNumber,
+          guestName: currentUser?.name || 'Valued Guest',
+          guestEmail: currentUser?.email || 'customer@gmail.com',
+          guestPhone: currentUser?.phone || '9876543210',
+          checkIn,
+          checkOut,
+          guestsCount: 2
+        });
 
-      const modalEl = document.getElementById('bookModal');
-      const modal = bootstrap.Modal.getInstance(modalEl);
-      if (modal) modal.hide();
+        const modalEl = document.getElementById('bookModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
 
-      showToast(`Room #${roomNumber} reserved successfully for ${nights} nights! Saved to PostgreSQL.`, 'Reservation Confirmed', 'success');
-      await renderGuestDashboard();
+        showToast(`Room #${roomNumber} reserved successfully for ${nights} nights! Saved to PostgreSQL.`, 'Reservation Confirmed', 'success');
+        await renderGuestDashboard();
+      } catch (err) {
+        const msg = err.message || '';
+        if (msg.includes('Double Booking') || msg.includes('booked')) {
+          showToast(msg, 'Double Booking Conflict', 'warning');
+        } else if (msg.includes('password authentication failed') || msg.includes('connection')) {
+          showToast('PostgreSQL authentication failed for user "postgres". Please set your PostgreSQL password in backend/database.py (DB_PASS).', 'PostgreSQL Connection Error', 'danger');
+        } else {
+          showToast(msg || 'Room is unavailable for selected dates.', 'Booking Error', 'danger');
+        }
+      }
     }
 
-    function handleGuestServiceOrder() {
-      const selectVal = document.getElementById('svcName').value;
-      const [svcName, priceStr] = selectVal.split('|');
-      const amount = parseInt(priceStr, 10);
+    async function handleGuestServiceOrder() {
+      const serviceId = document.getElementById('svcName').value.split('|')[0] || 1;
       const notes = document.getElementById('svcNotes').value.trim();
 
-      HotelDB.addServiceRequest({
-        roomNumber: '101',
-        guestName: currentUser?.name || 'Valued Guest',
-        serviceName: notes ? `${svcName} (${notes})` : svcName,
-        type: amount > 0 ? 'Dining' : 'Housekeeping',
-        amount: amount
-      });
+      const activeBookings = await HotelDB.getBookingsAsync();
+      const userRes = activeBookings.find(b => b.guestEmail === (currentUser?.email || 'customer@gmail.com')) || activeBookings[0];
 
-      showToast(`Service order "${svcName}" submitted to Front Desk!`, 'Room Service Requested', 'success');
-      document.getElementById('svcNotes').value = '';
-      renderGuestDashboard();
+      if (!userRes) {
+        showToast('No active room reservation found to request room service.', 'Request Error', 'warning');
+        return;
+      }
+
+      try {
+        await HotelDB.addServiceRequestAsync({
+          reservationId: userRes.reservationId || 1,
+          serviceId: parseInt(serviceId, 10),
+          quantity: 1
+        });
+
+        showToast(`Room service order submitted to Front Desk & PostgreSQL!`, 'Room Service Requested', 'success');
+        document.getElementById('svcNotes').value = '';
+        await renderGuestDashboard();
+      } catch (err) {
+        showToast(err.message, 'Service Request Error', 'danger');
+      }
     }
 
     async function renderGuestHistory() {
-      const bookings = (await HotelDB.getBookingsAsync()).filter(b => b.guestEmail === (currentUser?.email || 'guest@crowneplaza.com'));
-      const services = HotelDB.getServices().filter(s => s.roomNumber === '101');
+      const bookings = (await HotelDB.getBookingsAsync()).filter(b => b.guestEmail === (currentUser?.email || 'customer@gmail.com'));
+      const services = await HotelDB.getServiceRequestsAsync();
+      const bills = await HotelDB.getBillsAsync();
 
       const tbody = document.getElementById('guestHistoryTableBody');
       let html = '';
@@ -396,7 +442,7 @@
           <tr>
             <td>
               <strong>${b.category}</strong> (#${b.roomNumber})
-              <button class="btn btn-sm text-gold p-0 ms-2" onclick="openInvoiceModal('${b.id}')" title="View Printable Invoice">
+              <button class="btn btn-sm text-gold p-0 ms-2" onclick="openInvoiceModal('${b.id}')" title="View Folio">
                 <i class="fa-solid fa-file-invoice me-1"></i> Folio
               </button>
             </td>
@@ -407,16 +453,17 @@
         `;
       });
 
-      services.forEach(s => {
-        totalFolio += (s.amount || 0);
-        html += `
-          <tr>
-            <td><strong>${s.serviceName}</strong></td>
-            <td>Today &bull; ${s.time}</td>
-            <td class="fw-bold text-gold">${s.amount > 0 ? 'Rs. ' + s.amount.toLocaleString() : 'Free'}</td>
-            <td><span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 rounded-pill px-2 py-0.5 small">${s.status}</span></td>
-          </tr>
-        `;
+      bills.forEach(b => {
+        if (b.guest_email === (currentUser?.email || 'customer@gmail.com')) {
+          html += `
+            <tr class="table-light">
+              <td><strong>Tax Invoice (INV-${b.bill_id})</strong></td>
+              <td>${b.check_in} to ${b.check_out}</td>
+              <td class="fw-bold text-success">Rs. ${parseFloat(b.total_amount).toLocaleString()}</td>
+              <td><span class="badge ${b.payment_status === 'Paid' ? 'bg-success' : 'bg-danger'}">${b.payment_status}</span></td>
+            </tr>
+          `;
+        }
       });
 
       if (!html) {

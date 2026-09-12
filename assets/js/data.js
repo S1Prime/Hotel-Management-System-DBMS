@@ -4,71 +4,27 @@
 
 const API_BASE_URL = 'http://127.0.0.1:5000/api';
 
-const INITIAL_ROOMS = [
-  { id: 101, number: "101", category: "Luxury Suite", floor: 1, price: 6000, status: "Occupied", type: "Suite", capacity: 2, bed: "King Bed", view: "City Skyline", amenities: ["Wi-Fi", "Minibar", "Jacuzzi", "Smart TV", "City View"], image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80" },
-  { id: 102, number: "102", category: "Standard AC Room", floor: 1, price: 3500, status: "Available", type: "AC", capacity: 2, bed: "King Bed", view: "Garden View", amenities: ["Wi-Fi", "Coffee Maker", "Smart TV", "Balcony"], image: "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80" },
-  { id: 103, number: "103", category: "Economy Non-AC Room", floor: 1, price: 2000, status: "Cleaning", type: "Non-AC", capacity: 2, bed: "2 Twin Beds", view: "Courtyard View", amenities: ["Wi-Fi", "Work Desk", "Mini Fridge"], image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=800&q=80" },
-  { id: 201, number: "201", category: "AC Room with Balcony", floor: 2, price: 4500, status: "Occupied", type: "AC with Balcony", capacity: 4, bed: "King Bed + Sofa Bed", view: "Ocean View", amenities: ["Wi-Fi", "Private Balcony", "Ocean Panorama", "Espresso Bar"], image: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=800&q=80" },
-  { id: 202, number: "202", category: "Family AC Room", floor: 2, price: 4000, status: "Available", type: "AC Family", capacity: 4, bed: "2 Double Beds", view: "Garden View", amenities: ["Wi-Fi", "Mini Fridge", "Smart TV"], image: "https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=800&q=80" }
-];
-
-const INITIAL_BOOKINGS = [
-  {
-    id: "BK-1001",
-    roomNumber: "101",
-    guestName: "Eleanor Vance",
-    guestEmail: "guest@crowneplaza.com",
-    guestPhone: "+1 (555) 234-5678",
-    checkIn: "2026-07-28",
-    checkOut: "2026-08-02",
-    guestsCount: 2,
-    category: "Luxury Suite",
-    totalAmount: 30000,
-    status: "Occupied",
-    paymentStatus: "Paid",
-    wifiPassword: "hotelmanagement",
-    createdAt: "2026-07-25"
-  }
-];
-
-const INITIAL_SERVICES = [
-  { id: "SR-501", roomNumber: "101", guestName: "Eleanor Vance", serviceName: "Gourmet Breakfast in Bed", type: "Dining", amount: 1200, status: "Pending", time: "08:30 AM" }
-];
-
-function initLocalStorageFallback() {
-  if (!localStorage.getItem('cp_rooms')) {
-    localStorage.setItem('cp_rooms', JSON.stringify(INITIAL_ROOMS));
-  }
-  if (!localStorage.getItem('cp_bookings')) {
-    localStorage.setItem('cp_bookings', JSON.stringify(INITIAL_BOOKINGS));
-  }
-  if (!localStorage.getItem('cp_services')) {
-    localStorage.setItem('cp_services', JSON.stringify(INITIAL_SERVICES));
-  }
-}
-initLocalStorageFallback();
-
-// Unified Data Engine interacting with PostgreSQL Backend API
 const HotelDB = {
-  // 1. Fetch Rooms from PostgreSQL API
+  // ------------------------------------------------------------------------
+  // 1. ROOMS API INTEGRATION
+  // ------------------------------------------------------------------------
   async getRoomsAsync() {
     try {
       const res = await fetch(`${API_BASE_URL}/rooms`);
       if (res.ok) {
         const dbRooms = await res.json();
         if (dbRooms && dbRooms.length > 0) {
-          // Format DB rooms to match frontend template expectations
           return dbRooms.map(r => ({
             id: r.room_id,
             number: r.room_number,
-            category: r.room_type.includes('Room') || r.room_type.includes('Suite') ? r.room_type : `${r.room_type} Room`,
+            category: r.room_type,
             floor: parseInt(r.room_number[0], 10) || 1,
             price: parseFloat(r.price_per_night),
             status: r.status || 'Available',
             type: r.room_type,
-            capacity: r.room_type.includes('Suite') || r.room_type.includes('Double') ? 4 : 2,
+            capacity: r.room_type.includes('Suite') || r.room_type.includes('Family') ? 4 : 2,
             bed: r.room_type.includes('Suite') ? 'King Bed' : 'Double Bed',
-            view: 'City & Sea Panorama',
+            view: 'City & Panorama View',
             amenities: ['Wi-Fi', 'Smart TV', 'Air Conditioning', 'Executive Desk'],
             image: r.room_type.includes('Suite')
               ? 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80'
@@ -77,23 +33,47 @@ const HotelDB = {
         }
       }
     } catch (e) {
-      console.warn('Backend API offline, falling back to client cache:', e);
+      console.warn('Backend API offline, using fallback:', e);
     }
     return JSON.parse(localStorage.getItem('cp_rooms') || '[]');
   },
 
-  getRooms() {
-    return JSON.parse(localStorage.getItem('cp_rooms') || '[]');
+  async addRoomAsync(roomData) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/rooms`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(roomData)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to add room');
+      return data;
+    } catch (e) {
+      console.error('Error adding room:', e);
+      throw e;
+    }
   },
 
-  saveRooms(rooms) {
-    localStorage.setItem('cp_rooms', JSON.stringify(rooms));
+  async updateRoomAsync(roomId, roomData) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/rooms/${roomId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(roomData)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update room');
+      return data;
+    } catch (e) {
+      console.error('Error updating room:', e);
+      throw e;
+    }
   },
 
   async updateRoomStatusAsync(roomNumber, newStatus) {
     try {
       const rooms = await this.getRoomsAsync();
-      const target = rooms.find(r => r.number === String(roomNumber));
+      const target = rooms.find(r => String(r.number) === String(roomNumber));
       if (target && target.id) {
         await fetch(`${API_BASE_URL}/rooms/${target.id}/status`, {
           method: 'PUT',
@@ -104,19 +84,25 @@ const HotelDB = {
     } catch (e) {
       console.warn('Room status update API error:', e);
     }
-    this.updateRoomStatus(roomNumber, newStatus);
   },
 
-  updateRoomStatus(roomNumber, newStatus) {
-    const rooms = this.getRooms();
-    const room = rooms.find(r => r.number === String(roomNumber));
-    if (room) {
-      room.status = newStatus;
-      this.saveRooms(rooms);
+  async deleteRoomAsync(roomId) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/rooms/${roomId}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to delete room');
+      return data;
+    } catch (e) {
+      console.error('Error deleting room:', e);
+      throw e;
     }
   },
 
-  // 2. Fetch Bookings/Reservations from PostgreSQL API
+  // ------------------------------------------------------------------------
+  // 2. RESERVATIONS & BOOKINGS API INTEGRATION
+  // ------------------------------------------------------------------------
   async getBookingsAsync() {
     try {
       const res = await fetch(`${API_BASE_URL}/reservations`);
@@ -126,147 +112,242 @@ const HotelDB = {
           return dbRes.map(b => ({
             id: `RES-${b.reservation_id}`,
             reservationId: b.reservation_id,
+            customerId: b.customer_id,
             roomNumber: b.room_number,
             guestName: b.guest_name,
             guestEmail: b.guest_email,
             guestPhone: b.guest_phone,
             checkIn: b.check_in,
             checkOut: b.check_out,
-            guestsCount: 2,
+            guestsCount: b.number_of_guests || 1,
             category: b.room_type,
-            totalAmount: parseFloat(b.price_per_night) * 3,
-            status: b.status === 'Booked' ? 'Occupied' : b.status,
-            paymentStatus: 'Paid',
+            totalAmount: parseFloat(b.estimated_total || 0),
+            status: b.status,
+            paymentStatus: b.status === 'Checked-out' ? 'Paid' : 'Pending',
             wifiPassword: 'hotelmanagement'
           }));
         }
       }
     } catch (e) {
-      console.warn('Backend API offline, falling back to client bookings:', e);
+      console.warn('Backend API reservations offline, falling back:', e);
     }
     return JSON.parse(localStorage.getItem('cp_bookings') || '[]');
   },
 
-  getBookings() {
-    return JSON.parse(localStorage.getItem('cp_bookings') || '[]');
-  },
-
-  saveBookings(bookings) {
-    localStorage.setItem('cp_bookings', JSON.stringify(bookings));
-  },
-
-  findActiveBookingByRoom(roomNumber) {
-    const bookings = this.getBookings();
-    return bookings.find(b => String(b.roomNumber) === String(roomNumber) && (b.status === 'Occupied' || b.status === 'Booked'));
-  },
-
-  // 3. Create Reservation in PostgreSQL API
   async createBookingAsync(bookingData) {
     try {
       const res = await fetch(`${API_BASE_URL}/reservations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          customer_id: bookingData.customerId,
           room_number: bookingData.roomNumber,
           guest_name: bookingData.guestName,
           guest_email: bookingData.guestEmail,
           guest_phone: bookingData.guestPhone,
           check_in: bookingData.checkIn,
-          check_out: bookingData.checkOut
+          check_out: bookingData.checkOut,
+          number_of_guests: bookingData.guestsCount || 1
         })
       });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create reservation.');
+      }
+      return data;
+    } catch (e) {
+      console.error('Backend API reservation error:', e);
+      throw e;
+    }
+  },
+
+  async checkInBookingAsync(reservationId) {
+    try {
+      const cleanId = String(reservationId).replace('RES-', '');
+      const res = await fetch(`${API_BASE_URL}/reservations/${cleanId}/check-in`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to check in');
+      return data;
+    } catch (e) {
+      console.error('CheckIn API error:', e);
+      throw e;
+    }
+  },
+
+  async checkOutBookingAsync(reservationId) {
+    try {
+      const cleanId = String(reservationId).replace('RES-', '');
+      const res = await fetch(`${API_BASE_URL}/reservations/${cleanId}/check-out`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to check out');
+      return data;
+    } catch (e) {
+      console.error('CheckOut API error:', e);
+      throw e;
+    }
+  },
+
+  // ------------------------------------------------------------------------
+  // 3. HOTEL SERVICES & SERVICE REQUESTS API INTEGRATION
+  // ------------------------------------------------------------------------
+  async getServicesCatalogAsync() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/services`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Failed to fetch services catalog from API:', e);
+    }
+    return [
+      { service_id: 1, service_name: "Gourmet Breakfast in Bed", price: 1200, description: "Fresh continental breakfast" },
+      { service_id: 2, service_name: "Express Laundry Service", price: 850, description: "Same-day laundry & pressing" },
+      { service_id: 3, service_name: "Luxury Spa & Wellness Package", price: 3500, description: "60-minute relaxing massage" },
+      { service_id: 4, service_name: "Extra Rollaway Bed", price: 1500, description: "Twin bed with linens" }
+    ];
+  },
+
+  async getServiceRequestsAsync() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/service-requests`);
       if (res.ok) {
-        console.log('Reservation created in PostgreSQL!');
+        const list = await res.json();
+        return list.map(sr => ({
+          id: `SR-${sr.request_id}`,
+          requestId: sr.request_id,
+          reservationId: sr.reservation_id,
+          roomNumber: sr.room_number,
+          guestName: sr.guest_name,
+          serviceName: sr.service_name,
+          quantity: sr.quantity,
+          amount: parseFloat(sr.total_price),
+          status: sr.status,
+          time: new Date(sr.request_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }));
       }
     } catch (e) {
-      console.warn('Backend API reservation error:', e);
+      console.warn('Failed to fetch service requests from API:', e);
     }
-    return this.createBooking(bookingData);
-  },
-
-  createBooking(bookingData) {
-    const bookings = this.getBookings();
-    const newBooking = {
-      id: 'BK-' + (1000 + bookings.length + 1),
-      status: 'Occupied',
-      paymentStatus: bookingData.paymentStatus || 'Paid',
-      wifiPassword: 'hotelmanagement',
-      createdAt: new Date().toISOString().split('T')[0],
-      ...bookingData
-    };
-    bookings.unshift(newBooking);
-    this.saveBookings(bookings);
-
-    if (bookingData.roomNumber) {
-      this.updateRoomStatus(bookingData.roomNumber, 'Occupied');
-    }
-    return newBooking;
-  },
-
-  async checkOutBookingAsync(bookingId) {
-    if (String(bookingId).startsWith('RES-')) {
-      const dbId = bookingId.replace('RES-', '');
-      try {
-        await fetch(`${API_BASE_URL}/reservations/${dbId}/status`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'Completed' })
-        });
-      } catch (e) {
-        console.warn('CheckOut API error:', e);
-      }
-    }
-    this.checkOutBooking(bookingId);
-  },
-
-  checkOutBooking(bookingId) {
-    const bookings = this.getBookings();
-    const booking = bookings.find(b => b.id === bookingId);
-    if (booking) {
-      booking.status = 'Completed';
-      this.saveBookings(bookings);
-      if (booking.roomNumber) {
-        this.updateRoomStatus(booking.roomNumber, 'Cleaning');
-      }
-    }
-  },
-
-  getServices() {
     return JSON.parse(localStorage.getItem('cp_services') || '[]');
   },
 
-  saveServices(services) {
-    localStorage.setItem('cp_services', JSON.stringify(services));
-  },
-
-  addServiceRequest(request) {
-    const services = this.getServices();
-    const newReq = {
-      id: 'SR-' + (500 + services.length + 1),
-      status: 'Pending',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      ...request
-    };
-    services.unshift(newReq);
-    this.saveServices(services);
-    return newReq;
-  },
-
-  updateServiceStatus(serviceId, newStatus) {
-    const services = this.getServices();
-    const service = services.find(s => s.id === serviceId);
-    if (service) {
-      service.status = newStatus;
-      this.saveServices(services);
+  async addServiceRequestAsync(requestData) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/service-requests`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reservation_id: requestData.reservationId,
+          service_id: requestData.serviceId,
+          quantity: requestData.quantity || 1
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to submit service request');
+      return data;
+    } catch (e) {
+      console.error('Service request API error:', e);
+      throw e;
     }
   },
 
-  // 4. Fetch Metrics from PostgreSQL API
+  async updateServiceStatusAsync(requestId, newStatus) {
+    try {
+      const cleanId = String(requestId).replace('SR-', '');
+      const res = await fetch(`${API_BASE_URL}/service-requests/${cleanId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update service status');
+      return data;
+    } catch (e) {
+      console.error('Update service status error:', e);
+      throw e;
+    }
+  },
+
+  // ------------------------------------------------------------------------
+  // 4. BILLS & BILLING API INTEGRATION
+  // ------------------------------------------------------------------------
+  async getBillsAsync() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/bills`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Failed to fetch bills from API:', e);
+    }
+    return [];
+  },
+
+  async payBillAsync(billId) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/bills/${billId}/pay`, {
+        method: 'PUT'
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to process bill payment');
+      return data;
+    } catch (e) {
+      console.error('Pay bill API error:', e);
+      throw e;
+    }
+  },
+
+  // ------------------------------------------------------------------------
+  // 5. HOUSEKEEPING TASKS API INTEGRATION
+  // ------------------------------------------------------------------------
+  async getHousekeepingAsync() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/housekeeping`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Failed to fetch housekeeping tasks from API:', e);
+    }
+    return [];
+  },
+
+  async updateHousekeepingStatusAsync(taskId, newStatus) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/housekeeping/${taskId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update housekeeping task');
+      return data;
+    } catch (e) {
+      console.error('Housekeeping update error:', e);
+      throw e;
+    }
+  },
+
+  // ------------------------------------------------------------------------
+  // 6. REPORTS & METRICS API INTEGRATION
+  // ------------------------------------------------------------------------
+  async getReportsAsync() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/reports`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Failed to fetch reports from API:', e);
+    }
+    return {
+      metrics: { totalRooms: 5, occupiedRooms: 2, availableRooms: 2, cleaningRooms: 1, maintenanceRooms: 0, totalRevenue: 32760 },
+      revenueByRoomType: []
+    };
+  },
+
   async getMetricsAsync() {
     try {
       const res = await fetch(`${API_BASE_URL}/metrics`);
       if (res.ok) {
         const m = await res.json();
+        const reports = await this.getReportsAsync();
         return {
           totalRooms: m.totalRooms,
           occupied: m.occupied,
@@ -274,39 +355,109 @@ const HotelDB = {
           cleaning: m.cleaning,
           maintenance: m.maintenance,
           activeBookingsCount: m.activeBookingsCount,
-          pendingServicesCount: this.getServices().filter(s => s.status === 'Pending').length,
-          totalRevenue: m.occupied * 5000
+          totalRevenue: reports.metrics ? reports.metrics.totalRevenue : 0
         };
       }
     } catch (e) {
       console.warn('Backend metrics API error:', e);
     }
-    return this.getMetrics();
+    return { totalRooms: 5, occupied: 2, available: 2, cleaning: 1, maintenance: 0, activeBookingsCount: 2, totalRevenue: 0 };
   },
 
-  getMetrics() {
-    const rooms = this.getRooms();
-    const bookings = this.getBookings();
-    const services = this.getServices();
+  // ------------------------------------------------------------------------
+  // 7. DEDICATED ADMIN API INTEGRATIONS
+  // ------------------------------------------------------------------------
+  async getAdminCustomersAsync() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/customers`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Failed to fetch admin customer list:', e);
+    }
+    return [];
+  },
 
-    const occupied = rooms.filter(r => r.status === 'Occupied').length;
-    const available = rooms.filter(r => r.status === 'Available').length;
-    const cleaning = rooms.filter(r => r.status === 'Cleaning').length;
-    const maintenance = rooms.filter(r => r.status === 'Maintenance').length;
+  async getCustomerHistoryAsync(customerId) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/customers/${customerId}/history`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Failed to fetch customer history:', e);
+    }
+    return { customer: null, reservations: [] };
+  },
 
-    const activeBookings = bookings.filter(b => b.status === 'Occupied' || b.status === 'Booked');
-    const totalRevenue = activeBookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0) +
-      services.reduce((sum, s) => sum + (s.amount || 0), 0);
+  async getAdminStaffAsync() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/staff`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Failed to fetch staff accounts:', e);
+    }
+    return [];
+  },
 
-    return {
-      totalRooms: rooms.length,
-      occupied,
-      available,
-      cleaning,
-      maintenance,
-      activeBookingsCount: activeBookings.length,
-      pendingServicesCount: services.filter(s => s.status === 'Pending').length,
-      totalRevenue
-    };
+  async addStaffAsync(staffData) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/staff`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(staffData)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to add staff account');
+      return data;
+    } catch (e) {
+      console.error('Error adding staff:', e);
+      throw e;
+    }
+  },
+
+  async updateStaffAsync(staffId, staffData) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/staff/${staffId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(staffData)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update staff account');
+      return data;
+    } catch (e) {
+      console.error('Error updating staff:', e);
+      throw e;
+    }
+  },
+
+  async addServiceAsync(serviceData) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/services`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(serviceData)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to add service');
+      return data;
+    } catch (e) {
+      console.error('Error adding service:', e);
+      throw e;
+    }
+  },
+
+  async updateServiceAsync(serviceId, serviceData) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/services/${serviceId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(serviceData)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update service');
+      return data;
+    } catch (e) {
+      console.error('Error updating service:', e);
+      throw e;
+    }
   }
 };
