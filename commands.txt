@@ -1,25 +1,56 @@
 ================================================================================
-HOTEL MANAGEMENT SYSTEM - COMPLETE STEP-BY-STEP EXECUTION GUIDE
+HOTEL MANAGEMENT SYSTEM — DBMS PROJECT EXECUTION & SQL REFERENCE GUIDE
+================================================================================
+
+================================================================================
+SECTION A: PURE SQL EXECUTION (PGADMIN 4 / PSQL / DBeaver)
+Use this section if you want to run the project entirely via SQL without Python!
+================================================================================
+
+1. DIRECT ONE-CLICK DATABASE SETUP IN PGADMIN 4:
+   a. Open pgAdmin 4.
+   b. Right-click "Databases" -> Create -> Database -> Name: "hotel_management".
+   c. Select "hotel_management" database and open the "Query Tool".
+   d. Open file: `database/master_setup.sql`.
+   e. Click Execute (or press F5).
+   --> This builds all 9 tables, constraints, triggers, views, stored procedures,
+       performance indexes, and initial seed data in one step!
+
+2. RUN VIA PSQL COMMAND LINE (PowerShell / CMD):
+   psql -U postgres -d hotel_management -f database/master_setup.sql
+
+3. DEDICATED SQL FILES CATALOG (`database/` folder):
+   - `database/master_setup.sql`           : Complete standalone all-in-one SQL setup script.
+   - `database/schema.sql`                 : Core relational entity definitions & constraints.
+   - `database/data.sql`                   : Initial seed records (guests, staff, rooms, amenities).
+   - `database/procedures.sql`             : Stored Procedures & User-Defined Functions (PL/pgSQL).
+   - `database/triggers_and_audit.sql`     : Automation triggers & dedicated audit_logs table.
+   - `database/views.sql`                  : Analytical views & monthly financial materialized view.
+   - `database/advanced_queries.sql`       : Window functions, CTEs, running totals & viva queries.
+   - `database/indexes_and_performance.sql`: B-Tree, composite, partial indexes & EXPLAIN ANALYZE.
+   - `database/roles_and_security.sql`     : DCL commands, Role-Based Access Control & Row-Level Security.
+   - `database/transactions_acid.sql`      : ACID properties, savepoints, & pessimistic locking proofs.
+   - `database/queries.sql`                : Standard SQL queries demonstrating joins & aggregates.
+
+
+================================================================================
+SECTION B: WEB APPLICATION EXECUTION (OPTIONAL 3-TIER DEMONSTRATION)
 ================================================================================
 
 IMPORTANT NOTE ON DIRECTORY PATHS:
-- All commands below are meant to be run from the main project folder:
+- All commands below must be run from the main project folder:
   `Hotel-Management-System-DBMS`
-- If your terminal is already inside the `backend` subfolder, type `cd ..` first.
-
+- If terminal is in parent folder, run: cd "Hotel-Management-System-DBMS"
 
 --------------------------------------------------------------------------------
 STEP 1: INSTALL REQUIRED PYTHON LIBRARIES
 --------------------------------------------------------------------------------
-Open terminal in the project directory and run:
-
 pip install flask flask-cors psycopg2-binary
-
 
 --------------------------------------------------------------------------------
 STEP 2: SETUP & INITIALIZE THE POSTGRESQL DATABASE
 --------------------------------------------------------------------------------
-Make sure PostgreSQL is running on your computer.
+Make sure PostgreSQL service is running.
 
 Command 2A (Creates 'hotel_management' database & tables automatically):
 python backend/init_db.py
@@ -27,52 +58,37 @@ python backend/init_db.py
 Command 2B (Verifies database connections & sample query execution):
 python backend/test_db.py
 
-
 --------------------------------------------------------------------------------
 STEP 3: START THE BACKEND FLASK API SERVER
 --------------------------------------------------------------------------------
-Start the backend server:
-
 python backend/app.py
 
 Backend will start running at:
 http://127.0.0.1:5000/
-
-Keep this terminal window running in the background!
-
+(Keep this terminal running!)
 
 --------------------------------------------------------------------------------
 STEP 4: OPEN & RUN THE FRONTEND WEBSITE
 --------------------------------------------------------------------------------
-Open a NEW terminal window or file explorer:
-
 Option A (Direct Browser):
-Double-click "index.html" (or open "register.html" / "login.html") in your browser.
+Double-click "index.html" (or open "register.html" / "login.html" / "admin.html")
 
-Option B (Using Local Web Server):
+Option B (Local Web Server):
 python -m http.server 8000
-
-Then open in your browser:
-http://localhost:8000/
-
+Then open: http://localhost:8000/
 
 --------------------------------------------------------------------------------
-STEP 5: VERIFY DATABASE RECORDS (CUSTOMERS, ROOMS, & RESERVATIONS)
+STEP 5: VERIFY DATABASE RECORDS (TERMINAL SCRIPTS)
 --------------------------------------------------------------------------------
-Run any of the following commands in terminal to inspect PostgreSQL data:
-
-1. Inspect Full Database (Customers + Rooms + Reservations):
+1. Full Database Inspection (Customers + Rooms + Reservations + Bills):
    python backend/verify_all.py
 
 2. Inspect Registered Customers:
    python backend/verify_customers.py
-   (Browser API: http://127.0.0.1:5000/api/customers)
 
 3. Inspect Rooms Inventory:
    python backend/verify_rooms.py
-   (Browser API: http://127.0.0.1:5000/api/rooms)
 
 4. Inspect Bookings & Reservations:
    python backend/verify_reservations.py
-   (Browser API: http://127.0.0.1:5000/api/reservations)
 ================================================================================

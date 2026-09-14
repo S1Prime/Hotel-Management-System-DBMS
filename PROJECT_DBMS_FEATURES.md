@@ -263,4 +263,24 @@ UPDATE reservations SET status = 'Checked-out'
 
 ## 11. Viva Defense SQL Demonstration Queries
 
-All 19 viva queries are available in [database/queries.sql](file:///d:/sem%203/DBMS/project/Hotel-Management-System-DBMS/database/queries.sql) demonstrating `INNER JOIN`, `LEFT JOIN`, `GROUP BY`, `HAVING`, `COUNT`, `SUM`, `AVG`, `SUBQUERIES`, Date Filters, and Views.
+All 19 standard viva queries are available in [database/queries.sql](file:///database/queries.sql) demonstrating `INNER JOIN`, `LEFT JOIN`, `GROUP BY`, `HAVING`, `COUNT`, `SUM`, `AVG`, `SUBQUERIES`, Date Filters, and Views.
+
+---
+
+## 12. Complete Dedicated SQL Modules Directory
+
+To establish this project as an academic, enterprise-grade **PostgreSQL DBMS project**, the `database/` directory provides specialized, standalone SQL files covering the full spectrum of advanced database engineering:
+
+| SQL File | DBMS Paradigm | Core Concepts Demonstrated |
+| :--- | :--- | :--- |
+| **`database/master_setup.sql`** | **One-Click Pure SQL Setup** | Complete build script executable directly in **pgAdmin 4** or **psql**. Builds all tables, constraints, indexes, triggers, views, stored procedures, and seed records without needing Python. |
+| **`database/procedures.sql`** | **Stored Procedures & UDFs** | PL/pgSQL routines: `sp_create_reservation` (atomic booking with overlap checks), `sp_check_in_guest`, `sp_process_checkout` (computes nights + services + tax/discounts), `fn_calculate_stay_cost` (scalar UDF), and `fn_customer_stay_history` (table-valued UDF). |
+| **`database/triggers_and_audit.sql`** | **Event-Condition-Action (ECA) & Auditing** | Dedicated `audit_logs` table tracking mutations with `JSONB` serialization; automated room status transitions (`Cleaning` on checkout, `Available` on cancellation), housekeeping task dispatch, and reservation date validation triggers. |
+| **`database/views.sql`** | **Views & Materialized Views** | Operational views (`vw_active_reservations`, `vw_available_rooms`, `vw_housekeeping_queue`, `vw_service_popularity`), analytical customer loyalty tier view (`vw_customer_loyalty_ranking`), and `mv_monthly_financial_report` materialized view with concurrent refresh procedure. |
+| **`database/advanced_queries.sql`** | **Advanced Analytics & Window Functions** | `RANK()`, `DENSE_RANK()`, `ROW_NUMBER()`, cumulative running totals (`SUM(...) OVER(...)`), `LAG()`/`LEAD()` visitor comparisons, Multi-level CTEs, Recursive CTE for date series, Correlated subqueries (`EXISTS`/`NOT EXISTS`), `ALL`/`ANY`, and Set Operations (`UNION ALL`, `EXCEPT`). |
+| **`database/indexes_and_performance.sql`** | **Index Strategies & EXPLAIN ANALYZE** | Composite B-Tree indexes, Partial Indexes (indexing only `Available` rooms), Foreign Key indexes, `EXPLAIN (ANALYZE, BUFFERS)` execution plans comparing Sequential Scans vs Index Scans, and index catalog size diagnostic queries. |
+| **`database/roles_and_security.sql`** | **DCL, RBAC & Row-Level Security (RLS)** | PostgreSQL Roles (`hotel_admin`, `hotel_receptionist`, `hotel_guest_role`, `hotel_housekeeper`), Least-Privilege `GRANT`/`REVOKE` statements, and Row-Level Security policies restricting customer access strictly to their own reservations and bills. |
+| **`database/transactions_acid.sql`** | **ACID Proofs & Concurrency Control** | Multi-statement transactional blocks demonstrating **Atomicity**, **Consistency** (constraint rejection), **Isolation** (`SERIALIZABLE` level), **Durability**, `SAVEPOINT` / partial rollback, and Pessimistic Locking (`SELECT ... FOR UPDATE`) to prevent race condition double-bookings. |
+| **`database/schema.sql`** | **Relational DDL & Constraints** | The 8 fundamental entity tables with primary keys, foreign keys (`ON DELETE CASCADE`), unique constraints, and check constraints. |
+| **`database/data.sql`** | **Relational DML & Seed Records** | Complete initial seed data for customers, staff, rooms, services, reservations, service requests, and bills. |
+

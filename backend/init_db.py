@@ -12,7 +12,7 @@ if sys.platform == 'win32':
 DB_HOST = os.environ.get("DB_HOST", "localhost")
 DB_NAME = os.environ.get("DB_NAME", "hotel_management")
 DB_USER = os.environ.get("DB_USER", "postgres")
-DB_PASS = os.environ.get("DB_PASS", "92lnen70")
+DB_PASS = os.environ.get("DB_PASS", "200728")
 DB_PORT = os.environ.get("DB_PORT", "5432")
 
 def initialize_database():
@@ -68,6 +68,16 @@ def initialize_database():
         project_root = os.path.abspath(os.path.join(script_dir, ".."))
         schema_path = os.path.join(project_root, "database", "schema.sql")
         data_path = os.path.join(project_root, "database", "data.sql")
+
+        # Detect legacy schema (e.g. old reservations table with guest_count instead of number_of_guests)
+        cur_target.execute("""
+            SELECT column_name FROM information_schema.columns 
+            WHERE table_name = 'reservations' AND column_name = 'guest_count';
+        """)
+        if cur_target.fetchone():
+            print("   [INFO] Detected outdated legacy database schema. Refreshing public schema...")
+            cur_target.execute("DROP SCHEMA public CASCADE; CREATE SCHEMA public;")
+            conn_target.commit()
 
         if os.path.exists(schema_path):
             with open(schema_path, "r", encoding="utf-8") as f:
