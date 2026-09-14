@@ -19,7 +19,18 @@ Use this section if you want to run the project entirely via SQL without Python!
 2. RUN VIA PSQL COMMAND LINE (PowerShell / CMD):
    psql -U postgres -d hotel_management -f database/master_setup.sql
 
-3. DEDICATED SQL FILES CATALOG (`database/` folder):
+3. RUN DATABASE VERIFICATION & AUDIT (PURE SQL):
+   In pgAdmin Query Tool or psql, run:
+   `database/verify_database.sql`
+   --> Checks table counts, guest accounts, room states, constraints, views, and audit log!
+
+4. RUN SAMPLE BUSINESS WORKFLOWS & TRANSACTIONS (PURE SQL):
+   In pgAdmin Query Tool or psql, run:
+   `database/sample_operations.sql`
+   --> Executes guest registration, stored procedure booking, check-in, amenity order,
+       automated checkout invoice generation, and cancellation trigger release.
+
+5. DEDICATED SQL FILES CATALOG (`database/` folder):
    - `database/master_setup.sql`           : Complete standalone all-in-one SQL setup script.
    - `database/schema.sql`                 : Core relational entity definitions & constraints.
    - `database/data.sql`                   : Initial seed records (guests, staff, rooms, amenities).
@@ -30,11 +41,13 @@ Use this section if you want to run the project entirely via SQL without Python!
    - `database/indexes_and_performance.sql`: B-Tree, composite, partial indexes & EXPLAIN ANALYZE.
    - `database/roles_and_security.sql`     : DCL commands, Role-Based Access Control & Row-Level Security.
    - `database/transactions_acid.sql`      : ACID properties, savepoints, & pessimistic locking proofs.
+   - `database/verify_database.sql`        : Comprehensive SQL data verification & integrity checks.
+   - `database/sample_operations.sql`      : Transactional operations & stored procedure workflow demo.
    - `database/queries.sql`                : Standard SQL queries demonstrating joins & aggregates.
 
 
 ================================================================================
-SECTION B: WEB APPLICATION EXECUTION (OPTIONAL 3-TIER DEMONSTRATION)
+SECTION B: WEB APPLICATION EXECUTION (3-TIER APPLICATION)
 ================================================================================
 
 IMPORTANT NOTE ON DIRECTORY PATHS:
@@ -52,11 +65,8 @@ STEP 2: SETUP & INITIALIZE THE POSTGRESQL DATABASE
 --------------------------------------------------------------------------------
 Make sure PostgreSQL service is running.
 
-Command 2A (Creates 'hotel_management' database & tables automatically):
+Command 2 (Automated Python bootstrap for database & initial hashes):
 python backend/init_db.py
-
-Command 2B (Verifies database connections & sample query execution):
-python backend/test_db.py
 
 --------------------------------------------------------------------------------
 STEP 3: START THE BACKEND FLASK API SERVER
@@ -77,18 +87,6 @@ Option B (Local Web Server):
 python -m http.server 8000
 Then open: http://localhost:8000/
 
---------------------------------------------------------------------------------
-STEP 5: VERIFY DATABASE RECORDS (TERMINAL SCRIPTS)
---------------------------------------------------------------------------------
-1. Full Database Inspection (Customers + Rooms + Reservations + Bills):
-   python backend/verify_all.py
-
-2. Inspect Registered Customers:
-   python backend/verify_customers.py
-
-3. Inspect Rooms Inventory:
-   python backend/verify_rooms.py
-
-4. Inspect Bookings & Reservations:
-   python backend/verify_reservations.py
+Option C (One-Click Automated Launcher):
+Double-click "start.bat" to start both the backend server and frontend automatically!
 ================================================================================

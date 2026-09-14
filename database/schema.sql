@@ -94,7 +94,8 @@ CREATE TABLE IF NOT EXISTS housekeeping_tasks (
 -- ================================================================================
 
 -- View 1: Active Reservations with Guest & Room Details
-CREATE OR REPLACE VIEW vw_active_reservations AS
+DROP VIEW IF EXISTS vw_active_reservations CASCADE;
+CREATE VIEW vw_active_reservations AS
 SELECT 
     res.reservation_id,
     c.customer_id,
@@ -117,7 +118,8 @@ JOIN rooms r ON res.room_id = r.room_id
 WHERE res.status IN ('Confirmed', 'Checked-in', 'Booked');
 
 -- View 2: Available Rooms Catalog
-CREATE OR REPLACE VIEW vw_available_rooms AS
+DROP VIEW IF EXISTS vw_available_rooms CASCADE;
+CREATE VIEW vw_available_rooms AS
 SELECT 
     room_id,
     room_number,
@@ -128,7 +130,8 @@ FROM rooms
 WHERE status = 'Available' AND is_active = TRUE;
 
 -- View 3: Financial & Revenue Summary per Room Category
-CREATE OR REPLACE VIEW vw_revenue_summary AS
+DROP VIEW IF EXISTS vw_revenue_summary CASCADE;
+CREATE VIEW vw_revenue_summary AS
 SELECT 
     r.room_type,
     COUNT(res.reservation_id) AS total_bookings,
