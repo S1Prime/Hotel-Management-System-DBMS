@@ -1,33 +1,73 @@
 ================================================================================
-HOTEL MANAGEMENT SYSTEM — DBMS PROJECT EXECUTION & SQL REFERENCE GUIDE
+HOTEL MANAGEMENT SYSTEM — COMPLETE DBMS EXECUTION & SQL REFERENCE GUIDE
 ================================================================================
 
 ================================================================================
-SECTION A: PURE SQL EXECUTION (PGADMIN 4 / PSQL / DBeaver)
-Use this section if you want to run the project entirely via SQL without Python!
+SECTION 1: DEFAULT LOGIN CREDENTIALS (PRE-LOADED DEMO ACCOUNTS)
 ================================================================================
 
-1. DIRECT ONE-CLICK DATABASE SETUP IN PGADMIN 4:
+Use these accounts to test role-based authentication across all portals:
+
+1. SYSTEM ADMINISTRATOR PORTAL:
+   - Login Page : login.html
+   - Dashboard  : admin.html
+   - Email      : admin@crowneplaza.com
+   - Password   : admin123
+   - Privileges : Full CRUD control over rooms, services, staff, revenue & DBMS reports.
+
+2. RECEPTIONIST FRONT DESK PORTAL:
+   - Login Page : reception-login.html
+   - Dashboard  : reception-dashboard.html
+   - Email      : reception@crowneplaza.com
+   - Password   : staff123
+   - Privileges : Guest check-in/checkout, booking manager, in-room service dispatch, bills.
+
+3. CUSTOMER / GUEST PORTAL:
+   - Login Page : customer-login.html (or register.html for new users)
+   - Dashboard  : customer-dashboard.html
+   - Email      : customer@gmail.com
+   - Password   : guest123
+   - Privileges : Search rooms, instant room booking, view stay history, order amenities.
+
+
+================================================================================
+SECTION 2: POSTGRESQL DATABASE CONFIGURATION
+================================================================================
+
+- Database Management System : PostgreSQL 18
+- Database Name              : hotel_management
+- Host                       : localhost (127.0.0.1)
+- Port                       : 5432
+- Database Superuser         : postgres
+- Database Password          : 200728
+
+
+================================================================================
+SECTION 3: PURE SQL EXECUTION (PGADMIN 4 / PSQL / DBeaver)
+Run the project completely in PostgreSQL without touching Python!
+================================================================================
+
+1. ONE-CLICK SETUP IN PGADMIN 4:
    a. Open pgAdmin 4.
    b. Right-click "Databases" -> Create -> Database -> Name: "hotel_management".
    c. Select "hotel_management" database and open the "Query Tool".
    d. Open file: `database/master_setup.sql`.
-   e. Click Execute (or press F5).
-   --> This builds all 9 tables, constraints, triggers, views, stored procedures,
-       performance indexes, and initial seed data in one step!
+   e. Press F5 (Execute).
+   --> Builds all 9 tables, constraints, indexes, triggers, views, stored procedures,
+       and initial seed data in one step!
 
-2. RUN VIA PSQL COMMAND LINE (PowerShell / CMD):
+2. RUN VIA PSQL COMMAND LINE (PowerShell / Command Prompt):
    psql -U postgres -d hotel_management -f database/master_setup.sql
 
 3. RUN DATABASE VERIFICATION & AUDIT (PURE SQL):
    In pgAdmin Query Tool or psql, run:
    `database/verify_database.sql`
-   --> Checks table counts, guest accounts, room states, constraints, views, and audit log!
+   --> Checks table counts, guest accounts, room states, constraints, views, and audit log.
 
 4. RUN SAMPLE BUSINESS WORKFLOWS & TRANSACTIONS (PURE SQL):
    In pgAdmin Query Tool or psql, run:
    `database/sample_operations.sql`
-   --> Executes guest registration, stored procedure booking, check-in, amenity order,
+   --> Demonstrates customer registration, stored procedure booking, check-in, amenity order,
        automated checkout invoice generation, and cancellation trigger release.
 
 5. DEDICATED SQL FILES CATALOG (`database/` folder):
@@ -47,7 +87,7 @@ Use this section if you want to run the project entirely via SQL without Python!
 
 
 ================================================================================
-SECTION B: WEB APPLICATION EXECUTION (3-TIER APPLICATION)
+SECTION 4: WEB APPLICATION EXECUTION (3-TIER APPLICATION)
 ================================================================================
 
 IMPORTANT NOTE ON DIRECTORY PATHS:
@@ -75,7 +115,7 @@ python backend/app.py
 
 Backend will start running at:
 http://127.0.0.1:5000/
-(Keep this terminal running!)
+(Keep this terminal running in the background!)
 
 --------------------------------------------------------------------------------
 STEP 4: OPEN & RUN THE FRONTEND WEBSITE
@@ -89,4 +129,26 @@ Then open: http://localhost:8000/
 
 Option C (One-Click Automated Launcher):
 Double-click "start.bat" to start both the backend server and frontend automatically!
+
+
+================================================================================
+SECTION 5: INITIAL PRE-LOADED SEED DATA SUMMARY
+================================================================================
+
+- ROOMS INVENTORY (5 Rooms Pre-configured):
+  * Room 101: Luxury Suite ($6,000 / night) - Status: Occupied
+  * Room 102: Standard AC Room ($3,500 / night) - Status: Available
+  * Room 103: Economy Non-AC Room ($2,000 / night) - Status: Cleaning
+  * Room 201: AC Room with Balcony ($4,500 / night) - Status: Occupied
+  * Room 202: Family AC Room ($4,000 / night) - Status: Available
+
+- HOTEL SERVICES & AMENITIES CATALOG (4 Services):
+  * Gourmet Breakfast in Bed ($1,200)
+  * Express Laundry Service ($850)
+  * Luxury Spa & Wellness Package ($3,500)
+  * Extra Rollaway Bed ($1,500)
+
+- INITIAL RESERVATIONS:
+  * Res #1: Room 101 (Test Customer) - Status: Checked-in
+  * Res #2: Room 201 (Eleanor Vance) - Status: Confirmed
 ================================================================================
