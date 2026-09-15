@@ -140,7 +140,11 @@
         window.location.href = 'customer-dashboard.html';
 
       } catch (err) {
-        alertBox.textContent = err.message;
+        if (err.name === 'TypeError' || (err.message && err.message.toLowerCase().includes('fetch'))) {
+          alertBox.textContent = 'Cannot connect to backend server. Please start the backend server (run start.bat or python backend/app.py in terminal).';
+        } else {
+          alertBox.textContent = err.message;
+        }
         alertBox.classList.remove('d-none');
       } finally {
         submitBtn.disabled = false;
