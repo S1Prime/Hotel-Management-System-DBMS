@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS housekeeping_tasks (
 -- View 1: Active Reservations with Guest & Room Details
 DROP VIEW IF EXISTS vw_active_reservations CASCADE;
 CREATE VIEW vw_active_reservations AS
-SELECT 
+SELECT
     res.reservation_id,
     c.customer_id,
     c.name AS guest_name,
