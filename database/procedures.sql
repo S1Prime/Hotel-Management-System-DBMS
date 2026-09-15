@@ -45,6 +45,7 @@ CREATE OR REPLACE PROCEDURE sp_create_reservation(
     p_check_in DATE,
     p_check_out DATE,
     p_number_of_guests INT,
+    p_special_requests TEXT DEFAULT '',
     INOUT p_reservation_id INT DEFAULT NULL
 )
 LANGUAGE plpgsql AS $$
@@ -76,9 +77,9 @@ BEGIN
 
     -- Insert new reservation
     INSERT INTO reservations (
-        customer_id, room_id, check_in, check_out, number_of_guests, status
+        customer_id, room_id, check_in, check_out, number_of_guests, special_requests, status
     ) VALUES (
-        p_customer_id, p_room_id, p_check_in, p_check_out, p_number_of_guests, 'Confirmed'
+        p_customer_id, p_room_id, p_check_in, p_check_out, p_number_of_guests, p_special_requests, 'Confirmed'
     ) RETURNING reservation_id INTO p_reservation_id;
 
     -- If booking begins today, update room status to Occupied

@@ -482,6 +482,7 @@ def get_reservations():
                 res.check_in,
                 res.check_out,
                 res.number_of_guests,
+                res.special_requests,
                 res.booking_date,
                 res.status,
                 c.name AS guest_name,
@@ -518,6 +519,7 @@ def create_reservation():
     check_in = data.get("check_in")
     check_out = data.get("check_out")
     number_of_guests = int(data.get("number_of_guests", 1))
+    special_requests = (data.get("special_requests") or "").strip()
 
     if not room_number or not check_in or not check_out:
         return jsonify({"error": "Room number, check-in, and check-out dates are required."}), 400
@@ -580,11 +582,11 @@ def create_reservation():
 
         # 4. Insert Reservation Record in PostgreSQL Transaction
         insert_res = """
-            INSERT INTO reservations (customer_id, room_id, check_in, check_out, number_of_guests, status)
-            VALUES (%s, %s, %s, %s, %s, 'Confirmed')
+            INSERT INTO reservations (customer_id, room_id, check_in, check_out, number_of_guests, special_requests, status)
+            VALUES (%s, %s, %s, %s, %s, %s, 'Confirmed')
             RETURNING *;
         """
-        cursor.execute(insert_res, (customer_id, room_id, check_in, check_out, number_of_guests))
+        cursor.execute(insert_res, (customer_id, room_id, check_in, check_out, number_of_guests, special_requests))
         new_res = cursor.fetchone()
 
         # Update room status to Occupied

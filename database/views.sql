@@ -23,6 +23,7 @@ SELECT
     res.check_out,
     (res.check_out - res.check_in) AS total_nights,
     res.number_of_guests,
+    res.special_requests,
     res.status AS reservation_status,
     res.booking_date
 FROM reservations res

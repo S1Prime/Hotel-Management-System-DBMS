@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS reservations (
     check_in DATE NOT NULL,
     check_out DATE NOT NULL,
     number_of_guests INT DEFAULT 1 CHECK (number_of_guests > 0),
+    special_requests TEXT DEFAULT '',
     booking_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status VARCHAR(20) DEFAULT 'Confirmed' CHECK (status IN ('Pending', 'Booked', 'Confirmed', 'Checked-in', 'Checked-out', 'Cancelled')),
     CONSTRAINT chk_dates CHECK (check_out > check_in)
@@ -110,6 +111,7 @@ SELECT
     res.check_out,
     (res.check_out - res.check_in) AS total_nights,
     res.number_of_guests,
+    res.special_requests,
     res.status AS reservation_status,
     res.booking_date
 FROM reservations res

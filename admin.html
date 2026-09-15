@@ -260,7 +260,7 @@
                     <th>Guest Name</th>
                     <th>Room #</th>
                     <th>Dates</th>
-                    <th>Nights</th>
+                    <th>Features & Requests</th>
                     <th>Est. Total</th>
                     <th>Status</th>
                     <th>Actions</th>
@@ -800,7 +800,18 @@
           <td><strong>${b.guestName}</strong></td>
           <td><strong class="text-navy">#${b.roomNumber}</strong></td>
           <td>${b.checkIn} &bull; ${b.checkOut}</td>
-          <td>3 Nights</td>
+          <td>
+            ${b.specialRequests ? `
+              <div class="d-flex flex-column gap-1" style="min-width: 170px; max-width: 240px;">
+                ${b.specialRequests.includes('Breakfast') ? '<span class="badge bg-warning text-dark text-start py-1 px-2"><i class="fa-solid fa-utensils me-1"></i> Complimentary Breakfast</span>' : ''}
+                ${b.specialRequests.includes('Airport') ? '<span class="badge bg-primary text-white text-start py-1 px-2"><i class="fa-solid fa-plane-arrival me-1"></i> Airport Pickup</span>' : ''}
+                ${b.specialRequests.includes('High Floor') ? '<span class="badge bg-info text-dark text-start py-1 px-2"><i class="fa-solid fa-mountain-sun me-1"></i> High Floor</span>' : ''}
+                ${b.specialRequests.includes('Welcome') ? '<span class="badge bg-danger text-white text-start py-1 px-2"><i class="fa-solid fa-wine-glass me-1"></i> Welcome Basket</span>' : ''}
+                ${b.specialRequests.includes('Late Check-Out') || b.specialRequests.includes('Late Check-out') ? '<span class="badge bg-secondary text-white text-start py-1 px-2"><i class="fa-solid fa-clock me-1"></i> Late Check-out</span>' : ''}
+                ${b.specialRequests.includes('Notes:') ? `<div class="small text-muted fst-italic mt-1 border-start border-warning ps-1">${b.specialRequests.split('Notes:')[1].trim()}</div>` : (!b.specialRequests.includes('Breakfast') && !b.specialRequests.includes('Airport') && !b.specialRequests.includes('High Floor') && !b.specialRequests.includes('Welcome') && !b.specialRequests.includes('Late') ? `<span class="small text-dark">${b.specialRequests}</span>` : '')}
+              </div>
+            ` : '<span class="badge bg-light text-muted border">None</span>'}
+          </td>
           <td><strong class="text-gold">Rs. ${b.totalAmount.toLocaleString()}</strong></td>
           <td><span class="badge ${b.status === 'Cancelled' ? 'bg-secondary' : 'bg-success'}">${b.status}</span></td>
           <td>

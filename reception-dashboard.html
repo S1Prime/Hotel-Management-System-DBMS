@@ -144,6 +144,7 @@
               <th>Suite Type</th>
               <th>Guest Name</th>
               <th>Check-In & Out</th>
+              <th>Features & Requests</th>
               <th>Total Bill</th>
               <th>Status</th>
               <th>Actions</th>
@@ -438,7 +439,7 @@
 
       const tbody = document.getElementById('bookingsTableBody');
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">No matching guest bookings found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">No matching guest bookings found.</td></tr>`;
         return;
       }
 
@@ -449,6 +450,18 @@
           <td>${b.category}</td>
           <td><strong>${b.guestName}</strong><div class="small text-muted">${b.guestEmail}</div></td>
           <td>${b.checkIn} &bull; ${b.checkOut}</td>
+          <td>
+            ${b.specialRequests ? `
+              <div class="d-flex flex-column gap-1" style="min-width: 170px; max-width: 240px;">
+                ${b.specialRequests.includes('Breakfast') ? '<span class="badge bg-warning text-dark text-start py-1 px-2"><i class="fa-solid fa-utensils me-1"></i> Complimentary Breakfast</span>' : ''}
+                ${b.specialRequests.includes('Airport') ? '<span class="badge bg-primary text-white text-start py-1 px-2"><i class="fa-solid fa-plane-arrival me-1"></i> Airport Pickup</span>' : ''}
+                ${b.specialRequests.includes('High Floor') ? '<span class="badge bg-info text-dark text-start py-1 px-2"><i class="fa-solid fa-mountain-sun me-1"></i> High Floor</span>' : ''}
+                ${b.specialRequests.includes('Welcome') ? '<span class="badge bg-danger text-white text-start py-1 px-2"><i class="fa-solid fa-wine-glass me-1"></i> Welcome Basket</span>' : ''}
+                ${b.specialRequests.includes('Late Check-Out') || b.specialRequests.includes('Late Check-out') ? '<span class="badge bg-secondary text-white text-start py-1 px-2"><i class="fa-solid fa-clock me-1"></i> Late Check-out</span>' : ''}
+                ${b.specialRequests.includes('Notes:') ? `<div class="small text-muted fst-italic mt-1 border-start border-warning ps-1">${b.specialRequests.split('Notes:')[1].trim()}</div>` : (!b.specialRequests.includes('Breakfast') && !b.specialRequests.includes('Airport') && !b.specialRequests.includes('High Floor') && !b.specialRequests.includes('Welcome') && !b.specialRequests.includes('Late') ? `<span class="small text-dark">${b.specialRequests}</span>` : '')}
+              </div>
+            ` : '<span class="badge bg-light text-muted border">None</span>'}
+          </td>
           <td><strong class="text-gold">Rs. ${b.totalAmount.toLocaleString()}</strong></td>
           <td>
             <span class="badge-luxury ${b.status === 'Checked-in' || b.status === 'Occupied' ? 'badge-occupied' : 'badge-gold'}">${b.status}</span>

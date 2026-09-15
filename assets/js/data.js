@@ -120,6 +120,7 @@ const HotelDB = {
             checkIn: b.check_in,
             checkOut: b.check_out,
             guestsCount: b.number_of_guests || 1,
+            specialRequests: b.special_requests || '',
             category: b.room_type,
             totalAmount: parseFloat(b.estimated_total || 0),
             status: b.status,
@@ -147,7 +148,8 @@ const HotelDB = {
           guest_phone: bookingData.guestPhone,
           check_in: bookingData.checkIn,
           check_out: bookingData.checkOut,
-          number_of_guests: bookingData.guestsCount || 1
+          number_of_guests: bookingData.guestsCount || 1,
+          special_requests: bookingData.specialRequests || ''
         })
       });
       const data = await res.json();

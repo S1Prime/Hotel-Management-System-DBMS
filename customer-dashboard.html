@@ -200,6 +200,52 @@
               </div>
             </div>
 
+            <!-- Complimentary Features & Special Add-ons -->
+            <div class="mb-3">
+              <label class="form-label-custom d-flex justify-content-between align-items-center mb-1">
+                <span><i class="fa-solid fa-gift text-gold me-1"></i> Complimentary Features & Add-ons</span>
+                <span class="badge bg-gold text-dark" style="font-size:0.65rem;">Customized Stay</span>
+              </label>
+              
+              <div class="card p-3 bg-light border-0 rounded-3 mb-2">
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="featBreakfast" checked>
+                  <label class="form-check-label small fw-semibold" for="featBreakfast">
+                    <i class="fa-solid fa-utensils text-warning me-1"></i> Complimentary Executive Breakfast Buffet (Included)
+                  </label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="featAirport">
+                  <label class="form-check-label small" for="featAirport">
+                    <i class="fa-solid fa-plane-arrival text-primary me-1"></i> Airport Chauffeur Pickup & Drop
+                  </label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="featView">
+                  <label class="form-check-label small" for="featView">
+                    <i class="fa-solid fa-mountain-sun text-info me-1"></i> High Floor / City Panoramic View
+                  </label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="featWelcome">
+                  <label class="form-check-label small" for="featWelcome">
+                    <i class="fa-solid fa-wine-glass text-danger me-1"></i> Welcome Fruit Basket & Sparkling Drink
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="featLateCheckout">
+                  <label class="form-check-label small" for="featLateCheckout">
+                    <i class="fa-solid fa-clock text-secondary me-1"></i> Priority Late Check-Out (Until 2:00 PM)
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label class="form-label-custom small mb-1">Special Requests & Dietary Requirements</label>
+                <textarea id="bmSpecialNotes" class="form-control form-control-luxury small" rows="2" placeholder="e.g. Vegetarian buffet, quiet corner suite, extra pillows..."></textarea>
+              </div>
+            </div>
+
             <div class="p-3 bg-gold bg-opacity-10 border border-gold rounded-3 text-center mb-4">
               <span class="text-muted small d-block">Estimated Total Tariff</span>
               <strong class="text-gold fs-3 font-serif" id="bmEstimatedTotal">Rs. 0</strong>
@@ -239,12 +285,25 @@
 
     async function renderActiveStay() {
       const bookings = await HotelDB.getBookingsAsync();
-      const active = bookings.find(b => b.guestEmail === (currentUser?.email || 'guest@crowneplaza.com') && (b.status === 'Occupied' || b.status === 'Booked'));
+      const active = bookings.find(b => b.guestEmail === (currentUser?.email || 'guest@crowneplaza.com') && (b.status === 'Occupied' || b.status === 'Booked' || b.status === 'Confirmed' || b.status === 'Checked-in'));
       if (active) {
         document.getElementById('activeSuiteTitle').textContent = `${active.category} (#${active.roomNumber})`;
         document.getElementById('activeDates').textContent = `Check-In: ${active.checkIn} \u2022 Check-Out: ${active.checkOut}`;
         document.getElementById('navGuestRoom').textContent = `Room #${active.roomNumber}`;
         document.getElementById('wifiPasswordText').textContent = active.wifiPassword || 'hotelmanagement';
+        
+        // Update breakfast & features badge
+        const bkBadge = document.querySelector('#activeDates + div > div:last-child strong');
+        if (bkBadge) {
+          const req = active.specialRequests || '';
+          if (req.includes('Breakfast')) {
+            bkBadge.innerHTML = '<i class="fa-solid fa-utensils text-warning me-1"></i> Complimentary Buffet Included';
+          } else if (req) {
+            bkBadge.innerHTML = `<i class="fa-solid fa-star text-gold me-1"></i> ${req.split('|')[0]}`;
+          } else {
+            bkBadge.innerHTML = '<i class="fa-solid fa-utensils text-secondary me-1"></i> Standard Room Only';
+          }
+        }
       }
     }
 
@@ -371,6 +430,20 @@
 
       const nights = Math.max(1, Math.ceil((co - ci) / (1000 * 60 * 60 * 24)));
 
+      // Collect selected complimentary features & special notes
+      const selectedFeatures = [];
+      if (document.getElementById('featBreakfast')?.checked) selectedFeatures.push('Complimentary Breakfast');
+      if (document.getElementById('featAirport')?.checked) selectedFeatures.push('Airport Pickup');
+      if (document.getElementById('featView')?.checked) selectedFeatures.push('High Floor View');
+      if (document.getElementById('featWelcome')?.checked) selectedFeatures.push('Welcome Wine & Fruits');
+      if (document.getElementById('featLateCheckout')?.checked) selectedFeatures.push('Late Check-Out');
+
+      const customNotes = (document.getElementById('bmSpecialNotes')?.value || '').trim();
+      let specialRequests = selectedFeatures.join(', ');
+      if (customNotes) {
+        specialRequests = specialRequests ? `${specialRequests} | Notes: ${customNotes}` : `Notes: ${customNotes}`;
+      }
+
       try {
         await HotelDB.createBookingAsync({
           roomNumber,
@@ -379,7 +452,8 @@
           guestPhone: currentUser?.phone || '9876543210',
           checkIn,
           checkOut,
-          guestsCount: 2
+          guestsCount: 2,
+          specialRequests
         });
 
         const modalEl = document.getElementById('bookModal');
@@ -438,11 +512,13 @@
 
       bookings.forEach(b => {
         totalFolio += (b.totalAmount || 0);
+        const featuresTag = b.specialRequests ? `<div class="small text-gold mt-1"><i class="fa-solid fa-gift me-1"></i>${b.specialRequests}</div>` : '';
         html += `
           <tr>
             <td>
               <strong>${b.category}</strong> (#${b.roomNumber})
-              <button class="btn btn-sm text-gold p-0 ms-2" onclick="openInvoiceModal('${b.id}')" title="View Folio">
+              ${featuresTag}
+              <button class="btn btn-sm text-gold p-0 ms-1" onclick="openInvoiceModal('${b.id}')" title="View Folio">
                 <i class="fa-solid fa-file-invoice me-1"></i> Folio
               </button>
             </td>
