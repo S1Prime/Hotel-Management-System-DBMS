@@ -14,7 +14,7 @@ FROM rooms
 ORDER BY room_type ASC;
 
 -- 3. INNER JOIN: Detailed Guest Stay & Reservation Summary
-SELECT 
+SELECT
     res.reservation_id,
     c.name AS guest_name,
     c.email AS guest_email,
@@ -31,7 +31,7 @@ INNER JOIN rooms r ON res.room_id = r.room_id
 ORDER BY res.reservation_id DESC;
 
 -- 4. LEFT JOIN: Rooms with current/past bookings count (Includes rooms never booked)
-SELECT 
+SELECT
     r.room_number,
     r.room_type,
     r.price_per_night,

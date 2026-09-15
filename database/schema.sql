@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS service_requests (
     status VARCHAR(20) DEFAULT 'Requested' CHECK (status IN ('Requested', 'Processing', 'Completed', 'Cancelled'))
 );
 
+
 -- 7. BILLS & INVOICES TABLE
 CREATE TABLE IF NOT EXISTS bills (
     bill_id SERIAL PRIMARY KEY,
@@ -122,7 +123,7 @@ WHERE res.status IN ('Confirmed', 'Checked-in', 'Booked');
 -- View 2: Available Rooms Catalog
 DROP VIEW IF EXISTS vw_available_rooms CASCADE;
 CREATE VIEW vw_available_rooms AS
-SELECT 
+SELECT
     room_id,
     room_number,
     room_type,

@@ -404,11 +404,11 @@ INSERT INTO staff (name, email, password_hash, role, is_active) VALUES
 
 -- Rooms
 INSERT INTO rooms (room_number, room_type, price_per_night, status) VALUES
-('101', 'Luxury Suite', 6000.00, 'Occupied'),
-('102', 'Standard AC Room', 3500.00, 'Available'),
-('103', 'Economy Non-AC Room', 2000.00, 'Cleaning'),
-('201', 'AC Room with Balcony', 4500.00, 'Occupied'),
-('202', 'Family AC Room', 4000.00, 'Available');
+('101', 'Luxury Suite', 3000.00, 'Occupied'),
+('102', 'Standard AC Room', 1500.00, 'Available'),
+('103', 'Economy Non-AC Room', 1200.00, 'Cleaning'),
+('201', 'AC Room with Balcony', 1800.00, 'Occupied'),
+('202', 'Family AC Room', 1700.00, 'Available');
 
 -- Services
 INSERT INTO services (service_name, price, description, is_available) VALUES
@@ -429,7 +429,7 @@ INSERT INTO service_requests (reservation_id, service_id, quantity, status) VALU
 
 -- Bills
 INSERT INTO bills (reservation_id, room_charge, service_charge, tax, discount, total_amount, payment_status) VALUES
-(1, 30000.00, 1200.00, 1560.00, 0.00, 32760.00, 'Paid');
+(1, 15000.00, 1200.00, 810.00, 0.00, 17010.00, 'Paid');
 
 -- Refresh materialized view with initial data
 REFRESH MATERIALIZED VIEW mv_monthly_financial_report;

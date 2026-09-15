@@ -136,11 +136,11 @@ SECTION 5: INITIAL PRE-LOADED SEED DATA SUMMARY
 ================================================================================
 
 - ROOMS INVENTORY (5 Rooms Pre-configured):
-  * Room 101: Luxury Suite ($6,000 / night) - Status: Occupied
-  * Room 102: Standard AC Room ($3,500 / night) - Status: Available
-  * Room 103: Economy Non-AC Room ($2,000 / night) - Status: Cleaning
-  * Room 201: AC Room with Balcony ($4,500 / night) - Status: Occupied
-  * Room 202: Family AC Room ($4,000 / night) - Status: Available
+  * Room 101: Luxury Suite (Rs. 3,000 / night) - Status: Occupied
+  * Room 102: Standard AC Room (Rs. 1,500 / night) - Status: Available
+  * Room 103: Economy Non-AC Room (Rs. 1,200 / night) - Status: Cleaning
+  * Room 201: AC Room with Balcony (Rs. 1,800 / night) - Status: Occupied
+  * Room 202: Family AC Room (Rs. 1,700 / night) - Status: Available
 
 - HOTEL SERVICES & AMENITIES CATALOG (4 Services):
   * Gourmet Breakfast in Bed ($1,200)
