@@ -100,7 +100,15 @@
 
       if (isRoomId) {
         // Authenticate by Room ID and Wi-Fi password
-        const booking = HotelDB.findActiveBookingByRoom(emailOrRoom);
+        let booking = null;
+        if (window.HotelDB && typeof window.HotelDB.findActiveBookingByRoomAsync === 'function') {
+          booking = await window.HotelDB.findActiveBookingByRoomAsync(emailOrRoom);
+        } else if (window.HotelDB && typeof window.HotelDB.findActiveBookingByRoom === 'function') {
+          booking = window.HotelDB.findActiveBookingByRoom(emailOrRoom);
+        } else if (window.HotelDB && typeof window.HotelDB.getBookingsAsync === 'function') {
+          const bookings = await window.HotelDB.getBookingsAsync();
+          booking = bookings.find(b => String(b.roomNumber).trim() === String(emailOrRoom).trim() && ['Checked-in', 'Confirmed', 'Booked'].includes(b.status));
+        }
         if (!booking) {
           alertBox.textContent = `No active reservation found for Room #${emailOrRoom}.`;
           alertBox.classList.remove('d-none');

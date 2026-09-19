@@ -163,6 +163,32 @@ const HotelDB = {
     }
   },
 
+  async findActiveBookingByRoomAsync(roomNumber) {
+    try {
+      const bookings = await this.getBookingsAsync();
+      const target = bookings.find(b => 
+        String(b.roomNumber).trim() === String(roomNumber).trim() && 
+        ['Checked-in', 'Confirmed', 'Booked'].includes(b.status)
+      );
+      if (target) return target;
+    } catch (e) {
+      console.warn('findActiveBookingByRoomAsync error:', e);
+    }
+    const local = JSON.parse(localStorage.getItem('cp_bookings') || '[]');
+    return local.find(b => 
+      String(b.roomNumber).trim() === String(roomNumber).trim() && 
+      ['Checked-in', 'Confirmed', 'Booked'].includes(b.status)
+    ) || null;
+  },
+
+  findActiveBookingByRoom(roomNumber) {
+    const local = JSON.parse(localStorage.getItem('cp_bookings') || '[]');
+    return local.find(b => 
+      String(b.roomNumber).trim() === String(roomNumber).trim() && 
+      ['Checked-in', 'Confirmed', 'Booked'].includes(b.status)
+    ) || null;
+  },
+
   async checkInBookingAsync(reservationId) {
     try {
       const cleanId = String(reservationId).replace('RES-', '');
