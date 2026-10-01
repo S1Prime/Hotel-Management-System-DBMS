@@ -233,3 +233,64 @@ WHERE res.room_id = 1
   AND res.status IN ('Confirmed', 'Checked-in', 'Booked')
   AND res.check_in < '2026-08-05'
   AND res.check_out > '2026-08-01';
+
+-- --------------------------------------------------------------------------------
+-- 14. MULTI-LEVEL AGGREGATION & SERVICE CONSUMPTION RATIOS:
+-- Computes the percentage of guests who utilize dining/amenity services
+-- --------------------------------------------------------------------------------
+SELECT 
+    COUNT(DISTINCT r.reservation_id) AS total_reservations_settled,
+    COUNT(DISTINCT sr.reservation_id) AS reservations_with_services,
+    ROUND(
+        (COUNT(DISTINCT sr.reservation_id)::NUMERIC / NULLIF(COUNT(DISTINCT r.reservation_id), 0)) * 100.0, 
+        2
+    ) AS service_adoption_ratio_pct,
+    ROUND(AVG(COALESCE(b.service_charge, 0.00)), 2) AS avg_service_spend_per_reservation
+FROM reservations r
+LEFT JOIN service_requests sr ON r.reservation_id = sr.reservation_id
+LEFT JOIN bills b ON r.reservation_id = b.reservation_id;
+
+-- --------------------------------------------------------------------------------
+-- 15. WINDOW LEAD/LAG STAY DURATION VARIANCE:
+-- Analyzes trend of successive stays by repeat guests
+-- --------------------------------------------------------------------------------
+SELECT 
+    c.customer_id,
+    c.name AS guest_name,
+    r.reservation_id,
+    r.check_in,
+    r.check_out,
+    (r.check_out - r.check_in) AS current_stay_nights,
+    LAG(r.check_out - r.check_in, 1) OVER (
+        PARTITION BY c.customer_id 
+        ORDER BY r.check_in
+    ) AS previous_stay_nights,
+    (r.check_out - r.check_in) - LAG(r.check_out - r.check_in, 1) OVER (
+        PARTITION BY c.customer_id 
+        ORDER BY r.check_in
+    ) AS variance_in_stay_duration
+FROM reservations r
+JOIN customers c ON r.customer_id = c.customer_id
+ORDER BY c.customer_id, r.check_in;
+
+-- --------------------------------------------------------------------------------
+-- 16. SUBQUERY WITH LATERAL JOIN:
+-- Fetches most expensive service item ordered per reservation
+-- --------------------------------------------------------------------------------
+SELECT 
+    r.reservation_id,
+    c.name AS guest_name,
+    top_svc.service_name AS most_expensive_service_ordered,
+    top_svc.price AS service_unit_price
+FROM reservations r
+JOIN customers c ON r.customer_id = c.customer_id
+CROSS JOIN LATERAL (
+    SELECT s.service_name, s.price
+    FROM service_requests sr
+    JOIN services s ON sr.service_id = s.service_id
+    WHERE sr.reservation_id = r.reservation_id
+    ORDER BY s.price DESC
+    LIMIT 1
+) top_svc
+ORDER BY top_svc.price DESC;
+

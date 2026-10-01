@@ -184,3 +184,124 @@ INNER JOIN customers c ON res.customer_id = c.customer_id
 INNER JOIN rooms r ON res.room_id = r.room_id
 WHERE b.payment_status = 'Pending'
 ORDER BY b.bill_date DESC;
+
+-- 20. SELF-JOIN: Find pairs of rooms on the same floor with the exact same price
+SELECT 
+    r1.room_number AS room_a,
+    r2.room_number AS room_b,
+    r1.room_type,
+    r1.price_per_night
+FROM rooms r1
+JOIN rooms r2 ON r1.price_per_night = r2.price_per_night 
+             AND LEFT(r1.room_number, 1) = LEFT(r2.room_number, 1)
+             AND r1.room_id < r2.room_id;
+
+-- 21. CONDITIONAL CASE AGGREGATION: Occupancy count by room category
+SELECT 
+    room_type,
+    COUNT(*) AS total_inventory,
+    COUNT(CASE WHEN status = 'Available' THEN 1 END) AS available_count,
+    COUNT(CASE WHEN status = 'Occupied' THEN 1 END) AS occupied_count,
+    COUNT(CASE WHEN status = 'Cleaning' THEN 1 END) AS cleaning_count,
+    COUNT(CASE WHEN status = 'Maintenance' THEN 1 END) AS maintenance_count,
+    ROUND((COUNT(CASE WHEN status = 'Occupied' THEN 1 END)::NUMERIC / COUNT(*)) * 100.0, 1) AS occupancy_pct
+FROM rooms
+GROUP BY room_type
+ORDER BY occupancy_pct DESC;
+
+-- 22. COALESCE & NULLIF: Safe Average Spend per Guest
+SELECT 
+    c.customer_id,
+    c.name,
+    COUNT(r.reservation_id) AS total_bookings,
+    COALESCE(SUM(b.total_amount), 0.00) AS total_spent,
+    ROUND(COALESCE(SUM(b.total_amount) / NULLIF(COUNT(r.reservation_id), 0), 0.00), 2) AS avg_spend_per_booking
+FROM customers c
+LEFT JOIN reservations r ON c.customer_id = r.customer_id
+LEFT JOIN bills b ON r.reservation_id = b.reservation_id AND b.payment_status = 'Paid'
+GROUP BY c.customer_id, c.name
+ORDER BY total_spent DESC;
+
+-- 23. CORRELATED SUBQUERY: Find rooms that have higher price than the average for their type
+SELECT 
+    rm.room_id,
+    rm.room_number,
+    rm.room_type,
+    rm.price_per_night
+FROM rooms rm
+WHERE rm.price_per_night >= (
+    SELECT AVG(rm_sub.price_per_night)
+    FROM rooms rm_sub
+    WHERE rm_sub.room_type = rm.room_type
+)
+ORDER BY rm.room_type, rm.price_per_night DESC;
+
+-- 24. STRING MANIPULATION & PATTERN MATCHING: Email domain breakdown
+SELECT 
+    SUBSTRING(email FROM '@(.*)$') AS email_provider,
+    COUNT(*) AS registered_users
+FROM customers
+GROUP BY SUBSTRING(email FROM '@(.*)$')
+ORDER BY registered_users DESC;
+
+-- 25. FULL OUTER JOIN: Reconcile all rooms against active housekeeping tasks
+SELECT 
+    rm.room_number,
+    rm.room_type,
+    rm.status AS current_room_status,
+    ht.task_id,
+    ht.task_type,
+    ht.status AS task_status,
+    ht.created_at
+FROM rooms rm
+FULL OUTER JOIN housekeeping_tasks ht ON rm.room_id = ht.room_id AND ht.status != 'Completed'
+ORDER BY rm.room_number;
+
+-- 26. SET OPERATION (EXCEPT): Find services that have never been ordered
+SELECT service_id, service_name, price
+FROM services
+WHERE service_id NOT IN (
+    SELECT DISTINCT service_id FROM service_requests
+);
+
+-- 27. TEMPORAL DATE ARITHMETIC: Reservations checking in within the next 48 hours
+SELECT 
+    r.reservation_id,
+    c.name AS guest_name,
+    c.phone,
+    rm.room_number,
+    r.check_in,
+    (r.check_in - CURRENT_DATE) AS days_until_arrival
+FROM reservations r
+JOIN customers c ON r.customer_id = c.customer_id
+JOIN rooms rm ON r.room_id = rm.room_id
+WHERE r.status = 'Confirmed'
+  AND r.check_in BETWEEN CURRENT_DATE AND (CURRENT_DATE + INTERVAL '2 days')::DATE
+ORDER BY r.check_in ASC;
+
+-- 28. NESTED AGGREGATION IN HAVING: Room types generating above-median revenue
+WITH category_revenue AS (
+    SELECT rm.room_type, SUM(b.room_charge) AS total_revenue
+    FROM rooms rm
+    JOIN reservations r ON rm.room_id = r.room_id
+    JOIN bills b ON r.reservation_id = b.reservation_id AND b.payment_status = 'Paid'
+    GROUP BY rm.room_type
+)
+SELECT room_type, total_revenue
+FROM category_revenue
+WHERE total_revenue >= (SELECT AVG(total_revenue) FROM category_revenue)
+ORDER BY total_revenue DESC;
+
+-- 29. DYNAMIC DISCOUNT BENEFIT AUDIT
+SELECT 
+    b.bill_id,
+    c.name AS guest_name,
+    b.room_charge + b.service_charge + b.tax AS gross_total,
+    b.discount,
+    b.total_amount AS final_billed,
+    ROUND((b.discount / NULLIF(b.room_charge + b.service_charge + b.tax, 0)) * 100.0, 1) AS savings_percentage
+FROM bills b
+JOIN reservations r ON b.reservation_id = r.reservation_id
+JOIN customers c ON r.customer_id = c.customer_id
+WHERE b.discount > 0
+ORDER BY savings_percentage DESC;
