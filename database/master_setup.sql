@@ -443,3 +443,6 @@ SELECT 'Hotel Management System Database setup completed successfully!' AS statu
        (SELECT COUNT(*) FROM reservations) AS reservations,
        (SELECT COUNT(*) FROM bills) AS bills,
        (SELECT COUNT(*) FROM audit_logs) AS audit_entries;
+
+
+

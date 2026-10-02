@@ -152,3 +152,33 @@ SECTION 5: INITIAL PRE-LOADED SEED DATA SUMMARY
   * Res #1: Room 101 (Test Customer) - Status: Checked-in
   * Res #2: Room 201 (Eleanor Vance) - Status: Confirmed
 ================================================================================
+
+
+================================================================================
+SECTION 6: TERMINAL COMMANDS TO VIEW GUESTS & ROOM BOOKINGS
+Run these commands in PowerShell/Terminal to inspect live database tables:
+================================================================================
+
+1. INSTANT LOOKUP: VIEW ALL GUESTS ENROLLED/BOOKED FOR ROOMS (ONE-LINER)
+   Copy and paste directly into PowerShell:
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT r.room_number, r.room_type, c.name AS guest_name, c.phone, c.email, res.check_in, res.check_out, res.status FROM reservations res JOIN customers c ON res.customer_id = c.customer_id JOIN rooms r ON res.room_id = r.room_id ORDER BY r.room_number;"
+
+2. VIEW ONLY CURRENTLY ACTIVE GUESTS (USING BUILT-IN VIEW)
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT room_number, room_type, guest_name, guest_phone, check_in, check_out, total_nights, reservation_status FROM vw_active_reservations;"
+
+3. VIEW SPECIFIC ROOM BOOKING (e.g. ROOM 101)
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT r.room_number, c.name AS guest_name, c.phone, res.check_in, res.check_out, res.status FROM reservations res JOIN customers c ON res.customer_id = c.customer_id JOIN rooms r ON res.room_id = r.room_id WHERE r.room_number = '101';"
+
+4. VIEW ALL ROOMS & CURRENT STATUSES (Available, Occupied, Cleaning)
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT room_number, room_type, price_per_night, status FROM rooms ORDER BY room_number;"
+
+5. INTERACTIVE POSTGRESQL SHELL (Run multiple queries)
+   a. Connect:
+      & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management
+   b. Enter password:
+      200728
+   c. Type any SQL query followed by a semicolon (;), e.g.:
+      SELECT * FROM vw_active_reservations;
+   d. Exit:
+      \q
+================================================================================
