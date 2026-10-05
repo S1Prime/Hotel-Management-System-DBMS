@@ -42,7 +42,7 @@
       <div class="row align-items-center g-3">
         <div class="col-lg-8">
           <div class="d-flex align-items-center gap-2 mb-2">
-            <span class="badge bg-gold text-dark px-3 py-1 rounded-pill fw-bold">ACTIVE STAY</span>
+            <span class="badge bg-gold text-dark px-3 py-1 rounded-pill fw-bold" id="activeStayBadge">ACTIVE STAY</span>
             <span class="text-gold small"><i class="fa-solid fa-star"></i> VIP Guest Service</span>
           </div>
           <h2 class="font-serif fs-2 text-white mb-1" id="activeSuiteTitle">Crowne Executive Suite (#101)</h2>
@@ -51,7 +51,7 @@
           <div class="d-flex flex-wrap gap-4 pt-2 border-top border-secondary">
             <div>
               <span class="text-slate-400 small d-block">Digital Key Access Code</span>
-              <strong class="text-gold fs-5 font-monospace"><i class="fa-solid fa-key me-1"></i> CP-8842</strong>
+              <strong class="text-gold fs-5 font-monospace" id="digitalKeyCode"><i class="fa-solid fa-key me-1"></i> CP-8842</strong>
             </div>
             <div>
               <span class="text-slate-400 small d-block">High-Speed Wi-Fi (SSID: CrownePlaza_WiFi)</span>
@@ -62,13 +62,13 @@
             </div>
             <div>
               <span class="text-slate-400 small d-block">Breakfast Plan</span>
-              <strong class="text-white fs-6"><i class="fa-solid fa-utensils text-warning me-1"></i> Executive Buffet Included</strong>
+              <strong class="text-white fs-6" id="stayFeaturesSummary"><i class="fa-solid fa-utensils text-warning me-1"></i> Executive Buffet Included</strong>
             </div>
           </div>
         </div>
 
         <div class="col-lg-4 text-lg-end">
-          <button class="btn btn-gold py-2.5 px-4 rounded-pill shadow mb-2 w-100" data-bs-toggle="modal" data-bs-target="#serviceModal">
+          <button class="btn btn-gold py-2.5 px-4 rounded-pill shadow mb-2 w-100" onclick="document.getElementById('guestServiceForm').scrollIntoView({behavior: 'smooth'})">
             <i class="fa-solid fa-bell-concierge me-2"></i> Request Room Service
           </button>
           <button class="btn btn-outline-light py-2 px-4 rounded-pill w-100" onclick="scrollToRooms()">
@@ -285,15 +285,26 @@
 
     async function renderActiveStay() {
       const bookings = await HotelDB.getBookingsAsync();
-      const active = bookings.find(b => b.guestEmail === (currentUser?.email || 'guest@crowneplaza.com') && (b.status === 'Occupied' || b.status === 'Booked' || b.status === 'Confirmed' || b.status === 'Checked-in'));
+      const userEmail = (currentUser?.email || '').toLowerCase().trim();
+      
+      // Match guest's reservations from PostgreSQL
+      const userBookings = bookings.filter(b => (b.guestEmail || '').toLowerCase().trim() === userEmail);
+      const active = userBookings.find(b => b.status === 'Checked-in' || b.status === 'Occupied')
+                  || userBookings.find(b => b.status === 'Confirmed' || b.status === 'Booked')
+                  || userBookings[0];
+
       if (active) {
+        const isLive = active.status === 'Checked-in' || active.status === 'Occupied';
+        document.getElementById('activeStayBadge').textContent = isLive ? 'ACTIVE STAY' : 'CONFIRMED BOOKING';
+        document.getElementById('activeStayBadge').className = isLive ? 'badge bg-success text-white px-3 py-1 rounded-pill fw-bold' : 'badge bg-gold text-dark px-3 py-1 rounded-pill fw-bold';
         document.getElementById('activeSuiteTitle').textContent = `${active.category} (#${active.roomNumber})`;
-        document.getElementById('activeDates').textContent = `Check-In: ${active.checkIn} \u2022 Check-Out: ${active.checkOut}`;
+        document.getElementById('activeDates').textContent = `Check-In: ${active.checkIn} \u2022 Check-Out: ${active.checkOut} (${active.status})`;
         document.getElementById('navGuestRoom').textContent = `Room #${active.roomNumber}`;
+        document.getElementById('digitalKeyCode').innerHTML = `<i class="fa-solid fa-key me-1"></i> CP-${active.roomNumber}`;
         document.getElementById('wifiPasswordText').textContent = active.wifiPassword || 'hotelmanagement';
         
         // Update breakfast & features badge
-        const bkBadge = document.querySelector('#activeDates + div > div:last-child strong');
+        const bkBadge = document.getElementById('stayFeaturesSummary');
         if (bkBadge) {
           const req = active.specialRequests || '';
           if (req.includes('Breakfast')) {
@@ -304,6 +315,14 @@
             bkBadge.innerHTML = '<i class="fa-solid fa-utensils text-secondary me-1"></i> Standard Room Only';
           }
         }
+      } else {
+        document.getElementById('activeStayBadge').textContent = 'READY TO BOOK';
+        document.getElementById('activeStayBadge').className = 'badge bg-secondary text-white px-3 py-1 rounded-pill fw-bold';
+        document.getElementById('activeSuiteTitle').textContent = 'Welcome to Crowne Plaza';
+        document.getElementById('activeDates').textContent = 'You have no active stays. Select any available luxury suite below to book your stay.';
+        document.getElementById('navGuestRoom').textContent = 'No Room Assigned';
+        document.getElementById('digitalKeyCode').innerHTML = '<i class="fa-solid fa-lock me-1"></i> Available Upon Booking';
+        document.getElementById('wifiPasswordText').textContent = 'Provided upon check-in';
       }
     }
 

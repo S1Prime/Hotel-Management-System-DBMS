@@ -4,6 +4,19 @@
 
 const API_BASE_URL = 'http://127.0.0.1:5000/api';
 
+function getAuthHeaders() {
+  const headers = { 'Content-Type': 'application/json' };
+  if (typeof getCurrentUser === 'function') {
+    const user = getCurrentUser();
+    if (user) {
+      headers['X-User-Role'] = user.role || '';
+      headers['X-Staff-Role'] = user.role || '';
+      headers['X-User-Email'] = user.email || '';
+    }
+  }
+  return headers;
+}
+
 const HotelDB = {
   // ------------------------------------------------------------------------
   // 1. ROOMS API INTEGRATION
@@ -395,19 +408,6 @@ const HotelDB = {
   // ------------------------------------------------------------------------
   // 7. DEDICATED ADMIN API INTEGRATIONS
   // ------------------------------------------------------------------------
-function getAuthHeaders() {
-  const headers = { 'Content-Type': 'application/json' };
-  if (typeof getCurrentUser === 'function') {
-    const user = getCurrentUser();
-    if (user) {
-      headers['X-User-Role'] = user.role || '';
-      headers['X-Staff-Role'] = user.role || '';
-      headers['X-User-Email'] = user.email || '';
-    }
-  }
-  return headers;
-}
-
   async getAdminCustomersAsync() {
     try {
       const res = await fetch(`${API_BASE_URL}/admin/customers`, { headers: getAuthHeaders() });

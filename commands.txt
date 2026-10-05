@@ -159,20 +159,29 @@ SECTION 6: TERMINAL COMMANDS TO VIEW GUESTS & ROOM BOOKINGS
 Run these commands in PowerShell/Terminal to inspect live database tables:
 ================================================================================
 
-1. INSTANT LOOKUP: VIEW ALL GUESTS ENROLLED/BOOKED FOR ROOMS (ONE-LINER)
+0. ONE-CLICK INSTANT DATABASE INSPECTION (BATCH LAUNCHER)
+   In PowerShell or Command Prompt, run:
+   .\view_database.bat
+   (Or simply double-click 'view_database.bat' in File Explorer)
+   --> Displays all guest reservations, room statuses, and active stays in 1 second!
+
+1. VIEW ALL GUEST RESERVATIONS BOOKED FROM THE GUEST PORTAL (ONE-LINER)
    Copy and paste directly into PowerShell:
-   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT r.room_number, r.room_type, c.name AS guest_name, c.phone, c.email, res.check_in, res.check_out, res.status FROM reservations res JOIN customers c ON res.customer_id = c.customer_id JOIN rooms r ON res.room_id = r.room_id ORDER BY r.room_number;"
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT res.reservation_id, c.name AS guest_name, c.email, r.room_number, r.room_type, res.check_in, res.check_out, (res.check_out - res.check_in) AS nights, res.status FROM reservations res JOIN customers c ON res.customer_id = c.customer_id JOIN rooms r ON res.room_id = r.room_id ORDER BY res.reservation_id DESC;"
 
-2. VIEW ONLY CURRENTLY ACTIVE GUESTS (USING BUILT-IN VIEW)
-   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT room_number, room_type, guest_name, guest_phone, check_in, check_out, total_nights, reservation_status FROM vw_active_reservations;"
+2. VIEW ONLY CURRENTLY ACTIVE GUESTS (USING POSTGRESQL VIEW: vw_active_reservations)
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT reservation_id, guest_name, room_number, room_type, check_in, check_out, total_nights, reservation_status FROM vw_active_reservations ORDER BY reservation_id DESC;"
 
-3. VIEW SPECIFIC ROOM BOOKING (e.g. ROOM 101)
-   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT r.room_number, c.name AS guest_name, c.phone, res.check_in, res.check_out, res.status FROM reservations res JOIN customers c ON res.customer_id = c.customer_id JOIN rooms r ON res.room_id = r.room_id WHERE r.room_number = '101';"
+3. VIEW SPECIFIC ROOM BOOKING (e.g. ROOM 101 or 102)
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT r.room_number, c.name AS guest_name, c.phone, res.check_in, res.check_out, res.status FROM reservations res JOIN customers c ON res.customer_id = c.customer_id JOIN rooms r ON res.room_id = r.room_id WHERE r.room_number = '102';"
 
 4. VIEW ALL ROOMS & CURRENT STATUSES (Available, Occupied, Cleaning)
    $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT room_number, room_type, price_per_night, status FROM rooms ORDER BY room_number;"
 
-5. INTERACTIVE POSTGRESQL SHELL (Run multiple queries)
+5. VIEW BILLS & INVOICES GENERATED FROM CHECKOUT
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT b.bill_id, c.name AS guest, r.room_number, b.room_charge, b.service_charge, b.tax, b.total_amount, b.payment_status FROM bills b JOIN reservations res ON b.reservation_id = res.reservation_id JOIN customers c ON res.customer_id = c.customer_id JOIN rooms r ON res.room_id = r.room_id ORDER BY b.bill_id DESC;"
+
+6. INTERACTIVE POSTGRESQL SHELL (Run multiple queries)
    a. Connect:
       & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management
    b. Enter password:

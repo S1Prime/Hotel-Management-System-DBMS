@@ -285,3 +285,66 @@ BEGIN
     RAISE NOTICE 'Room service request #% created successfully.', p_request_id;
 END;
 $$;
+
+-- --------------------------------------------------------------------------------
+-- 7. PROCEDURE: COMPLETE HOUSEKEEPING TASK
+-- Updates task to Completed and sets associated room to Available
+-- --------------------------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE sp_complete_housekeeping(
+    p_task_id INT
+)
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_room_id INT;
+BEGIN
+    SELECT room_id INTO v_room_id
+    FROM housekeeping_tasks
+    WHERE task_id = p_task_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Housekeeping task #% does not exist.', p_task_id;
+    END IF;
+
+    UPDATE housekeeping_tasks
+    SET status = 'Completed', completed_at = CURRENT_TIMESTAMP
+    WHERE task_id = p_task_id;
+
+    UPDATE rooms
+    SET status = 'Available'
+    WHERE room_id = v_room_id;
+
+    RAISE NOTICE 'Housekeeping task #% completed. Room % is now Available.', p_task_id, v_room_id;
+END;
+$$;
+
+-- --------------------------------------------------------------------------------
+-- 8. PROCEDURE: CANCEL RESERVATION
+-- Cancels reservation and frees room back to Available via trigger
+-- --------------------------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE sp_cancel_reservation(
+    p_reservation_id INT
+)
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_status VARCHAR(20);
+    v_room_id INT;
+BEGIN
+    SELECT status, room_id INTO v_status, v_room_id
+    FROM reservations
+    WHERE reservation_id = p_reservation_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Reservation #% not found.', p_reservation_id;
+    END IF;
+
+    IF v_status = 'Cancelled' THEN
+        RAISE EXCEPTION 'Reservation #% is already cancelled.', p_reservation_id;
+    END IF;
+
+    UPDATE reservations
+    SET status = 'Cancelled'
+    WHERE reservation_id = p_reservation_id;
+
+    RAISE NOTICE 'Reservation #% cancelled successfully.', p_reservation_id;
+END;
+$$;

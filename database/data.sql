@@ -28,7 +28,10 @@ VALUES
 ('103', 'Economy Non-AC Room', 1200.00, 'Cleaning'),
 ('201', 'AC Room with Balcony', 1800.00, 'Occupied'),
 ('202', 'Family AC Room', 1700.00, 'Available')
-ON CONFLICT (room_number) DO NOTHING;
+ON CONFLICT (room_number) DO UPDATE SET
+    room_type = EXCLUDED.room_type,
+    price_per_night = EXCLUDED.price_per_night,
+    status = EXCLUDED.status;
 
 
 -- 4. Insert Hotel Services Catalog

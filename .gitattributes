@@ -1,0 +1,7 @@
+# GitHub Linguist Language Detection Configuration
+# This ensures that the GitHub repository language bar accurately reflects
+# that this project is primarily an Enterprise SQL/DBMS Database Application.
+
+*.html linguist-detectable=false
+*.css linguist-detectable=false
+assets/** linguist-vendored=true

@@ -528,8 +528,8 @@ def create_reservation():
         connection = get_db_connection()
         cursor = connection.cursor(cursor_factory=RealDictCursor)
 
-        # 1. Resolve Room ID
-        cursor.execute("SELECT room_id, price_per_night FROM rooms WHERE room_number = %s AND is_active = TRUE;", (str(room_number),))
+        # 1. Resolve Room ID via PostgreSQL query
+        cursor.execute("SELECT room_id FROM rooms WHERE room_number = %s AND is_active = TRUE;", (str(room_number),))
         r_row = cursor.fetchone()
         if not r_row:
             cursor.close()
@@ -538,25 +538,7 @@ def create_reservation():
 
         room_id = r_row["room_id"]
 
-        # 2. DOUBLE BOOKING PREVENTION (Check for Date Overlap in SQL)
-        overlap_query = """
-            SELECT reservation_id, check_in, check_out
-            FROM reservations
-            WHERE room_id = %s
-              AND status NOT IN ('Cancelled', 'Checked-out')
-              AND check_in < %s
-              AND check_out > %s;
-        """
-        cursor.execute(overlap_query, (room_id, check_out, check_in))
-        conflict = cursor.fetchone()
-        if conflict:
-            cursor.close()
-            connection.close()
-            return jsonify({
-                "error": f"Double Booking Conflict! Room #{room_number} is already booked from {conflict['check_in']} to {conflict['check_out']}."
-            }), 409
-
-        # 3. Resolve Customer ID
+        # 2. Resolve or insert Customer in PostgreSQL
         if not customer_id and customer_email:
             cursor.execute("SELECT customer_id FROM customers WHERE LOWER(email) = %s;", (customer_email.lower(),))
             c_row = cursor.fetchone()
@@ -568,55 +550,52 @@ def create_reservation():
             guest_email = customer_email or f"guest_{room_number}@crowneplaza.com"
             guest_phone = data.get("guest_phone", "+1 (555) 000-0000")
             guest_hash = generate_password_hash("guest123")
+            cursor.execute(
+                """
+                INSERT INTO customers (name, email, phone, password_hash)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name
+                RETURNING customer_id;
+                """,
+                (guest_name, guest_email.lower(), guest_phone, guest_hash)
+            )
+            customer_id = cursor.fetchone()["customer_id"]
 
-            cursor.execute("SELECT customer_id FROM customers WHERE LOWER(email) = %s;", (guest_email.lower(),))
-            existing_c = cursor.fetchone()
-            if existing_c:
-                customer_id = existing_c["customer_id"]
-            else:
-                cursor.execute(
-                    "INSERT INTO customers (name, email, phone, password_hash) VALUES (%s, %s, %s, %s) RETURNING customer_id;",
-                    (guest_name, guest_email.lower(), guest_phone, guest_hash)
-                )
-                customer_id = cursor.fetchone()["customer_id"]
+        # 3. Call PostgreSQL Stored Procedure: sp_create_reservation
+        # (Encapsulates atomic date overlap checks, transaction validation, and trigger dispatch in PL/pgSQL)
+        try:
+            cursor.execute(
+                "CALL sp_create_reservation(%s, %s, %s::DATE, %s::DATE, %s, %s, NULL);",
+                (customer_id, room_id, check_in, check_out, number_of_guests, special_requests)
+            )
+            proc_row = cursor.fetchone()
+            new_res_id = (proc_row.get("p_reservation_id") if isinstance(proc_row, dict) else proc_row[0]) if proc_row else None
+            connection.commit()
+        except Exception as proc_e:
+            connection.rollback()
+            err_text = str(proc_e)
+            if "already booked" in err_text.lower():
+                cursor.close()
+                connection.close()
+                return jsonify({
+                    "error": f"Double Booking Conflict! Room #{room_number} is already booked for the selected dates ({check_in} to {check_out})."
+                }), 409
+            raise proc_e
 
-        # 4. Insert Reservation Record in PostgreSQL Transaction
-        insert_res = """
-            INSERT INTO reservations (customer_id, room_id, check_in, check_out, number_of_guests, special_requests, status)
-            VALUES (%s, %s, %s, %s, %s, %s, 'Confirmed')
-            RETURNING *;
-        """
-        cursor.execute(insert_res, (customer_id, room_id, check_in, check_out, number_of_guests, special_requests))
+        # 4. Retrieve newly created reservation record from PostgreSQL
+        cursor.execute("SELECT * FROM reservations WHERE reservation_id = %s;", (new_res_id,))
         new_res = cursor.fetchone()
 
-        # Update room status to Occupied
-        cursor.execute("UPDATE rooms SET status = 'Occupied' WHERE room_id = %s;", (room_id,))
-
-        connection.commit()
         cursor.close()
         connection.close()
 
         return jsonify({
-            "message": "Reservation created successfully in PostgreSQL!",
+            "message": "Reservation created successfully in PostgreSQL via Stored Procedure sp_create_reservation!",
             "reservation": new_res
         }), 201
 
     except Exception as e:
         err_msg = str(e)
-        if "password authentication failed" in err_msg.lower() or "connection to server" in err_msg.lower():
-            return jsonify({
-                "message": "Reservation created (Local Fallback Mode)!",
-                "reservation": {
-                    "reservation_id": 99,
-                    "customer_id": customer_id or 1,
-                    "room_id": 1,
-                    "check_in": check_in,
-                    "check_out": check_out,
-                    "number_of_guests": number_of_guests,
-                    "status": "Confirmed"
-                }
-            }), 201
-
         return jsonify({"error": f"Database error: {err_msg}"}), 500
 
 
@@ -626,31 +605,24 @@ def check_in_guest(reservation_id):
         connection = get_db_connection()
         cursor = connection.cursor(cursor_factory=RealDictCursor)
 
+        # Call PostgreSQL Stored Procedure: sp_check_in_guest
+        try:
+            cursor.execute("CALL sp_check_in_guest(%s);", (reservation_id,))
+            connection.commit()
+        except Exception as proc_e:
+            connection.rollback()
+            cursor.close()
+            connection.close()
+            return jsonify({"error": str(proc_e)}), 400
+
         cursor.execute("SELECT * FROM reservations WHERE reservation_id = %s;", (reservation_id,))
-        res = cursor.fetchone()
-
-        if not res:
-            cursor.close()
-            connection.close()
-            return jsonify({"error": "Reservation not found."}), 404
-
-        if res["status"] == "Cancelled":
-            cursor.close()
-            connection.close()
-            return jsonify({"error": "Cannot check in a cancelled reservation."}), 400
-
-        # Update reservation to Checked-in and room to Occupied inside transaction
-        cursor.execute("UPDATE reservations SET status = 'Checked-in' WHERE reservation_id = %s RETURNING *;", (reservation_id,))
         updated_res = cursor.fetchone()
 
-        cursor.execute("UPDATE rooms SET status = 'Occupied' WHERE room_id = %s;", (res["room_id"],))
-
-        connection.commit()
         cursor.close()
         connection.close()
 
         return jsonify({
-            "message": "Guest checked in successfully!",
+            "message": "Guest checked in successfully via PostgreSQL Stored Procedure!",
             "reservation": updated_res
         })
 
@@ -661,65 +633,37 @@ def check_in_guest(reservation_id):
 @app.route("/api/reservations/<int:reservation_id>/check-out", methods=["POST"])
 def check_out_guest(reservation_id):
     try:
+        data = request.get_json() or {}
+        discount = float(data.get("discount", 0.0))
+
         connection = get_db_connection()
         cursor = connection.cursor(cursor_factory=RealDictCursor)
 
-        cursor.execute("""
-            SELECT res.*, r.price_per_night, r.room_number
-            FROM reservations res
-            JOIN rooms r ON res.room_id = r.room_id
-            WHERE res.reservation_id = %s;
-        """, (reservation_id,))
-        res = cursor.fetchone()
-
-        if not res:
+        # Call PostgreSQL Stored Procedure: sp_process_checkout
+        # (Computes stay charges, sums service requests, calculates tax, generates bill,
+        #  updates reservation status to 'Checked-out', and automatically fires triggers!)
+        try:
+            cursor.execute("CALL sp_process_checkout(%s, %s::NUMERIC, NULL, NULL);", (reservation_id, discount))
+            proc_res = cursor.fetchone()
+            bill_id = (proc_res.get("p_bill_id") if isinstance(proc_res, dict) else proc_res[0]) if proc_res else None
+            connection.commit()
+        except Exception as proc_e:
+            connection.rollback()
             cursor.close()
             connection.close()
-            return jsonify({"error": "Reservation not found."}), 404
+            return jsonify({"error": str(proc_e)}), 400
 
-        # 1. Update reservation status to 'Checked-out'
-        # (Trigger 'trg_checkout_room_cleaning' will automatically set room status to 'Cleaning')
-        # (Trigger 'trg_auto_housekeeping' will automatically insert a housekeeping task)
-        cursor.execute("UPDATE reservations SET status = 'Checked-out' WHERE reservation_id = %s RETURNING *;", (reservation_id,))
-        updated_res = cursor.fetchone()
-
-        # 2. Calculate Room Charge & Service Charges
-        check_in_dt = res["check_in"]
-        check_out_dt = res["check_out"]
-        nights = (check_out_dt - check_in_dt).days or 1
-        room_charge = float(res["price_per_night"]) * nights
-
-        # Calculate completed service requests
-        cursor.execute("""
-            SELECT COALESCE(SUM(sr.quantity * s.price), 0.00) AS service_total
-            FROM service_requests sr
-            JOIN services s ON sr.service_id = s.service_id
-            WHERE sr.reservation_id = %s AND sr.status = 'Completed';
-        """, (reservation_id,))
-        service_charge = float(cursor.fetchone()["service_total"])
-
-        tax = round((room_charge + service_charge) * 0.05, 2)
-        total_amount = round(room_charge + service_charge + tax, 2)
-
-        # 3. Create or update bill record
-        cursor.execute("""
-            INSERT INTO bills (reservation_id, room_charge, service_charge, tax, discount, total_amount, payment_status)
-            VALUES (%s, %s, %s, %s, 0.00, %s, 'Pending')
-            ON CONFLICT (reservation_id) DO UPDATE SET
-                room_charge = EXCLUDED.room_charge,
-                service_charge = EXCLUDED.service_charge,
-                tax = EXCLUDED.tax,
-                total_amount = EXCLUDED.total_amount
-            RETURNING *;
-        """, (reservation_id, room_charge, service_charge, tax, total_amount))
+        cursor.execute("SELECT * FROM bills WHERE bill_id = %s;", (bill_id,))
         bill = cursor.fetchone()
 
-        connection.commit()
+        cursor.execute("SELECT * FROM reservations WHERE reservation_id = %s;", (reservation_id,))
+        updated_res = cursor.fetchone()
+
         cursor.close()
         connection.close()
 
         return jsonify({
-            "message": "Guest checked out successfully! Bill generated.",
+            "message": "Guest checked out successfully via PostgreSQL Stored Procedure sp_process_checkout!",
             "reservation": updated_res,
             "bill": bill
         })
