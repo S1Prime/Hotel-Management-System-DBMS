@@ -1,221 +1,31 @@
-# 🏨 Hotel Management System
+# 🏨 Hotel Management System — DBMS Enterprise Engine
 
-> A responsive **Hotel Management System** developed as a **Database Management System (DBMS)** project using **HTML, CSS, JavaScript, Bootstrap, and SQL**. The system streamlines hotel operations through role-based access for customers and receptionists while providing an intuitive and responsive user experience.
+An enterprise-grade, relational Hotel Management System powered by **PostgreSQL 14+** and a **Python Flask REST API**. 
 
----
-
-# 📖 Overview
-
-The Hotel Management System is designed to simplify hotel management by integrating a modern frontend with a relational database. It enables customers to search and book rooms while allowing receptionists to efficiently manage reservations, guests, room availability, billing, and hotel services.
-
-This project demonstrates the practical application of **web development** and **database management concepts**, including relational database design, SQL operations, and role-based access control.
+Unlike conventional web systems where the database is treated merely as a passive storage silo, this architecture leverages PostgreSQL as an **autonomous, active relational engine**. Critical business logic, concurrency isolation, audit logging, state-machine lifecycles, and analytical calculations are executed directly within the database tier via PL/pgSQL routines, triggers, engine-level constraints, and views.
 
 ---
 
-# ✨ Features
-
-## 👤 Customer Module
-
-* Secure customer registration and login
-* Search available rooms
-* Room booking and reservation management
-* View booking history
-* Cancel reservations
-* Current stay information
-* Request room services
-* View billing and payment details
-* Manage personal profile
-
-## 🏨 Receptionist Module
-
-* Secure receptionist login
-* Reservation management
-* Guest check-in and check-out
-* Guest information management
-* Room availability management
-* Billing and invoice generation
-* Room service management
-* View customer details
-* Dashboard with hotel statistics
+## 📑 Table of Contents
+- [1. System Architecture](#1-system-architecture)
+- [2. Relational Schema & ER Design](#2-relational-schema--er-design)
+- [3. Core SQL & DBMS Implementation Details](#3-core-sql--dbms-implementation-details)
+  - [A. DDL & Engine-Level Data Integrity](#a-ddl--engine-level-data-integrity)
+  - [B. Indexing Strategy & Performance Tuning](#b-indexing-strategy--performance-tuning)
+  - [C. Concurrency Control & Race Condition Prevention](#c-concurrency-control--race-condition-prevention)
+  - [D. PL/pgSQL Triggers (Automated State Transitions)](#d-plpgsql-triggers-automated-state-transitions)
+  - [E. Stored Procedures & Business Routines](#e-stored-procedures--business-routines)
+  - [F. DCL, RBAC & Row-Level Security (RLS)](#f-dcl-rbac--row-level-security-rls)
+  - [G. OLAP Analytics, Window Functions & Hospitality KPIs](#g-olap-analytics-window-functions--hospitality-kpis)
+- [4. Primary Business Workflows](#4-primary-business-workflows)
+- [5. Project Directory Structure](#5-project-directory-structure)
+- [6. Setup and Installation](#6-setup-and-installation)
 
 ---
 
-# 🛠️ Technologies Used
+## 1. System Architecture
 
-### Frontend
-
-* HTML5
-* CSS3
-* Bootstrap 5
-* JavaScript (ES6)
-
-### Database
-
-* PgAdmin for SQL
-* Relational Database Management System (RDBMS)
-
-### Development Tools
-
-* Visual Studio Code
-* Git & GitHub
-
----
-
-# 🔐 User Roles
-
-### Customer
-
-Customers can:
-
-* Register and log in
-* Search available rooms
-* Book rooms
-* Manage reservations
-* Request hotel services
-* View billing information
-* Update profile details
-
-### Receptionist
-
-Receptionists can:
-
-* Access both receptionist and customer functionalities
-* Manage reservations
-* Perform guest check-in and check-out
-* Manage room availability
-* Generate invoices
-* Handle guest records
-* Monitor room service requests
-
----
-
-# 🗄️ Database Concepts Implemented
-
-* Relational Database Design
-* Primary Keys
-* Foreign Keys
-* One-to-Many Relationships
-* Data Integrity Constraints
-* SQL CRUD Operations
-* JOIN Operations
-* Aggregate Functions
-* Normalization
-* Date-overlap validation to prevent double bookings
-
----
-
-# 📊 System Workflow
-
-```text
-Customer Login
-      │
-      ▼
-Search Available Rooms
-      │
-      ▼
-Book Room
-      │
-      ▼
-Reservation Confirmation
-      │
-      ▼
-Receptionist Check-In
-      │
-      ▼
-Guest Stay
-      │
-      ▼
-Billing & Payment
-      │
-      ▼
-Check-Out
-```
-
----
-
-# 📱 Responsive Design
-
-The application is designed using **Bootstrap 5** to ensure a responsive experience across:
-
-* Desktop
-* Laptop
-* Tablet
-* Mobile Devices
-
----
-
-# 🚀 Getting Started
-
-1. Clone the repository.
-
-```bash
-git clone https://github.com/your-username/Hotel-Management-System.git
-```
-
-2. Open the project in Visual Studio Code.
-
-3. Run the frontend using Live Server or open `index.html` in your browser.
-
-4. Import the SQL database into your preferred relational database system.
-
-5. Connect the frontend with your backend/database implementation if required.
-
----
-
-# 🎯 Learning Outcomes
-
-This project demonstrates:
-
-* Responsive Web Design
-* Bootstrap UI Development
-* JavaScript DOM Manipulation
-* SQL Database Design
-* Database Relationships
-* CRUD Operations
-* Authentication & Authorization
-* Role-Based Access Control
-* DBMS Principles
-
----
-
-# 🔮 Future Enhancements
-
-* Admin Dashboard
-* Online Payment Gateway
-* Email Notifications
-* QR Code Check-In
-* Analytics Dashboard
-* Customer Reviews & Ratings
-* Multi-Hotel Support
-
----
-
-# 📸 Screenshots
-
-Include screenshots of:
-
-* Landing Page
-* Login Page
-* Customer Dashboard
-* Receptionist Dashboard
-* Room Booking
-* Reservation Management
-* Billing Module
-
----
-
-# 👨‍💻 Authors
-
-**Prathijna Mahalingan**
-**Praful Singh**
-**Lasya C**
-**Vaishnav Venu**
-
-B.Tech Computer Science and Engineering
-Amrita Vishwa Vidyapeetham,Kollam
-
----
-
+The application is structured according to the classic **Three-Tier Enterprise Architecture**:
 # 📜 License
 
 This project was developed for educational purposes as part of a **Database Management System (DBMS)** course and is intended for learning, academic demonstration, and portfolio use.
