@@ -1,7 +1,16 @@
 # GitHub Linguist Language Detection Configuration
-# This ensures that the GitHub repository language bar accurately reflects
-# that this project is primarily an Enterprise SQL/DBMS Database Application.
+# Ensure all database scripts are classified into unified SQL
+*.sql linguist-detectable=true
+*.sql linguist-language=SQL
+database/*.sql linguist-detectable=true
+database/*.sql linguist-language=SQL
 
+# Exclude web presentation templates, styles, and assets
 *.html linguist-detectable=false
 *.css linguist-detectable=false
 assets/** linguist-vendored=true
+
+# Exclude batch and documentation scripts from language calculation
+*.bat linguist-documentation=true
+*.md linguist-documentation=true
+*.txt linguist-documentation=true
