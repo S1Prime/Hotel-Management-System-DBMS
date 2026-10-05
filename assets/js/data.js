@@ -395,9 +395,22 @@ const HotelDB = {
   // ------------------------------------------------------------------------
   // 7. DEDICATED ADMIN API INTEGRATIONS
   // ------------------------------------------------------------------------
+function getAuthHeaders() {
+  const headers = { 'Content-Type': 'application/json' };
+  if (typeof getCurrentUser === 'function') {
+    const user = getCurrentUser();
+    if (user) {
+      headers['X-User-Role'] = user.role || '';
+      headers['X-Staff-Role'] = user.role || '';
+      headers['X-User-Email'] = user.email || '';
+    }
+  }
+  return headers;
+}
+
   async getAdminCustomersAsync() {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/customers`);
+      const res = await fetch(`${API_BASE_URL}/admin/customers`, { headers: getAuthHeaders() });
       if (res.ok) return await res.json();
     } catch (e) {
       console.warn('Failed to fetch admin customer list:', e);
@@ -405,9 +418,41 @@ const HotelDB = {
     return [];
   },
 
+  async updateCustomerAsync(customerId, customerData) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/customers/${customerId}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(customerData)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update customer');
+      return data;
+    } catch (e) {
+      console.error('Error updating customer:', e);
+      throw e;
+    }
+  },
+
+  async resetCustomerPasswordAsync(customerId, password) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/customers/${customerId}/reset-password`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to reset customer password');
+      return data;
+    } catch (e) {
+      console.error('Error resetting customer password:', e);
+      throw e;
+    }
+  },
+
   async getCustomerHistoryAsync(customerId) {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/customers/${customerId}/history`);
+      const res = await fetch(`${API_BASE_URL}/admin/customers/${customerId}/history`, { headers: getAuthHeaders() });
       if (res.ok) return await res.json();
     } catch (e) {
       console.warn('Failed to fetch customer history:', e);
@@ -417,7 +462,7 @@ const HotelDB = {
 
   async getAdminStaffAsync() {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/staff`);
+      const res = await fetch(`${API_BASE_URL}/admin/staff`, { headers: getAuthHeaders() });
       if (res.ok) return await res.json();
     } catch (e) {
       console.warn('Failed to fetch staff accounts:', e);
@@ -429,7 +474,7 @@ const HotelDB = {
     try {
       const res = await fetch(`${API_BASE_URL}/admin/staff`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(staffData)
       });
       const data = await res.json();
@@ -445,7 +490,7 @@ const HotelDB = {
     try {
       const res = await fetch(`${API_BASE_URL}/admin/staff/${staffId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(staffData)
       });
       const data = await res.json();
@@ -457,11 +502,44 @@ const HotelDB = {
     }
   },
 
+  async resetStaffPasswordAsync(staffId, password) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/staff/${staffId}/reset-password`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to reset staff password');
+      return data;
+    } catch (e) {
+      console.error('Error resetting staff password:', e);
+      throw e;
+    }
+  },
+
+  async updateReservationAsync(reservationId, reservationData) {
+    try {
+      const cleanId = String(reservationId).replace('RES-', '');
+      const res = await fetch(`${API_BASE_URL}/admin/reservations/${cleanId}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(reservationData)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update reservation');
+      return data;
+    } catch (e) {
+      console.error('Error updating reservation:', e);
+      throw e;
+    }
+  },
+
   async addServiceAsync(serviceData) {
     try {
       const res = await fetch(`${API_BASE_URL}/services`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(serviceData)
       });
       const data = await res.json();
@@ -477,7 +555,7 @@ const HotelDB = {
     try {
       const res = await fetch(`${API_BASE_URL}/admin/services/${serviceId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(serviceData)
       });
       const data = await res.json();
@@ -487,5 +565,52 @@ const HotelDB = {
       console.error('Error updating service:', e);
       throw e;
     }
+  },
+
+  async addHousekeepingTaskAsync(taskData) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/housekeeping`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(taskData)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to dispatch housekeeping task');
+      return data;
+    } catch (e) {
+      console.error('Error dispatching housekeeping task:', e);
+      throw e;
+    }
+  },
+
+  async getAdminBillDetailsAsync(billId) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/bills/${billId}`, { headers: getAuthHeaders() });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Failed to fetch bill details:', e);
+    }
+    return null;
+  },
+
+  async getAdminAnalyticsAsync() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/analytics`, { headers: getAuthHeaders() });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Failed to fetch admin analytics:', e);
+    }
+    return null;
+  },
+
+  async getAuditLogsAsync() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/audit-logs`, { headers: getAuthHeaders() });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      console.warn('Failed to fetch audit logs:', e);
+    }
+    return [];
   }
 };
+

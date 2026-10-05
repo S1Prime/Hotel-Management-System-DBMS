@@ -1149,15 +1149,113 @@ def get_metrics():
 
 
 # ------------------------------------------------------------------------------
-# 9. DEDICATED ADMIN APIs (/api/admin/*)
+# 9. DEDICATED ADMIN APIs & CONTROL CENTER (/api/admin/*)
 # ------------------------------------------------------------------------------
+
+def verify_admin_access():
+    """Helper to verify Admin role from request headers/query."""
+    role = request.headers.get("X-User-Role") or request.headers.get("X-Staff-Role") or request.args.get("user_role")
+    if role and role.lower() != "admin":
+        return False
+    return True
+
 @app.route("/api/admin/metrics", methods=["GET"])
 def get_admin_metrics():
+    if not verify_admin_access():
+        return jsonify({"error": "Forbidden: Admin privileges required."}), 403
     return get_reports()
 
+@app.route("/api/admin/analytics", methods=["GET"])
+def get_admin_analytics():
+    if not verify_admin_access():
+        return jsonify({"error": "Forbidden: Admin privileges required."}), 403
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+
+        # 1. Basic KPI Metrics
+        cursor.execute("SELECT COUNT(*) AS total FROM rooms WHERE is_active = TRUE;")
+        total_rooms = cursor.fetchone()["total"]
+
+        cursor.execute("SELECT COUNT(*) AS total FROM rooms WHERE status = 'Occupied' AND is_active = TRUE;")
+        occupied = cursor.fetchone()["total"]
+
+        cursor.execute("SELECT COUNT(*) AS total FROM rooms WHERE status = 'Available' AND is_active = TRUE;")
+        available = cursor.fetchone()["total"]
+
+        cursor.execute("SELECT COUNT(*) AS total FROM rooms WHERE status = 'Cleaning' AND is_active = TRUE;")
+        cleaning = cursor.fetchone()["total"]
+
+        cursor.execute("SELECT COUNT(*) AS total FROM rooms WHERE status = 'Maintenance' AND is_active = TRUE;")
+        maintenance = cursor.fetchone()["total"]
+
+        cursor.execute("SELECT COUNT(*) AS total FROM customers;")
+        total_customers = cursor.fetchone()["total"]
+
+        cursor.execute("SELECT COUNT(*) AS total FROM reservations;")
+        total_reservations = cursor.fetchone()["total"]
+
+        cursor.execute("SELECT COUNT(*) AS total FROM reservations WHERE status IN ('Confirmed', 'Checked-in', 'Booked');")
+        active_reservations = cursor.fetchone()["total"]
+
+        cursor.execute("SELECT COUNT(*) AS total FROM reservations WHERE status = 'Cancelled';")
+        cancelled_reservations = cursor.fetchone()["total"]
+
+        cursor.execute("SELECT COUNT(*) AS total FROM staff WHERE is_active = TRUE;")
+        active_staff = cursor.fetchone()["total"]
+
+        cursor.execute("SELECT COALESCE(SUM(total_amount), 0.00) AS total FROM bills WHERE payment_status = 'Paid';")
+        total_revenue = float(cursor.fetchone()["total"])
+
+        # 2. Revenue Summary by Room Category
+        cursor.execute("SELECT * FROM vw_revenue_summary;")
+        revenue_by_room_type = cursor.fetchall()
+
+        # 3. Customer Loyalty & Spend Leaderboard
+        cursor.execute("SELECT * FROM vw_customer_loyalty_ranking ORDER BY lifetime_expenditure DESC LIMIT 10;")
+        customer_loyalty = cursor.fetchall()
+
+        # 4. Service Popularity Leaderboard
+        cursor.execute("SELECT * FROM vw_service_popularity ORDER BY total_units_consumed DESC;")
+        service_popularity = cursor.fetchall()
+
+        # 5. Monthly Financial Performance
+        cursor.execute("SELECT * FROM mv_monthly_financial_report LIMIT 12;")
+        monthly_reports = cursor.fetchall()
+
+        cursor.close()
+        connection.close()
+
+        occupancy_rate = round((occupied / total_rooms * 100), 1) if total_rooms > 0 else 0.0
+
+        return jsonify({
+            "metrics": {
+                "totalRooms": total_rooms,
+                "occupiedRooms": occupied,
+                "availableRooms": available,
+                "cleaningRooms": cleaning,
+                "maintenanceRooms": maintenance,
+                "occupancyRate": occupancy_rate,
+                "totalCustomers": total_customers,
+                "totalReservations": total_reservations,
+                "activeReservations": active_reservations,
+                "cancelledReservations": cancelled_reservations,
+                "activeStaff": active_staff,
+                "totalRevenue": total_revenue
+            },
+            "revenueByRoomType": revenue_by_room_type,
+            "customerLoyaltyRanking": customer_loyalty,
+            "servicePopularity": service_popularity,
+            "monthlyReports": monthly_reports
+        })
+
+    except Exception as e:
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
 
 @app.route("/api/admin/customers", methods=["GET"])
 def get_admin_customers():
+    if not verify_admin_access():
+        return jsonify({"error": "Forbidden: Admin privileges required."}), 403
     try:
         connection = get_db_connection()
         cursor = connection.cursor(cursor_factory=RealDictCursor)
@@ -1169,9 +1267,11 @@ def get_admin_customers():
                 c.email,
                 c.phone,
                 c.created_at,
-                COUNT(res.reservation_id) AS total_bookings
+                COUNT(res.reservation_id) AS total_bookings,
+                COALESCE(SUM(b.total_amount), 0.00) AS total_spent
             FROM customers c
             LEFT JOIN reservations res ON c.customer_id = res.customer_id
+            LEFT JOIN bills b ON res.reservation_id = b.reservation_id AND b.payment_status = 'Paid'
             GROUP BY c.customer_id, c.name, c.email, c.phone, c.created_at
             ORDER BY c.customer_id DESC;
         """
@@ -1184,9 +1284,92 @@ def get_admin_customers():
     except Exception as e:
         return jsonify({"error": f"Database error: {str(e)}"}), 500
 
+@app.route("/api/admin/customers/<int:customer_id>", methods=["PUT"])
+def update_admin_customer(customer_id):
+    if not verify_admin_access():
+        return jsonify({"error": "Forbidden: Admin privileges required."}), 403
+    data = request.get_json() or {}
+    name = (data.get("name") or "").strip()
+    email = (data.get("email") or "").strip().lower()
+    phone = (data.get("phone") or "").strip()
+
+    if not name or not email:
+        return jsonify({"error": "Customer name and email are required."}), 400
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("SELECT customer_id FROM customers WHERE LOWER(email) = %s AND customer_id != %s;", (email, customer_id))
+        if cursor.fetchone():
+            cursor.close()
+            connection.close()
+            return jsonify({"error": "Another customer account with this email address already exists."}), 409
+
+        cursor.execute(
+            """
+            UPDATE customers
+            SET name = %s, email = %s, phone = %s
+            WHERE customer_id = %s
+            RETURNING customer_id, name, email, phone, created_at;
+            """,
+            (name, email, phone, customer_id)
+        )
+        updated = cursor.fetchone()
+        connection.commit()
+
+        cursor.close()
+        connection.close()
+
+        if not updated:
+            return jsonify({"error": "Customer not found."}), 404
+
+        return jsonify({
+            "message": "Customer profile updated successfully!",
+            "customer": updated
+        })
+    except Exception as e:
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route("/api/admin/customers/<int:customer_id>/reset-password", methods=["POST"])
+def reset_admin_customer_password(customer_id):
+    if not verify_admin_access():
+        return jsonify({"error": "Forbidden: Admin privileges required."}), 403
+    data = request.get_json() or {}
+    new_password = (data.get("password") or "guest123").strip()
+
+    if not new_password:
+        return jsonify({"error": "New password cannot be empty."}), 400
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+
+        pwd_hash = generate_password_hash(new_password)
+        cursor.execute(
+            "UPDATE customers SET password_hash = %s WHERE customer_id = %s RETURNING customer_id, name, email;",
+            (pwd_hash, customer_id)
+        )
+        c = cursor.fetchone()
+        connection.commit()
+
+        cursor.close()
+        connection.close()
+
+        if not c:
+            return jsonify({"error": "Customer account not found."}), 404
+
+        return jsonify({
+            "message": f"Password reset successfully for guest {c['name']}!",
+            "customer": c
+        })
+    except Exception as e:
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
 
 @app.route("/api/admin/customers/<int:customer_id>/history", methods=["GET"])
 def get_admin_customer_history(customer_id):
+    if not verify_admin_access():
+        return jsonify({"error": "Forbidden: Admin privileges required."}), 403
     try:
         connection = get_db_connection()
         cursor = connection.cursor(cursor_factory=RealDictCursor)
@@ -1229,9 +1412,10 @@ def get_admin_customer_history(customer_id):
     except Exception as e:
         return jsonify({"error": f"Database error: {str(e)}"}), 500
 
-
 @app.route("/api/admin/staff", methods=["GET", "POST"])
 def manage_admin_staff():
+    if not verify_admin_access():
+        return jsonify({"error": "Forbidden: Admin privileges required."}), 403
     try:
         connection = get_db_connection()
         cursor = connection.cursor(cursor_factory=RealDictCursor)
@@ -1260,7 +1444,6 @@ def manage_admin_staff():
                 connection.close()
                 return jsonify({"error": "Role must be Admin or Receptionist."}), 400
 
-            # Check existing email
             cursor.execute("SELECT staff_id FROM staff WHERE LOWER(email) = %s;", (email,))
             if cursor.fetchone():
                 cursor.close()
@@ -1289,9 +1472,10 @@ def manage_admin_staff():
     except Exception as e:
         return jsonify({"error": f"Database error: {str(e)}"}), 500
 
-
 @app.route("/api/admin/staff/<int:staff_id>", methods=["PUT"])
 def update_admin_staff(staff_id):
+    if not verify_admin_access():
+        return jsonify({"error": "Forbidden: Admin privileges required."}), 403
     data = request.get_json() or {}
 
     try:
@@ -1309,6 +1493,15 @@ def update_admin_staff(staff_id):
         email = data.get("email", existing["email"]).strip().lower()
         role = data.get("role", existing["role"])
         is_active = data.get("is_active", existing["is_active"])
+
+        # PROTECTION RULE: Do not allow deactivating or demoting the last active Admin account
+        if existing["role"] == "Admin" and (not is_active or role != "Admin"):
+            cursor.execute("SELECT COUNT(*) AS total FROM staff WHERE role = 'Admin' AND is_active = TRUE AND staff_id != %s;", (staff_id,))
+            other_admins = cursor.fetchone()["total"]
+            if other_admins == 0:
+                cursor.close()
+                connection.close()
+                return jsonify({"error": "Security Protection: Cannot deactivate or demote the last active Admin account in the system."}), 400
 
         cursor.execute(
             """
@@ -1332,9 +1525,121 @@ def update_admin_staff(staff_id):
     except Exception as e:
         return jsonify({"error": f"Database error: {str(e)}"}), 500
 
+@app.route("/api/admin/staff/<int:staff_id>/reset-password", methods=["POST"])
+def reset_admin_staff_password(staff_id):
+    if not verify_admin_access():
+        return jsonify({"error": "Forbidden: Admin privileges required."}), 403
+    data = request.get_json() or {}
+    new_password = (data.get("password") or "staff123").strip()
+
+    if not new_password:
+        return jsonify({"error": "New password cannot be empty."}), 400
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+
+        pwd_hash = generate_password_hash(new_password)
+        cursor.execute(
+            "UPDATE staff SET password_hash = %s WHERE staff_id = %s RETURNING staff_id, name, email, role;",
+            (pwd_hash, staff_id)
+        )
+        s = cursor.fetchone()
+        connection.commit()
+
+        cursor.close()
+        connection.close()
+
+        if not s:
+            return jsonify({"error": "Staff account not found."}), 404
+
+        return jsonify({
+            "message": f"Password reset successfully for staff account {s['name']} ({s['role']})!",
+            "staff": s
+        })
+    except Exception as e:
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route("/api/admin/reservations/<int:reservation_id>", methods=["PUT"])
+def update_admin_reservation(reservation_id):
+    if not verify_admin_access():
+        return jsonify({"error": "Forbidden: Admin privileges required."}), 403
+    data = request.get_json() or {}
+
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("SELECT * FROM reservations WHERE reservation_id = %s;", (reservation_id,))
+        res = cursor.fetchone()
+        if not res:
+            cursor.close()
+            connection.close()
+            return jsonify({"error": "Reservation not found."}), 404
+
+        room_number = data.get("room_number")
+        check_in = data.get("check_in", res["check_in"])
+        check_out = data.get("check_out", res["check_out"])
+        guests = data.get("number_of_guests", res["number_of_guests"])
+        special_requests = data.get("special_requests", res["special_requests"])
+        status = data.get("status", res["status"])
+
+        room_id = res["room_id"]
+        if room_number:
+            cursor.execute("SELECT room_id FROM rooms WHERE room_number = %s;", (str(room_number),))
+            r_row = cursor.fetchone()
+            if not r_row:
+                cursor.close()
+                connection.close()
+                return jsonify({"error": f"Target Room #{room_number} does not exist."}), 404
+            room_id = r_row["room_id"]
+
+        # Double booking overlap check if status is active
+        if status in ['Confirmed', 'Checked-in', 'Booked']:
+            overlap_query = """
+                SELECT reservation_id, check_in, check_out
+                FROM reservations
+                WHERE room_id = %s
+                  AND reservation_id != %s
+                  AND status NOT IN ('Cancelled', 'Checked-out')
+                  AND check_in < %s
+                  AND check_out > %s;
+            """
+            cursor.execute(overlap_query, (room_id, reservation_id, check_out, check_in))
+            conflict = cursor.fetchone()
+            if conflict:
+                cursor.close()
+                connection.close()
+                return jsonify({
+                    "error": f"Double Booking Conflict! Room is already booked from {conflict['check_in']} to {conflict['check_out']}."
+                }), 409
+
+        cursor.execute(
+            """
+            UPDATE reservations
+            SET room_id = %s, check_in = %s, check_out = %s, number_of_guests = %s, special_requests = %s, status = %s
+            WHERE reservation_id = %s
+            RETURNING *;
+            """,
+            (room_id, check_in, check_out, guests, special_requests, status, reservation_id)
+        )
+        updated_res = cursor.fetchone()
+        connection.commit()
+
+        cursor.close()
+        connection.close()
+
+        return jsonify({
+            "message": "Reservation updated successfully with double-booking verification!",
+            "reservation": updated_res
+        })
+    except Exception as e:
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
 
 @app.route("/api/admin/services/<int:service_id>", methods=["PUT"])
 def update_admin_service(service_id):
+    if not verify_admin_access():
+        return jsonify({"error": "Forbidden: Admin privileges required."}), 403
     data = request.get_json() or {}
 
     try:
@@ -1372,6 +1677,172 @@ def update_admin_service(service_id):
     except Exception as e:
         return jsonify({"error": f"Database error: {str(e)}"}), 500
 
+@app.route("/api/admin/housekeeping", methods=["GET", "POST"])
+def manage_admin_housekeeping():
+    if not verify_admin_access():
+        return jsonify({"error": "Forbidden: Admin privileges required."}), 403
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+
+        if request.method == "GET":
+            query = """
+                SELECT 
+                    hk.task_id,
+                    hk.room_id,
+                    r.room_number,
+                    r.room_type,
+                    r.status AS room_status,
+                    hk.task_type,
+                    hk.status,
+                    hk.created_at,
+                    hk.completed_at,
+                    hk.notes
+                FROM housekeeping_tasks hk
+                JOIN rooms r ON hk.room_id = r.room_id
+                ORDER BY hk.task_id DESC;
+            """
+            cursor.execute(query)
+            tasks = cursor.fetchall()
+            cursor.close()
+            connection.close()
+            return jsonify(tasks)
+
+        elif request.method == "POST":
+            data = request.get_json() or {}
+            room_number = data.get("room_number")
+            task_type = data.get("task_type", "Cleaning")
+            notes = (data.get("notes") or "").strip()
+
+            if not room_number:
+                cursor.close()
+                connection.close()
+                return jsonify({"error": "Room number is required."}), 400
+
+            cursor.execute("SELECT room_id FROM rooms WHERE room_number = %s;", (str(room_number),))
+            r_row = cursor.fetchone()
+            if not r_row:
+                cursor.close()
+                connection.close()
+                return jsonify({"error": f"Room #{room_number} does not exist."}), 404
+
+            room_id = r_row["room_id"]
+
+            cursor.execute(
+                """
+                INSERT INTO housekeeping_tasks (room_id, task_type, status, notes)
+                VALUES (%s, %s, 'Pending', %s)
+                RETURNING *;
+                """,
+                (room_id, task_type, notes)
+            )
+            new_task = cursor.fetchone()
+
+            # Update room status to match task if cleaning or maintenance
+            if task_type in ["Cleaning", "Maintenance"]:
+                cursor.execute("UPDATE rooms SET status = %s WHERE room_id = %s;", (task_type, room_id))
+
+            connection.commit()
+            cursor.close()
+            connection.close()
+
+            return jsonify({
+                "message": "Housekeeping task dispatched successfully!",
+                "task": new_task
+            }), 201
+
+    except Exception as e:
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route("/api/admin/bills/<int:bill_id>", methods=["GET"])
+def get_admin_bill_details(bill_id):
+    if not verify_admin_access():
+        return jsonify({"error": "Forbidden: Admin privileges required."}), 403
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("""
+            SELECT 
+                b.*,
+                res.check_in,
+                res.check_out,
+                res.number_of_guests,
+                c.name AS guest_name,
+                c.email AS guest_email,
+                c.phone AS guest_phone,
+                r.room_number,
+                r.room_type,
+                r.price_per_night
+            FROM bills b
+            JOIN reservations res ON b.reservation_id = res.reservation_id
+            JOIN customers c ON res.customer_id = c.customer_id
+            JOIN rooms r ON res.room_id = r.room_id
+            WHERE b.bill_id = %s;
+        """, (bill_id,))
+        bill = cursor.fetchone()
+
+        if not bill:
+            cursor.close()
+            connection.close()
+            return jsonify({"error": "Bill invoice not found."}), 404
+
+        # Fetch associated itemized service requests
+        cursor.execute("""
+            SELECT 
+                sr.request_id,
+                sr.quantity,
+                sr.request_date,
+                s.service_name,
+                s.price AS unit_price,
+                (sr.quantity * s.price) AS item_total
+            FROM service_requests sr
+            JOIN services s ON sr.service_id = s.service_id
+            WHERE sr.reservation_id = %s AND sr.status = 'Completed';
+        """, (bill["reservation_id"],))
+        service_items = cursor.fetchall()
+
+        cursor.close()
+        connection.close()
+
+        return jsonify({
+            "bill": bill,
+            "serviceItems": service_items
+        })
+    except Exception as e:
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route("/api/admin/audit-logs", methods=["GET"])
+def get_admin_audit_logs():
+    if not verify_admin_access():
+        return jsonify({"error": "Forbidden: Admin privileges required."}), 403
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+
+        query = """
+            SELECT log_id, table_name, operation, record_id, old_data, new_data, changed_by, changed_at
+            FROM audit_logs
+            ORDER BY log_id DESC
+            LIMIT 100;
+        """
+        cursor.execute(query)
+        logs = cursor.fetchall()
+
+        # Sanitize password hashes from audit logs if present
+        for log in logs:
+            if log.get("old_data") and isinstance(log["old_data"], dict):
+                if "password_hash" in log["old_data"]:
+                    log["old_data"]["password_hash"] = "[REDACTED_HASH]"
+            if log.get("new_data") and isinstance(log["new_data"], dict):
+                if "password_hash" in log["new_data"]:
+                    log["new_data"]["password_hash"] = "[REDACTED_HASH]"
+
+        cursor.close()
+        connection.close()
+        return jsonify(logs)
+    except Exception as e:
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    app.run(host="127.0.0.1", port=5000, debug=True)

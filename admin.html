@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="assets/css/style.css">
   <style>
     .admin-sidebar {
-      width: 260px;
+      width: 270px;
       min-height: 100vh;
       background: var(--primary-navy, #0b1329);
       color: #fff;
@@ -20,14 +20,15 @@
     .admin-nav-link {
       color: #94a3b8;
       border-radius: 12px;
-      padding: 12px 16px;
-      margin-bottom: 6px;
+      padding: 10px 14px;
+      margin-bottom: 4px;
       font-weight: 500;
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
       gap: 12px;
       text-decoration: none;
+      font-size: 0.92rem;
     }
     .admin-nav-link:hover, .admin-nav-link.active {
       color: #fff;
@@ -38,6 +39,21 @@
       width: 20px;
       text-align: center;
       color: var(--accent-gold, #d4af37);
+    }
+    .main-wrapper {
+      max-width: calc(100vw - 270px);
+      overflow-x: hidden;
+    }
+    .json-box {
+      background: #1e293b;
+      color: #38bdf8;
+      font-family: monospace;
+      padding: 12px;
+      border-radius: 8px;
+      max-height: 250px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
     }
   </style>
 </head>
@@ -60,10 +76,13 @@
             <i class="fa-solid fa-chart-pie"></i> Overview
           </a>
           <a class="admin-nav-link" id="tab-rooms" data-bs-toggle="pill" href="#pane-rooms">
-            <i class="fa-solid fa-building"></i> Room Management
+            <i class="fa-solid fa-building"></i> Room Inventory
           </a>
           <a class="admin-nav-link" id="tab-customers" data-bs-toggle="pill" href="#pane-customers">
             <i class="fa-solid fa-users"></i> Customer Records
+          </a>
+          <a class="admin-nav-link" id="tab-staff" data-bs-toggle="pill" href="#pane-staff">
+            <i class="fa-solid fa-user-shield"></i> Staff Management
           </a>
           <a class="admin-nav-link" id="tab-reservations" data-bs-toggle="pill" href="#pane-reservations">
             <i class="fa-solid fa-calendar-check"></i> Reservations
@@ -71,14 +90,20 @@
           <a class="admin-nav-link" id="tab-services" data-bs-toggle="pill" href="#pane-services">
             <i class="fa-solid fa-bell-concierge"></i> Hotel Services
           </a>
+          <a class="admin-nav-link" id="tab-service-requests" data-bs-toggle="pill" href="#pane-service-requests">
+            <i class="fa-solid fa-list-check"></i> Service Requests
+          </a>
+          <a class="admin-nav-link" id="tab-housekeeping" data-bs-toggle="pill" href="#pane-housekeeping">
+            <i class="fa-solid fa-broom"></i> Housekeeping Board
+          </a>
           <a class="admin-nav-link" id="tab-bills" data-bs-toggle="pill" href="#pane-bills">
             <i class="fa-solid fa-file-invoice-dollar"></i> Bills & Invoices
           </a>
-          <a class="admin-nav-link" id="tab-staff" data-bs-toggle="pill" href="#pane-staff">
-            <i class="fa-solid fa-user-shield"></i> Staff Management
-          </a>
           <a class="admin-nav-link" id="tab-reports" data-bs-toggle="pill" href="#pane-reports">
-            <i class="fa-solid fa-chart-line"></i> DBMS Reports
+            <i class="fa-solid fa-chart-line"></i> Analytics & Reports
+          </a>
+          <a class="admin-nav-link" id="tab-audit-logs" data-bs-toggle="pill" href="#pane-audit-logs">
+            <i class="fa-solid fa-shield-halved"></i> Audit Logs
           </a>
         </div>
       </div>
@@ -87,7 +112,7 @@
         <div class="d-flex align-items-center justify-content-between text-white">
           <div>
             <strong class="d-block text-gold" id="adminNameDisplay">System Admin</strong>
-            <span class="badge bg-danger text-white">ADMIN ROLE</span>
+            <span class="badge bg-danger text-white">ADMINISTRATOR</span>
           </div>
           <button onclick="logoutUser()" class="btn btn-sm btn-outline-light rounded-circle" title="Logout">
             <i class="fa-solid fa-right-from-bracket"></i>
@@ -97,7 +122,7 @@
     </div>
 
     <!-- Main Content Area -->
-    <div class="flex-grow-1 p-4" style="max-width: calc(100vw - 260px); overflow-x: hidden;">
+    <div class="flex-grow-1 p-4 main-wrapper">
       
       <div class="tab-content">
         
@@ -106,65 +131,82 @@
           <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
               <h2 class="font-serif fs-2 mb-1 text-dark">System Executive Overview</h2>
-              <p class="text-muted mb-0">Real-time PostgreSQL metrics across rooms, guests, revenue, and staff.</p>
+              <p class="text-muted mb-0">Live central control panel powered by PostgreSQL views, triggers, and procedures.</p>
             </div>
-            <a href="reception-dashboard.html" class="btn btn-outline-navy rounded-pill px-3">
-              <i class="fa-solid fa-concierge-bell me-1"></i> Front Desk View
-            </a>
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-primary rounded-pill px-3" onclick="initAdminDashboard()">
+                <i class="fa-solid fa-rotate me-1"></i> Refresh Data
+              </button>
+              <a href="reception-dashboard.html" class="btn btn-outline-navy rounded-pill px-3">
+                <i class="fa-solid fa-concierge-bell me-1"></i> Front Desk View
+              </a>
+            </div>
           </div>
 
-          <!-- Live Metrics Grid -->
+          <!-- Live Metrics Cards -->
           <div class="row g-3 mb-4">
             <div class="col-md-3">
               <div class="card p-3 border-0 shadow-sm rounded-4 bg-white">
-                <div class="text-muted small">Total Room Inventory</div>
-                <h2 class="font-serif text-navy mb-0" id="ovTotalRooms">0</h2>
+                <div class="text-muted small fw-semibold">Total Inventory</div>
+                <h3 class="font-serif text-navy mb-0 mt-1" id="ovTotalRooms">0 Rooms</h3>
+                <div class="small text-muted mt-1" id="ovOccupancyRate">0% Occupancy Rate</div>
               </div>
             </div>
             <div class="col-md-3">
               <div class="card p-3 border-0 shadow-sm rounded-4 bg-white">
-                <div class="text-muted small">Occupied / Vacant</div>
-                <h2 class="font-serif text-success mb-0" id="ovOccupiedVacant">0 / 0</h2>
+                <div class="text-muted small fw-semibold">Occupied / Available</div>
+                <h3 class="font-serif text-success mb-0 mt-1" id="ovOccupiedVacant">0 / 0</h3>
+                <div class="small text-muted mt-1" id="ovCleaningMaint">0 Cleaning | 0 Maint.</div>
               </div>
             </div>
             <div class="col-md-3">
               <div class="card p-3 border-0 shadow-sm rounded-4 bg-white">
-                <div class="text-muted small">Registered Guests</div>
-                <h2 class="font-serif text-primary mb-0" id="ovTotalCustomers">0</h2>
+                <div class="text-muted small fw-semibold">Registered Customers</div>
+                <h3 class="font-serif text-primary mb-0 mt-1" id="ovTotalCustomers">0</h3>
+                <div class="small text-muted mt-1" id="ovActiveReservations">0 Active Reservations</div>
               </div>
             </div>
             <div class="col-md-3">
               <div class="card p-3 border-0 shadow-sm rounded-4 bg-white">
-                <div class="text-muted small">Total Paid Revenue</div>
-                <h2 class="font-serif text-gold mb-0" id="ovTotalRevenue">Rs. 0</h2>
+                <div class="text-muted small fw-semibold">Total Paid Revenue</div>
+                <h3 class="font-serif text-gold mb-0 mt-1" id="ovTotalRevenue">Rs. 0</h3>
+                <div class="small text-muted mt-1" id="ovStaffCount">0 Active Staff Accounts</div>
               </div>
             </div>
           </div>
 
           <!-- Quick Action Cards -->
-          <div class="row g-3">
+          <div class="row g-3 mb-4">
             <div class="col-md-6">
               <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
                 <h4 class="font-serif text-dark mb-3"><i class="fa-solid fa-bolt me-2 text-gold"></i> Quick Administrative Actions</h4>
                 <div class="d-flex flex-wrap gap-2">
                   <button class="btn btn-gold rounded-pill px-3 py-2" data-bs-toggle="modal" data-bs-target="#modalAddRoom">
-                    <i class="fa-solid fa-plus me-1"></i> Add Room
+                    <i class="fa-solid fa-plus me-1"></i> Add New Room
                   </button>
                   <button class="btn btn-success rounded-pill px-3 py-2" data-bs-toggle="modal" data-bs-target="#modalAddStaff">
-                    <i class="fa-solid fa-user-plus me-1"></i> Add Receptionist
+                    <i class="fa-solid fa-user-plus me-1"></i> Create Staff Account
                   </button>
-                  <button class="btn btn-outline-primary rounded-pill px-3 py-2" data-bs-toggle="modal" data-bs-target="#modalAddService">
-                    <i class="fa-solid fa-concierge-bell me-1"></i> Add Service
+                  <button class="btn btn-primary rounded-pill px-3 py-2" data-bs-toggle="modal" data-bs-target="#modalAddService">
+                    <i class="fa-solid fa-concierge-bell me-1"></i> Add Service Item
+                  </button>
+                  <button class="btn btn-outline-warning text-dark rounded-pill px-3 py-2" data-bs-toggle="modal" data-bs-target="#modalAddHousekeeping">
+                    <i class="fa-solid fa-broom me-1"></i> Dispatch Housekeeping
                   </button>
                 </div>
               </div>
             </div>
             <div class="col-md-6">
               <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
-                <h4 class="font-serif text-dark mb-2"><i class="fa-solid fa-shield-halved me-2 text-primary"></i> Database Health & Security</h4>
-                <p class="text-muted small mb-2">Connected to PostgreSQL database <code>hotel_management</code> using parameterized SQL queries and hashed credentials.</p>
-                <div class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill w-fit">
-                  <i class="fa-solid fa-check-circle me-1"></i> Triggers & Views Active
+                <h4 class="font-serif text-dark mb-2"><i class="fa-solid fa-shield-halved me-2 text-primary"></i> RDBMS Health & Security</h4>
+                <p class="text-muted small mb-3">Connected to PostgreSQL database <code>hotel_management</code> with parameterized queries, hashed passwords, foreign key constraints, views, and automated audit logging.</p>
+                <div class="d-flex gap-2">
+                  <div class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill">
+                    <i class="fa-solid fa-check-circle me-1"></i> Triggers Active
+                  </div>
+                  <div class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-3 py-2 rounded-pill">
+                    <i class="fa-solid fa-lock me-1"></i> Scrypt Hashes
+                  </div>
                 </div>
               </div>
             </div>
@@ -176,7 +218,7 @@
           <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
               <h2 class="font-serif fs-2 mb-1 text-dark">Room Inventory Management</h2>
-              <p class="text-muted mb-0">Add rooms, modify pricing, update room status, and manage deactivation.</p>
+              <p class="text-muted mb-0">Add rooms, modify pricing, update room status, and handle safe deactivation.</p>
             </div>
             <button class="btn btn-gold rounded-pill px-4 py-2" data-bs-toggle="modal" data-bs-target="#modalAddRoom">
               <i class="fa-solid fa-plus me-2"></i> Add New Room
@@ -184,6 +226,17 @@
           </div>
 
           <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="btn-group" role="group" id="roomStatusFilterGroup">
+                <button type="button" class="btn btn-outline-secondary btn-sm active" onclick="filterAdminRooms('All')">All Statuses</button>
+                <button type="button" class="btn btn-outline-success btn-sm" onclick="filterAdminRooms('Available')">Available</button>
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="filterAdminRooms('Occupied')">Occupied</button>
+                <button type="button" class="btn btn-outline-warning btn-sm text-dark" onclick="filterAdminRooms('Cleaning')">Cleaning</button>
+                <button type="button" class="btn btn-outline-info btn-sm" onclick="filterAdminRooms('Maintenance')">Maintenance</button>
+              </div>
+              <input type="text" id="roomSearchInput" class="form-control rounded-pill px-3" placeholder="Search room # or category..." style="width: 240px;" onkeyup="renderAdminRooms()">
+            </div>
+
             <div class="table-responsive">
               <table class="table table-hover align-middle mb-0">
                 <thead class="table-dark">
@@ -202,14 +255,14 @@
           </div>
         </div>
 
-        <!-- 3. CUSTOMERS MANAGEMENT TAB -->
+        <!-- 3. CUSTOMER MANAGEMENT TAB -->
         <div class="tab-pane fade" id="pane-customers">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
               <h2 class="font-serif fs-2 mb-1 text-dark">Registered Customer Records</h2>
-              <p class="text-muted mb-0">View registered guest accounts and reservation history (Passwords hidden).</p>
+              <p class="text-muted mb-0">Manage customer profiles, inspect stay history, and reset guest passwords securely.</p>
             </div>
-            <input type="text" id="custSearchInput" class="form-control rounded-pill px-3" placeholder="Search by name or email..." style="width: 260px;" onkeyup="renderAdminCustomers()">
+            <input type="text" id="custSearchInput" class="form-control rounded-pill px-3" placeholder="Search customer name, email, phone..." style="width: 280px;" onkeyup="renderAdminCustomers()">
           </div>
 
           <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
@@ -222,6 +275,7 @@
                     <th>Email Address</th>
                     <th>Phone</th>
                     <th>Total Bookings</th>
+                    <th>Total Spent</th>
                     <th>Registered Date</th>
                     <th>Actions</th>
                   </tr>
@@ -232,138 +286,12 @@
           </div>
         </div>
 
-        <!-- 4. RESERVATIONS MANAGEMENT TAB -->
-        <div class="tab-pane fade" id="pane-reservations">
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-              <h2 class="font-serif fs-2 mb-1 text-dark">Master Reservations Database</h2>
-              <p class="text-muted mb-0">Inspect all guest bookings, filter by status, and handle administrative cancellations.</p>
-            </div>
-            <div class="d-flex gap-2">
-              <input type="text" id="resSearchInput" class="form-control rounded-pill px-3" placeholder="Search guest or room..." style="width: 220px;" onkeyup="renderAdminReservations()">
-              <select id="resFilterStatus" class="form-select rounded-pill" style="width: 160px;" onchange="renderAdminReservations()">
-                <option value="">All Statuses</option>
-                <option value="Confirmed">Confirmed</option>
-                <option value="Checked-in">Checked-in</option>
-                <option value="Checked-out">Checked-out</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="table-dark">
-                  <tr>
-                    <th>Res ID</th>
-                    <th>Guest Name</th>
-                    <th>Room #</th>
-                    <th>Dates</th>
-                    <th>Features & Requests</th>
-                    <th>Est. Total</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="adminReservationsTableBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- 5. HOTEL SERVICES TAB -->
-        <div class="tab-pane fade" id="pane-services">
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-              <h2 class="font-serif fs-2 mb-1 text-dark">Hotel Services Catalog & Orders</h2>
-              <p class="text-muted mb-0">Add services, edit pricing, toggle availability, and monitor guest orders.</p>
-            </div>
-            <button class="btn btn-gold rounded-pill px-4 py-2" data-bs-toggle="modal" data-bs-target="#modalAddService">
-              <i class="fa-solid fa-plus me-2"></i> Add Hotel Service
-            </button>
-          </div>
-
-          <div class="row g-4 mb-4">
-            <div class="col-md-6">
-              <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
-                <h4 class="font-serif text-dark mb-3"><i class="fa-solid fa-list me-2 text-gold"></i> Service Catalog Items</h4>
-                <div class="table-responsive">
-                  <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                      <tr>
-                        <th>Service</th>
-                        <th>Price</th>
-                        <th>Available</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody id="adminServicesCatalogBody"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-md-6">
-              <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
-                <h4 class="font-serif text-dark mb-3"><i class="fa-solid fa-bell-concierge me-2 text-warning"></i> Recent Service Orders</h4>
-                <div class="table-responsive">
-                  <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                      <tr>
-                        <th>Req ID</th>
-                        <th>Room</th>
-                        <th>Service</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody id="adminServiceOrdersBody"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 6. BILLS & INVOICES TAB -->
-        <div class="tab-pane fade" id="pane-bills">
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-              <h2 class="font-serif fs-2 mb-1 text-dark">Financial Invoices & Billing Desk</h2>
-              <p class="text-muted mb-0">Audit all customer bills generated upon guest check-out.</p>
-            </div>
-            <input type="text" id="billSearchInput" class="form-control rounded-pill px-3" placeholder="Search bill or guest..." style="width: 240px;" onkeyup="renderAdminBills()">
-          </div>
-
-          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="table-dark">
-                  <tr>
-                    <th>Bill ID</th>
-                    <th>Guest Name</th>
-                    <th>Room #</th>
-                    <th>Room Charge</th>
-                    <th>Service Charge</th>
-                    <th>Tax (5%)</th>
-                    <th>Total Amount</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody id="adminBillsTableBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- 7. STAFF MANAGEMENT TAB -->
+        <!-- 4. STAFF MANAGEMENT TAB -->
         <div class="tab-pane fade" id="pane-staff">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
               <h2 class="font-serif fs-2 mb-1 text-dark">Staff & Receptionist Management</h2>
-              <p class="text-muted mb-0">Create staff accounts, assign roles (Admin / Receptionist), and toggle active access.</p>
+              <p class="text-muted mb-0">Create staff accounts, assign roles (Admin / Receptionist), and manage active permissions.</p>
             </div>
             <button class="btn btn-gold rounded-pill px-4 py-2" data-bs-toggle="modal" data-bs-target="#modalAddStaff">
               <i class="fa-solid fa-user-plus me-2"></i> Add Staff Account
@@ -390,29 +318,299 @@
           </div>
         </div>
 
-        <!-- 8. DBMS REPORTS TAB -->
-        <div class="tab-pane fade" id="pane-reports">
+        <!-- 5. RESERVATIONS TAB -->
+        <div class="tab-pane fade" id="pane-reservations">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-              <h2 class="font-serif fs-2 mb-1 text-dark">PostgreSQL Analytical Reports</h2>
-              <p class="text-muted mb-0">DBMS reports computed via PostgreSQL views (<code>vw_revenue_summary</code>) & aggregate functions.</p>
+              <h2 class="font-serif fs-2 mb-1 text-dark">Master Reservations Database</h2>
+              <p class="text-muted mb-0">Inspect all guest bookings, edit dates/rooms with double-booking validation, and handle cancellations.</p>
+            </div>
+            <div class="d-flex gap-2">
+              <input type="text" id="resSearchInput" class="form-control rounded-pill px-3" placeholder="Search guest or room..." style="width: 220px;" onkeyup="renderAdminReservations()">
+              <select id="resFilterStatus" class="form-select rounded-pill" style="width: 160px;" onchange="renderAdminReservations()">
+                <option value="">All Statuses</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Checked-in">Checked-in</option>
+                <option value="Checked-out">Checked-out</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
             </div>
           </div>
 
-          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white mb-4">
-            <h4 class="font-serif text-dark mb-3"><i class="fa-solid fa-chart-pie me-2 text-gold"></i> Financial Revenue by Room Type</h4>
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
             <div class="table-responsive">
-              <table class="table table-bordered align-middle">
+              <table class="table table-hover align-middle mb-0">
                 <thead class="table-dark">
                   <tr>
+                    <th>Res ID</th>
+                    <th>Guest Name</th>
+                    <th>Room #</th>
+                    <th>Dates</th>
+                    <th>Guests</th>
+                    <th>Special Requests</th>
+                    <th>Est. Total</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminReservationsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. HOTEL SERVICES CATALOG TAB -->
+        <div class="tab-pane fade" id="pane-services">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">Hotel Services Catalog</h2>
+              <p class="text-muted mb-0">Manage services, adjust prices, edit descriptions, and toggle availability.</p>
+            </div>
+            <button class="btn btn-gold rounded-pill px-4 py-2" data-bs-toggle="modal" data-bs-target="#modalAddService">
+              <i class="fa-solid fa-plus me-2"></i> Add Hotel Service
+            </button>
+          </div>
+
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Service ID</th>
+                    <th>Service Name</th>
+                    <th>Price</th>
+                    <th>Description</th>
+                    <th>Availability</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminServicesCatalogBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. SERVICE REQUESTS TAB -->
+        <div class="tab-pane fade" id="pane-service-requests">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">Guest Service Requests Board</h2>
+              <p class="text-muted mb-0">Monitor and fulfill room service orders placed by guests.</p>
+            </div>
+          </div>
+
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Req ID</th>
+                    <th>Room #</th>
+                    <th>Guest Name</th>
+                    <th>Service</th>
+                    <th>Quantity</th>
+                    <th>Total Price</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminServiceOrdersBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. HOUSEKEEPING BOARD TAB -->
+        <div class="tab-pane fade" id="pane-housekeeping">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">Housekeeping & Room Maintenance Board</h2>
+              <p class="text-muted mb-0">Auto-generated checkout tasks and manual room cleaning dispatches.</p>
+            </div>
+            <button class="btn btn-gold rounded-pill px-4 py-2" data-bs-toggle="modal" data-bs-target="#modalAddHousekeeping">
+              <i class="fa-solid fa-broom me-2"></i> Dispatch Task
+            </button>
+          </div>
+
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Task ID</th>
+                    <th>Room #</th>
                     <th>Room Type</th>
+                    <th>Task Type</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminHousekeepingBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9. BILLS & INVOICES TAB -->
+        <div class="tab-pane fade" id="pane-bills">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">Financial Invoices & Billing Desk</h2>
+              <p class="text-muted mb-0">Audit guest bills, view itemized charges, and process payment status.</p>
+            </div>
+            <div class="d-flex gap-2">
+              <input type="text" id="billSearchInput" class="form-control rounded-pill px-3" placeholder="Search bill or guest..." style="width: 240px;" onkeyup="renderAdminBills()">
+              <select id="billFilterStatus" class="form-select rounded-pill" style="width: 150px;" onchange="renderAdminBills()">
+                <option value="">All Payments</option>
+                <option value="Paid">Paid</option>
+                <option value="Pending">Pending</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Bill ID</th>
+                    <th>Guest Name</th>
+                    <th>Room #</th>
+                    <th>Room Charge</th>
+                    <th>Service Charge</th>
+                    <th>Tax (5%)</th>
+                    <th>Total Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminBillsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 10. DBMS REPORTS TAB -->
+        <div class="tab-pane fade" id="pane-reports">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">PostgreSQL Analytical Reports & OLAP</h2>
+              <p class="text-muted mb-0">Reports computed via PostgreSQL views (<code>vw_revenue_summary</code>, <code>vw_customer_loyalty_ranking</code>, <code>vw_service_popularity</code>) & Materialized View (<code>mv_monthly_financial_report</code>).</p>
+            </div>
+          </div>
+
+          <!-- Revenue by Room Category -->
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white mb-4">
+            <h4 class="font-serif text-dark mb-3"><i class="fa-solid fa-chart-pie me-2 text-gold"></i> Financial Revenue by Room Category</h4>
+            <div class="table-responsive">
+              <table class="table table-bordered align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Room Category</th>
                     <th>Total Bookings</th>
                     <th>Room Tariff Collected</th>
-                    <th>Room Service Revenue</th>
+                    <th>Service Revenue</th>
+                    <th>Tax Collected</th>
                     <th>Grand Total</th>
                   </tr>
                 </thead>
                 <tbody id="adminReportsRevenueBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="row g-4 mb-4">
+            <!-- Customer Loyalty Leaderboard -->
+            <div class="col-md-6">
+              <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
+                <h4 class="font-serif text-dark mb-3"><i class="fa-solid fa-award me-2 text-warning"></i> Customer Loyalty & Spend Leaderboard</h4>
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Guest</th>
+                        <th>Bookings</th>
+                        <th>Lifetime Spend</th>
+                        <th>Tier</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminReportsLoyaltyBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Service Popularity Leaderboard -->
+            <div class="col-md-6">
+              <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
+                <h4 class="font-serif text-dark mb-3"><i class="fa-solid fa-fire me-2 text-danger"></i> Service & Amenity Popularity</h4>
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Service Item</th>
+                        <th>Orders</th>
+                        <th>Units</th>
+                        <th>Revenue</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminReportsServicePopularityBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monthly Financial Report -->
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <h4 class="font-serif text-dark mb-3"><i class="fa-solid fa-calendar-days me-2 text-primary"></i> Monthly Executive Financial Performance</h4>
+            <div class="table-responsive">
+              <table class="table table-bordered align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Billing Month</th>
+                    <th>Invoices Issued</th>
+                    <th>Gross Room Revenue</th>
+                    <th>Gross Service Revenue</th>
+                    <th>Tax Collected</th>
+                    <th>Net Revenue</th>
+                  </tr>
+                </thead>
+                <tbody id="adminReportsMonthlyBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 11. AUDIT LOGS TAB -->
+        <div class="tab-pane fade" id="pane-audit-logs">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">Enterprise Audit Trail & System Logs</h2>
+              <p class="text-muted mb-0">Real-time audit records populated by PostgreSQL trigger <code>trg_audit_reservations</code>, <code>trg_audit_bills</code>, and <code>trg_audit_rooms</code>.</p>
+            </div>
+            <button class="btn btn-outline-primary rounded-pill px-3" onclick="renderAdminAuditLogs()">
+              <i class="fa-solid fa-arrows-rotate me-1"></i> Refresh Logs
+            </button>
+          </div>
+
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Log ID</th>
+                    <th>Table Name</th>
+                    <th>Operation</th>
+                    <th>Record ID</th>
+                    <th>Executed By</th>
+                    <th>Timestamp</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody id="adminAuditLogsTableBody"></tbody>
               </table>
             </div>
           </div>
@@ -452,7 +650,7 @@
               <input type="number" id="arPrice" class="form-control form-control-luxury" placeholder="1800" min="500" required>
             </div>
             <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
-              <i class="fa-solid fa-check me-2"></i> Add Room to PostgreSQL
+              <i class="fa-solid fa-check me-2"></i> Save Room to PostgreSQL
             </button>
           </form>
         </div>
@@ -499,7 +697,67 @@
               </select>
             </div>
             <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
-              <i class="fa-solid fa-save me-2"></i> Save Changes
+              <i class="fa-solid fa-save me-2"></i> Update Room Details
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT CUSTOMER -->
+  <div class="modal fade" id="modalEditCustomer" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-user-pen me-2"></i> Edit Customer Profile</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitEditCustomer();">
+            <input type="hidden" id="ecId">
+            <div class="mb-3">
+              <label class="form-label-custom">Full Name</label>
+              <input type="text" id="ecName" class="form-control form-control-luxury" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Email Address</label>
+              <input type="email" id="ecEmail" class="form-control form-control-luxury" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Phone Number</label>
+              <input type="text" id="ecPhone" class="form-control form-control-luxury">
+            </div>
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-save me-2"></i> Save Profile Changes
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RESET CUSTOMER PASSWORD -->
+  <div class="modal fade" id="modalResetCustPass" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-key me-2"></i> Reset Guest Password</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitResetCustPass();">
+            <input type="hidden" id="rcpId">
+            <div class="mb-3">
+              <label class="form-label-custom">Guest Name</label>
+              <input type="text" id="rcpName" class="form-control form-control-luxury" disabled>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">New Password</label>
+              <input type="password" id="rcpPassword" class="form-control form-control-luxury" placeholder="Enter new password" required>
+            </div>
+            <button type="submit" class="btn btn-danger w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-lock me-2"></i> Reset Password
             </button>
           </form>
         </div>
@@ -545,6 +803,127 @@
     </div>
   </div>
 
+  <!-- MODAL: EDIT STAFF -->
+  <div class="modal fade" id="modalEditStaff" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-user-gear me-2"></i> Edit Staff Account</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitEditStaff();">
+            <input type="hidden" id="esId">
+            <div class="mb-3">
+              <label class="form-label-custom">Staff Full Name</label>
+              <input type="text" id="esName" class="form-control form-control-luxury" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Email Address</label>
+              <input type="email" id="esEmail" class="form-control form-control-luxury" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Assigned Role</label>
+              <select id="esRole" class="form-select form-control-luxury" required>
+                <option value="Receptionist">Receptionist</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Account Status</label>
+              <select id="esActive" class="form-select form-control-luxury" required>
+                <option value="true">Active Access</option>
+                <option value="false">Deactivated / Suspended</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-save me-2"></i> Save Staff Changes
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RESET STAFF PASSWORD -->
+  <div class="modal fade" id="modalResetStaffPass" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-key me-2"></i> Reset Staff Password</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitResetStaffPass();">
+            <input type="hidden" id="rspId">
+            <div class="mb-3">
+              <label class="form-label-custom">Staff Member</label>
+              <input type="text" id="rspName" class="form-control form-control-luxury" disabled>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">New Password</label>
+              <input type="password" id="rspPassword" class="form-control form-control-luxury" placeholder="Enter new password" required>
+            </div>
+            <button type="submit" class="btn btn-danger w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-lock me-2"></i> Reset Password
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT RESERVATION -->
+  <div class="modal fade" id="modalEditReservation" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-pen-to-square me-2"></i> Edit Reservation</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitEditReservation();">
+            <input type="hidden" id="eresId">
+            <div class="mb-3">
+              <label class="form-label-custom">Assigned Room Number</label>
+              <input type="text" id="eresRoomNumber" class="form-control form-control-luxury" required>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label-custom">Check-In Date</label>
+                <input type="date" id="eresCheckIn" class="form-control form-control-luxury" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label-custom">Check-Out Date</label>
+                <input type="date" id="eresCheckOut" class="form-control form-control-luxury" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Guests Count</label>
+              <input type="number" id="eresGuests" class="form-control form-control-luxury" min="1" max="10" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Special Requests</label>
+              <input type="text" id="eresRequests" class="form-control form-control-luxury">
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Status</label>
+              <select id="eresStatus" class="form-select form-control-luxury" required>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Checked-in">Checked-in</option>
+                <option value="Checked-out">Checked-out</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-shield-halved me-2"></i> Update Reservation (Server Overlap Check)
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: ADD SERVICE -->
   <div class="modal fade" id="modalAddService" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -576,15 +955,119 @@
     </div>
   </div>
 
+  <!-- MODAL: EDIT SERVICE -->
+  <div class="modal fade" id="modalEditService" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-pen-to-square me-2"></i> Edit Hotel Service</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitEditService();">
+            <input type="hidden" id="esvcId">
+            <div class="mb-3">
+              <label class="form-label-custom">Service Name</label>
+              <input type="text" id="esvcName" class="form-control form-control-luxury" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Price (Rs.)</label>
+              <input type="number" id="esvcPrice" class="form-control form-control-luxury" min="0" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Description</label>
+              <input type="text" id="esvcDesc" class="form-control form-control-luxury">
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Availability Status</label>
+              <select id="esvcAvail" class="form-select form-control-luxury" required>
+                <option value="true">Available</option>
+                <option value="false">Disabled / Unavailable</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-save me-2"></i> Update Service Item
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD HOUSEKEEPING TASK -->
+  <div class="modal fade" id="modalAddHousekeeping" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-broom me-2"></i> Dispatch Housekeeping Task</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitAddHousekeeping();">
+            <div class="mb-3">
+              <label class="form-label-custom">Target Room Number</label>
+              <input type="text" id="ahkRoom" class="form-control form-control-luxury" placeholder="e.g. 102" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Task Type</label>
+              <select id="ahkType" class="form-select form-control-luxury" required>
+                <option value="Cleaning">Cleaning</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="Deep Sanitization">Deep Sanitization</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Task Notes</label>
+              <input type="text" id="ahkNotes" class="form-control form-control-luxury" placeholder="e.g. Urgent guest request after checkout">
+            </div>
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-check me-2"></i> Dispatch Task
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: CUSTOMER HISTORY -->
   <div class="modal fade" id="modalCustHistory" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content rounded-4 border-0 shadow-lg">
         <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
-          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-history me-2"></i> Customer Stay History</h5>
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-clock-rotate-left me-2"></i> Customer Stay & Invoice History</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body p-4" id="custHistoryModalBody">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ITEMIZE INVOICE BREAKDOWN -->
+  <div class="modal fade" id="modalViewInvoice" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-file-invoice me-2"></i> Itemized Financial Invoice Breakdown</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4" id="viewInvoiceModalBody">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: AUDIT LOG DETAILS -->
+  <div class="modal fade" id="modalViewAuditLog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-database me-2"></i> PostgreSQL Audit Log State Diff</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4" id="viewAuditLogModalBody">
           <!-- Rendered dynamically -->
         </div>
       </div>
@@ -604,37 +1087,80 @@
       document.getElementById('adminNameDisplay').textContent = currentUser.name;
     }
 
+    let roomFilterStatus = 'All';
+
     async function initAdminDashboard() {
       await renderAdminOverview();
       await renderAdminRooms();
       await renderAdminCustomers();
+      await renderAdminStaff();
       await renderAdminReservations();
       await renderAdminServices();
+      await renderAdminServiceOrders();
+      await renderAdminHousekeeping();
       await renderAdminBills();
-      await renderAdminStaff();
       await renderAdminReports();
+      await renderAdminAuditLogs();
     }
 
+    // 1. OVERVIEW & ANALYTICS
     async function renderAdminOverview() {
-      const reports = await HotelDB.getReportsAsync();
-      const m = reports.metrics || {};
-      document.getElementById('ovTotalRooms').textContent = m.totalRooms || 0;
+      const analytics = await HotelDB.getAdminAnalyticsAsync();
+      const m = (analytics && analytics.metrics) ? analytics.metrics : {};
+
+      document.getElementById('ovTotalRooms').textContent = `${m.totalRooms || 0} Rooms`;
+      document.getElementById('ovOccupancyRate').textContent = `${m.occupancyRate || 0}% Occupancy Rate`;
       document.getElementById('ovOccupiedVacant').textContent = `${m.occupiedRooms || 0} / ${m.availableRooms || 0}`;
+      document.getElementById('ovCleaningMaint').textContent = `${m.cleaningRooms || 0} Cleaning | ${m.maintenanceRooms || 0} Maintenance`;
       document.getElementById('ovTotalCustomers').textContent = m.totalCustomers || 0;
+      document.getElementById('ovActiveReservations').textContent = `${m.activeReservations || 0} Active Bookings`;
       document.getElementById('ovTotalRevenue').textContent = `Rs. ${(m.totalRevenue || 0).toLocaleString()}`;
+      document.getElementById('ovStaffCount').textContent = `${m.activeStaff || 0} Active Staff Accounts`;
+    }
+
+    // 2. ROOM MANAGEMENT
+    function filterAdminRooms(status) {
+      roomFilterStatus = status;
+      const group = document.getElementById('roomStatusFilterGroup');
+      if (group) {
+        Array.from(group.children).forEach(btn => {
+          btn.classList.remove('active');
+          if (btn.textContent.includes(status) || (status === 'All' && btn.textContent.includes('All'))) {
+            btn.classList.add('active');
+          }
+        });
+      }
+      renderAdminRooms();
     }
 
     async function renderAdminRooms() {
       const rooms = await HotelDB.getRoomsAsync();
+      const search = (document.getElementById('roomSearchInput')?.value || '').toLowerCase();
       const tbody = document.getElementById('adminRoomsTableBody');
+      if (!tbody) return;
 
-      tbody.innerHTML = rooms.map(r => `
+      const filtered = rooms.filter(r => {
+        const matchesSearch = String(r.number).toLowerCase().includes(search) || (r.category || '').toLowerCase().includes(search);
+        const matchesStatus = roomFilterStatus === 'All' || r.status === roomFilterStatus;
+        return matchesSearch && matchesStatus;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">No matching rooms found in inventory.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(r => `
         <tr>
-          <td><strong class="text-navy">#${r.number}</strong></td>
+          <td><strong class="text-navy fs-6">#${r.number}</strong></td>
           <td>${r.category}</td>
           <td><strong class="text-gold">Rs. ${r.price.toLocaleString()}</strong></td>
-          <td><span class="badge ${r.status === 'Available' ? 'bg-success' : (r.status === 'Occupied' ? 'bg-danger' : 'bg-warning text-dark')}">${r.status}</span></td>
-          <td><span class="badge bg-info">Active</span></td>
+          <td>
+            <span class="badge ${r.status === 'Available' ? 'bg-success' : (r.status === 'Occupied' ? 'bg-danger' : (r.status === 'Cleaning' ? 'bg-warning text-dark' : 'bg-info'))}">
+              ${r.status}
+            </span>
+          </td>
+          <td><span class="badge bg-secondary">Active</span></td>
           <td>
             <div class="d-flex gap-1">
               <button class="btn btn-sm btn-outline-navy rounded-pill px-2.5" onclick="openEditRoomModal(${r.id}, '${r.number}', '${r.category}', ${r.price}, '${r.status}')">
@@ -655,8 +1181,7 @@
       document.getElementById('erType').value = type;
       document.getElementById('erPrice').value = price;
       document.getElementById('erStatus').value = status;
-      const modal = new bootstrap.Modal(document.getElementById('modalEditRoom'));
-      modal.show();
+      new bootstrap.Modal(document.getElementById('modalEditRoom')).show();
     }
 
     async function submitAddRoom() {
@@ -667,7 +1192,7 @@
       try {
         await HotelDB.addRoomAsync({ room_number: roomNumber, room_type: roomType, price_per_night: price });
         bootstrap.Modal.getInstance(document.getElementById('modalAddRoom')).hide();
-        showToast(`Room #${roomNumber} created in PostgreSQL!`, 'Room Created', 'success');
+        showToast(`Room #${roomNumber} created in PostgreSQL database!`, 'Room Created', 'success');
         await initAdminDashboard();
       } catch (err) {
         showToast(err.message, 'Database Error', 'danger');
@@ -701,6 +1226,7 @@
       }
     }
 
+    // 3. CUSTOMER MANAGEMENT
     async function renderAdminCustomers() {
       const customers = await HotelDB.getAdminCustomersAsync();
       const search = (document.getElementById('custSearchInput')?.value || '').toLowerCase();
@@ -714,7 +1240,7 @@
       );
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-3">No matching customers found in database.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">No matching customer records found in database.</td></tr>`;
         return;
       }
 
@@ -725,14 +1251,67 @@
           <td>${c.email || 'N/A'}</td>
           <td>${c.phone || 'N/A'}</td>
           <td><span class="badge bg-gold text-dark fw-bold">${c.total_bookings || 0} Bookings</span></td>
+          <td><strong class="text-success">Rs. ${parseFloat(c.total_spent || 0).toLocaleString()}</strong></td>
           <td><span class="small text-muted">${c.created_at ? new Date(c.created_at).toLocaleDateString() : 'N/A'}</span></td>
           <td>
-            <button class="btn btn-sm btn-outline-navy rounded-pill px-3" onclick="viewCustomerHistory(${c.customer_id})">
-              <i class="fa-solid fa-history me-1"></i> View Stay History
-            </button>
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm btn-outline-navy rounded-pill px-2.5" onclick="openEditCustomerModal(${c.customer_id}, '${(c.name||'').replace(/'/g, "\\'")}', '${(c.email||'').replace(/'/g, "\\'")}', '${(c.phone||'').replace(/'/g, "\\\'")}')">
+                <i class="fa-solid fa-pen me-1"></i> Edit
+              </button>
+              <button class="btn btn-sm btn-outline-danger rounded-pill px-2.5" onclick="openResetCustPassModal(${c.customer_id}, '${(c.name||'').replace(/'/g, "\\\'")}')">
+                <i class="fa-solid fa-key me-1"></i> Reset Pass
+              </button>
+              <button class="btn btn-sm btn-outline-primary rounded-pill px-2.5" onclick="viewCustomerHistory(${c.customer_id})">
+                <i class="fa-solid fa-history me-1"></i> History
+              </button>
+            </div>
           </td>
         </tr>
       `).join('');
+    }
+
+    function openEditCustomerModal(id, name, email, phone) {
+      document.getElementById('ecId').value = id;
+      document.getElementById('ecName').value = name;
+      document.getElementById('ecEmail').value = email;
+      document.getElementById('ecPhone').value = phone || '';
+      new bootstrap.Modal(document.getElementById('modalEditCustomer')).show();
+    }
+
+    async function submitEditCustomer() {
+      const id = document.getElementById('ecId').value;
+      const name = document.getElementById('ecName').value.trim();
+      const email = document.getElementById('ecEmail').value.trim();
+      const phone = document.getElementById('ecPhone').value.trim();
+
+      try {
+        await HotelDB.updateCustomerAsync(id, { name, email, phone });
+        bootstrap.Modal.getInstance(document.getElementById('modalEditCustomer')).hide();
+        showToast('Customer profile updated in PostgreSQL!', 'Profile Updated', 'success');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Database Error', 'danger');
+      }
+    }
+
+    function openResetCustPassModal(id, name) {
+      document.getElementById('rcpId').value = id;
+      document.getElementById('rcpName').value = name;
+      document.getElementById('rcpPassword').value = 'guest123';
+      new bootstrap.Modal(document.getElementById('modalResetCustPass')).show();
+    }
+
+    async function submitResetCustPass() {
+      const id = document.getElementById('rcpId').value;
+      const pass = document.getElementById('rcpPassword').value.trim();
+
+      try {
+        await HotelDB.resetCustomerPasswordAsync(id, pass);
+        bootstrap.Modal.getInstance(document.getElementById('modalResetCustPass')).hide();
+        showToast('Guest password has been reset with scrypt hash in PostgreSQL!', 'Password Reset', 'success');
+      } catch (err) {
+        showToast(err.message, 'Reset Error', 'danger');
+      }
     }
 
     async function viewCustomerHistory(customerId) {
@@ -746,7 +1325,7 @@
           <h5 class="font-serif text-dark mb-1">${c.name}</h5>
           <div class="text-muted small">${c.email} &bull; ${c.phone || 'No Phone'}</div>
         </div>
-        <h6 class="font-serif text-navy mb-2">Reservation & Bill History (${resList.length})</h6>
+        <h6 class="font-serif text-navy mb-2">Reservation & Invoice History (${resList.length})</h6>
         <div class="table-responsive">
           <table class="table table-bordered align-middle mb-0">
             <thead class="table-light">
@@ -777,165 +1356,11 @@
       new bootstrap.Modal(document.getElementById('modalCustHistory')).show();
     }
 
-    async function renderAdminReservations() {
-      const bookings = await HotelDB.getBookingsAsync();
-      const search = document.getElementById('resSearchInput').value.toLowerCase();
-      const filter = document.getElementById('resFilterStatus').value;
-      const tbody = document.getElementById('adminReservationsTableBody');
-
-      const filtered = bookings.filter(b => {
-        const matchesSearch = b.guestName.toLowerCase().includes(search) || String(b.roomNumber).includes(search);
-        const matchesFilter = filter === '' || b.status === filter;
-        return matchesSearch && matchesFilter;
-      });
-
-      if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">No matching reservations found.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = filtered.map(b => `
-        <tr>
-          <td><span class="badge bg-light text-dark font-monospace">${b.id}</span></td>
-          <td><strong>${b.guestName}</strong></td>
-          <td><strong class="text-navy">#${b.roomNumber}</strong></td>
-          <td>${b.checkIn} &bull; ${b.checkOut}</td>
-          <td>
-            ${b.specialRequests ? `
-              <div class="d-flex flex-column gap-1" style="min-width: 170px; max-width: 240px;">
-                ${b.specialRequests.includes('Breakfast') ? '<span class="badge bg-warning text-dark text-start py-1 px-2"><i class="fa-solid fa-utensils me-1"></i> Complimentary Breakfast</span>' : ''}
-                ${b.specialRequests.includes('Airport') ? '<span class="badge bg-primary text-white text-start py-1 px-2"><i class="fa-solid fa-plane-arrival me-1"></i> Airport Pickup</span>' : ''}
-                ${b.specialRequests.includes('High Floor') ? '<span class="badge bg-info text-dark text-start py-1 px-2"><i class="fa-solid fa-mountain-sun me-1"></i> High Floor</span>' : ''}
-                ${b.specialRequests.includes('Welcome') ? '<span class="badge bg-danger text-white text-start py-1 px-2"><i class="fa-solid fa-wine-glass me-1"></i> Welcome Basket</span>' : ''}
-                ${b.specialRequests.includes('Late Check-Out') || b.specialRequests.includes('Late Check-out') ? '<span class="badge bg-secondary text-white text-start py-1 px-2"><i class="fa-solid fa-clock me-1"></i> Late Check-out</span>' : ''}
-                ${b.specialRequests.includes('Notes:') ? `<div class="small text-muted fst-italic mt-1 border-start border-warning ps-1">${b.specialRequests.split('Notes:')[1].trim()}</div>` : (!b.specialRequests.includes('Breakfast') && !b.specialRequests.includes('Airport') && !b.specialRequests.includes('High Floor') && !b.specialRequests.includes('Welcome') && !b.specialRequests.includes('Late') ? `<span class="small text-dark">${b.specialRequests}</span>` : '')}
-              </div>
-            ` : '<span class="badge bg-light text-muted border">None</span>'}
-          </td>
-          <td><strong class="text-gold">Rs. ${b.totalAmount.toLocaleString()}</strong></td>
-          <td><span class="badge ${b.status === 'Cancelled' ? 'bg-secondary' : 'bg-success'}">${b.status}</span></td>
-          <td>
-            ${b.status !== 'Cancelled' && b.status !== 'Checked-out' ? `
-              <button class="btn btn-sm btn-outline-danger rounded-pill px-2.5" onclick="cancelReservation(${b.reservationId})">
-                <i class="fa-solid fa-ban me-1"></i> Cancel
-              </button>
-            ` : '<span class="text-muted small">No actions</span>'}
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    async function cancelReservation(resId) {
-      if (!confirm("Are you sure you want to cancel this reservation?")) return;
-      try {
-        await fetch(`http://127.0.0.1:5000/api/reservations/${resId}/status`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: 'Cancelled' })
-        });
-        showToast("Reservation cancelled! PostgreSQL trigger reverted room to Available.", "Reservation Cancelled", "info");
-        await initAdminDashboard();
-      } catch (err) {
-        showToast(err.message, "Cancellation Error", "danger");
-      }
-    }
-
-    async function renderAdminServices() {
-      const services = await HotelDB.getServicesCatalogAsync();
-      const requests = await HotelDB.getServiceRequestsAsync();
-
-      const catBody = document.getElementById('adminServicesCatalogBody');
-      catBody.innerHTML = services.map(s => `
-        <tr>
-          <td><strong>${s.service_name}</strong></td>
-          <td><strong class="text-gold">Rs. ${parseFloat(s.price).toLocaleString()}</strong></td>
-          <td><span class="badge ${s.is_available !== false ? 'bg-success' : 'bg-secondary'}">${s.is_available !== false ? 'Available' : 'Disabled'}</span></td>
-          <td>
-            <button class="btn btn-sm btn-outline-warning rounded-pill px-2" onclick="toggleServiceAvailable(${s.service_id}, ${!(s.is_available !== false)})">
-              ${s.is_available !== false ? 'Disable' : 'Enable'}
-            </button>
-          </td>
-        </tr>
-      `).join('');
-
-      const reqBody = document.getElementById('adminServiceOrdersBody');
-      reqBody.innerHTML = requests.map(r => `
-        <tr>
-          <td><span class="badge bg-secondary">${r.id}</span></td>
-          <td><strong>#${r.roomNumber}</strong></td>
-          <td>${r.serviceName}</td>
-          <td><span class="badge ${r.status === 'Completed' ? 'bg-success' : 'bg-warning text-dark'}">${r.status}</span></td>
-          <td>
-            ${r.status !== 'Completed' ? `
-              <button class="btn btn-sm btn-success rounded-pill px-2" onclick="fulfillServiceAdmin('${r.id}')">Fulfill</button>
-            ` : '<span class="text-success small">Done</span>'}
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    async function toggleServiceAvailable(serviceId, newStatus) {
-      await HotelDB.updateServiceAsync(serviceId, { is_available: newStatus });
-      showToast(`Service availability status updated in PostgreSQL!`, 'Catalog Updated', 'info');
-      await initAdminDashboard();
-    }
-
-    async function fulfillServiceAdmin(reqId) {
-      await HotelDB.updateServiceStatusAsync(reqId, 'Completed');
-      showToast('Order marked as Completed in PostgreSQL.', 'Order Fulfilled', 'success');
-      await initAdminDashboard();
-    }
-
-    async function submitAddService() {
-      const name = document.getElementById('asSvcName').value.trim();
-      const price = parseFloat(document.getElementById('asSvcPrice').value);
-      const desc = document.getElementById('asSvcDesc').value.trim();
-
-      try {
-        await HotelDB.addServiceAsync({ service_name: name, price, description: desc });
-        bootstrap.Modal.getInstance(document.getElementById('modalAddService')).hide();
-        showToast(`Service "${name}" added to PostgreSQL catalog!`, 'Service Added', 'success');
-        await initAdminDashboard();
-      } catch (err) {
-        showToast(err.message, 'Database Error', 'danger');
-      }
-    }
-
-    async function renderAdminBills() {
-      const bills = await HotelDB.getBillsAsync();
-      const search = document.getElementById('billSearchInput').value.toLowerCase();
-      const tbody = document.getElementById('adminBillsTableBody');
-
-      const filtered = bills.filter(b => b.guest_name.toLowerCase().includes(search) || String(b.room_number).includes(search));
-
-      tbody.innerHTML = filtered.map(b => `
-        <tr>
-          <td><span class="badge bg-dark">INV-${b.bill_id}</span></td>
-          <td><strong>${b.guest_name}</strong></td>
-          <td><strong class="text-navy">#${b.room_number}</strong></td>
-          <td>Rs. ${parseFloat(b.room_charge).toLocaleString()}</td>
-          <td>Rs. ${parseFloat(b.service_charge).toLocaleString()}</td>
-          <td>Rs. ${parseFloat(b.tax).toLocaleString()}</td>
-          <td><strong class="text-gold">Rs. ${parseFloat(b.total_amount).toLocaleString()}</strong></td>
-          <td><span class="badge ${b.payment_status === 'Paid' ? 'bg-success' : 'bg-danger'}">${b.payment_status}</span></td>
-          <td>
-            ${b.payment_status === 'Pending' ? `
-              <button class="btn btn-sm btn-outline-success rounded-pill px-2.5" onclick="payBillAdmin(${b.bill_id})">Mark Paid</button>
-            ` : '<span class="text-success small">Paid</span>'}
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    async function payBillAdmin(billId) {
-      await HotelDB.payBillAsync(billId);
-      showToast(`Bill INV-${billId} marked as Paid in PostgreSQL!`, 'Payment Cleared', 'success');
-      await initAdminDashboard();
-    }
-
+    // 4. STAFF MANAGEMENT
     async function renderAdminStaff() {
       const staffList = await HotelDB.getAdminStaffAsync();
       const tbody = document.getElementById('adminStaffTableBody');
+      if (!tbody) return;
 
       tbody.innerHTML = staffList.map(s => `
         <tr>
@@ -946,18 +1371,76 @@
           <td><span class="badge ${s.is_active ? 'bg-success' : 'bg-secondary'}">${s.is_active ? 'Active' : 'Inactive'}</span></td>
           <td><span class="small text-muted">${new Date(s.created_at).toLocaleDateString()}</span></td>
           <td>
-            <button class="btn btn-sm btn-outline-warning rounded-pill px-2.5" onclick="toggleStaffActive(${s.staff_id}, ${!s.is_active})">
-              ${s.is_active ? 'Deactivate' : 'Activate'}
-            </button>
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm btn-outline-navy rounded-pill px-2.5" onclick="openEditStaffModal(${s.staff_id}, '${s.name.replace(/'/g, "\\'")}', '${s.email.replace(/'/g, "\\'")}', '${s.role}', ${s.is_active})">
+                <i class="fa-solid fa-pen me-1"></i> Edit
+              </button>
+              <button class="btn btn-sm btn-outline-danger rounded-pill px-2.5" onclick="openResetStaffPassModal(${s.staff_id}, '${s.name.replace(/'/g, "\\'")}')">
+                <i class="fa-solid fa-key me-1"></i> Pass
+              </button>
+              <button class="btn btn-sm ${s.is_active ? 'btn-outline-warning' : 'btn-outline-success'} rounded-pill px-2.5" onclick="toggleStaffActive(${s.staff_id}, ${!s.is_active})">
+                ${s.is_active ? 'Deactivate' : 'Activate'}
+              </button>
+            </div>
           </td>
         </tr>
       `).join('');
     }
 
+    function openEditStaffModal(id, name, email, role, isActive) {
+      document.getElementById('esId').value = id;
+      document.getElementById('esName').value = name;
+      document.getElementById('esEmail').value = email;
+      document.getElementById('esRole').value = role;
+      document.getElementById('esActive').value = String(isActive);
+      new bootstrap.Modal(document.getElementById('modalEditStaff')).show();
+    }
+
+    async function submitEditStaff() {
+      const id = document.getElementById('esId').value;
+      const name = document.getElementById('esName').value.trim();
+      const email = document.getElementById('esEmail').value.trim();
+      const role = document.getElementById('esRole').value;
+      const isActive = document.getElementById('esActive').value === 'true';
+
+      try {
+        await HotelDB.updateStaffAsync(id, { name, email, role, is_active: isActive });
+        bootstrap.Modal.getInstance(document.getElementById('modalEditStaff')).hide();
+        showToast('Staff account updated in PostgreSQL!', 'Staff Updated', 'success');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Protection Warning', 'danger');
+      }
+    }
+
+    function openResetStaffPassModal(id, name) {
+      document.getElementById('rspId').value = id;
+      document.getElementById('rspName').value = name;
+      document.getElementById('rspPassword').value = 'staff123';
+      new bootstrap.Modal(document.getElementById('modalResetStaffPass')).show();
+    }
+
+    async function submitResetStaffPass() {
+      const id = document.getElementById('rspId').value;
+      const pass = document.getElementById('rspPassword').value.trim();
+
+      try {
+        await HotelDB.resetStaffPasswordAsync(id, pass);
+        bootstrap.Modal.getInstance(document.getElementById('modalResetStaffPass')).hide();
+        showToast('Staff password has been reset with werkzeug hash in PostgreSQL!', 'Password Reset', 'success');
+      } catch (err) {
+        showToast(err.message, 'Reset Error', 'danger');
+      }
+    }
+
     async function toggleStaffActive(staffId, newActiveStatus) {
-      await HotelDB.updateStaffAsync(staffId, { is_active: newActiveStatus });
-      showToast('Staff access status updated in PostgreSQL!', 'Staff Updated', 'info');
-      await initAdminDashboard();
+      try {
+        await HotelDB.updateStaffAsync(staffId, { is_active: newActiveStatus });
+        showToast('Staff access status updated in PostgreSQL!', 'Staff Updated', 'info');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Action Blocked', 'danger');
+      }
     }
 
     async function submitAddStaff() {
@@ -976,20 +1459,521 @@
       }
     }
 
-    async function renderAdminReports() {
-      const reports = await HotelDB.getReportsAsync();
-      const breakdown = reports.revenueByRoomType || [];
+    // 5. RESERVATION MANAGEMENT
+    async function renderAdminReservations() {
+      const bookings = await HotelDB.getBookingsAsync();
+      const search = (document.getElementById('resSearchInput')?.value || '').toLowerCase();
+      const filter = document.getElementById('resFilterStatus')?.value || '';
+      const tbody = document.getElementById('adminReservationsTableBody');
+      if (!tbody) return;
 
-      const tbody = document.getElementById('adminReportsRevenueBody');
-      tbody.innerHTML = breakdown.map(r => `
+      const filtered = bookings.filter(b => {
+        const matchesSearch = (b.guestName || '').toLowerCase().includes(search) || String(b.roomNumber).includes(search);
+        const matchesFilter = filter === '' || b.status === filter;
+        return matchesSearch && matchesFilter;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-3">No matching reservations found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(b => `
         <tr>
-          <td><strong>${r.room_type}</strong></td>
-          <td>${r.total_bookings} Bookings</td>
-          <td>Rs. ${parseFloat(r.total_room_revenue).toLocaleString()}</td>
-          <td>Rs. ${parseFloat(r.total_service_revenue).toLocaleString()}</td>
-          <td><strong class="text-gold">Rs. ${parseFloat(r.grand_total_revenue).toLocaleString()}</strong></td>
+          <td><span class="badge bg-light text-dark font-monospace">${b.id}</span></td>
+          <td><strong>${b.guestName}</strong></td>
+          <td><strong class="text-navy">#${b.roomNumber}</strong></td>
+          <td><span class="small">${b.checkIn} &bull; ${b.checkOut}</span></td>
+          <td>${b.guestsCount || 1} Guests</td>
+          <td><span class="small text-muted">${b.specialRequests || 'None'}</span></td>
+          <td><strong class="text-gold">Rs. ${(b.totalAmount || 0).toLocaleString()}</strong></td>
+          <td><span class="badge ${b.status === 'Cancelled' ? 'bg-secondary' : (b.status === 'Checked-in' ? 'bg-success' : 'bg-primary')}">${b.status}</span></td>
+          <td>
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm btn-outline-navy rounded-pill px-2.5" onclick="openEditReservationModal('${b.id}', '${b.roomNumber}', '${b.checkIn}', '${b.checkOut}', ${b.guestsCount || 1}, '${(b.specialRequests || '').replace(/'/g, "\\'")}', '${b.status}')">
+                <i class="fa-solid fa-pen me-1"></i> Edit
+              </button>
+              ${b.status !== 'Cancelled' && b.status !== 'Checked-out' ? `
+                <button class="btn btn-sm btn-outline-danger rounded-pill px-2.5" onclick="cancelReservation(${b.reservationId})">
+                  <i class="fa-solid fa-ban me-1"></i> Cancel
+                </button>
+              ` : ''}
+            </div>
+          </td>
         </tr>
       `).join('');
+    }
+
+    function openEditReservationModal(resId, roomNum, checkIn, checkOut, guests, requests, status) {
+      document.getElementById('eresId').value = resId;
+      document.getElementById('eresRoomNumber').value = roomNum;
+      document.getElementById('eresCheckIn').value = checkIn;
+      document.getElementById('eresCheckOut').value = checkOut;
+      document.getElementById('eresGuests').value = guests;
+      document.getElementById('eresRequests').value = requests;
+      document.getElementById('eresStatus').value = status;
+      new bootstrap.Modal(document.getElementById('modalEditReservation')).show();
+    }
+
+    async function submitEditReservation() {
+      const resId = document.getElementById('eresId').value;
+      const roomNum = document.getElementById('eresRoomNumber').value.trim();
+      const checkIn = document.getElementById('eresCheckIn').value;
+      const checkOut = document.getElementById('eresCheckOut').value;
+      const guests = parseInt(document.getElementById('eresGuests').value, 10);
+      const requests = document.getElementById('eresRequests').value.trim();
+      const status = document.getElementById('eresStatus').value;
+
+      try {
+        await HotelDB.updateReservationAsync(resId, {
+          room_number: roomNum,
+          check_in: checkIn,
+          check_out: checkOut,
+          number_of_guests: guests,
+          special_requests: requests,
+          status: status
+        });
+        bootstrap.Modal.getInstance(document.getElementById('modalEditReservation')).hide();
+        showToast('Reservation updated cleanly in PostgreSQL!', 'Reservation Updated', 'success');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Overlap Conflict Error', 'danger');
+      }
+    }
+
+    async function cancelReservation(resId) {
+      if (!confirm("Are you sure you want to cancel this reservation?")) return;
+      try {
+        await fetch(`http://127.0.0.1:5000/api/reservations/${resId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'Cancelled' })
+        });
+        showToast("Reservation cancelled! PostgreSQL trigger reverted room to Available.", "Reservation Cancelled", "info");
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, "Cancellation Error", "danger");
+      }
+    }
+
+    // 6. HOTEL SERVICES & REQUESTS
+    async function renderAdminServices() {
+      const services = await HotelDB.getServicesCatalogAsync();
+      const catBody = document.getElementById('adminServicesCatalogBody');
+      if (!catBody) return;
+
+      catBody.innerHTML = services.map(s => `
+        <tr>
+          <td><span class="badge bg-secondary">SVC-${s.service_id}</span></td>
+          <td><strong>${s.service_name}</strong></td>
+          <td><strong class="text-gold">Rs. ${parseFloat(s.price).toLocaleString()}</strong></td>
+          <td><span class="small text-muted">${s.description || 'No description'}</span></td>
+          <td><span class="badge ${s.is_available !== false ? 'bg-success' : 'bg-secondary'}">${s.is_available !== false ? 'Available' : 'Disabled'}</span></td>
+          <td>
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm btn-outline-navy rounded-pill px-2.5" onclick="openEditServiceModal(${s.service_id}, '${s.service_name.replace(/'/g, "\\'")}', ${s.price}, '${(s.description || '').replace(/'/g, "\\'")}', ${s.is_available !== false})">
+                <i class="fa-solid fa-pen me-1"></i> Edit
+              </button>
+              <button class="btn btn-sm ${s.is_available !== false ? 'btn-outline-warning' : 'btn-outline-success'} rounded-pill px-2.5" onclick="toggleServiceAvailable(${s.service_id}, ${!(s.is_available !== false)})">
+                ${s.is_available !== false ? 'Disable' : 'Enable'}
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function openEditServiceModal(id, name, price, desc, isAvail) {
+      document.getElementById('esvcId').value = id;
+      document.getElementById('esvcName').value = name;
+      document.getElementById('esvcPrice').value = price;
+      document.getElementById('esvcDesc').value = desc;
+      document.getElementById('esvcAvail').value = String(isAvail);
+      new bootstrap.Modal(document.getElementById('modalEditService')).show();
+    }
+
+    async function submitEditService() {
+      const id = document.getElementById('esvcId').value;
+      const name = document.getElementById('esvcName').value.trim();
+      const price = parseFloat(document.getElementById('esvcPrice').value);
+      const desc = document.getElementById('esvcDesc').value.trim();
+      const isAvail = document.getElementById('esvcAvail').value === 'true';
+
+      try {
+        await HotelDB.updateServiceAsync(id, { service_name: name, price, description: desc, is_available: isAvail });
+        bootstrap.Modal.getInstance(document.getElementById('modalEditService')).hide();
+        showToast('Service catalog updated in PostgreSQL!', 'Catalog Updated', 'success');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Database Error', 'danger');
+      }
+    }
+
+    async function toggleServiceAvailable(serviceId, newStatus) {
+      await HotelDB.updateServiceAsync(serviceId, { is_available: newStatus });
+      showToast(`Service availability status updated in PostgreSQL!`, 'Catalog Updated', 'info');
+      await initAdminDashboard();
+    }
+
+    async function submitAddService() {
+      const name = document.getElementById('asSvcName').value.trim();
+      const price = parseFloat(document.getElementById('asSvcPrice').value);
+      const desc = document.getElementById('asSvcDesc').value.trim();
+
+      try {
+        await HotelDB.addServiceAsync({ service_name: name, price, description: desc });
+        bootstrap.Modal.getInstance(document.getElementById('modalAddService')).hide();
+        showToast(`Service "${name}" added to PostgreSQL catalog!`, 'Service Added', 'success');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Database Error', 'danger');
+      }
+    }
+
+    async function renderAdminServiceOrders() {
+      const requests = await HotelDB.getServiceRequestsAsync();
+      const reqBody = document.getElementById('adminServiceOrdersBody');
+      if (!reqBody) return;
+
+      if (requests.length === 0) {
+        reqBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">No service requests placed yet.</td></tr>`;
+        return;
+      }
+
+      reqBody.innerHTML = requests.map(r => `
+        <tr>
+          <td><span class="badge bg-secondary">${r.id}</span></td>
+          <td><strong class="text-navy">#${r.roomNumber}</strong></td>
+          <td><strong>${r.guestName}</strong></td>
+          <td>${r.serviceName}</td>
+          <td>${r.quantity}x</td>
+          <td><strong class="text-gold">Rs. ${(r.amount || 0).toLocaleString()}</strong></td>
+          <td><span class="badge ${r.status === 'Completed' ? 'bg-success' : 'bg-warning text-dark'}">${r.status}</span></td>
+          <td>
+            ${r.status !== 'Completed' ? `
+              <button class="btn btn-sm btn-success rounded-pill px-3" onclick="fulfillServiceAdmin('${r.id}')">
+                <i class="fa-solid fa-check me-1"></i> Fulfill
+              </button>
+            ` : '<span class="text-success small fw-bold"><i class="fa-solid fa-check-double me-1"></i> Completed</span>'}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function fulfillServiceAdmin(reqId) {
+      await HotelDB.updateServiceStatusAsync(reqId, 'Completed');
+      showToast('Order marked as Completed in PostgreSQL.', 'Order Fulfilled', 'success');
+      await initAdminDashboard();
+    }
+
+    // 7. HOUSEKEEPING BOARD
+    async function renderAdminHousekeeping() {
+      const tasks = await HotelDB.getHousekeepingAsync();
+      const tbody = document.getElementById('adminHousekeepingBody');
+      if (!tbody) return;
+
+      if (tasks.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">No active housekeeping tasks.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = tasks.map(t => `
+        <tr>
+          <td><span class="badge bg-secondary">TASK-${t.task_id}</span></td>
+          <td><strong class="text-navy">#${t.room_number}</strong></td>
+          <td>${t.room_type}</td>
+          <td><span class="badge bg-info text-dark">${t.task_type}</span></td>
+          <td>
+            <span class="badge ${t.status === 'Completed' ? 'bg-success' : (t.status === 'In Progress' ? 'bg-warning text-dark' : 'bg-danger')}">
+              ${t.status}
+            </span>
+          </td>
+          <td><span class="small text-muted">${t.notes || 'None'}</span></td>
+          <td><span class="small text-muted">${new Date(t.created_at).toLocaleString()}</span></td>
+          <td>
+            ${t.status !== 'Completed' ? `
+              <div class="d-flex gap-1">
+                ${t.status === 'Pending' ? `
+                  <button class="btn btn-sm btn-warning text-dark rounded-pill px-2.5" onclick="updateHousekeepingStatus(${t.task_id}, 'In Progress')">In Progress</button>
+                ` : ''}
+                <button class="btn btn-sm btn-success rounded-pill px-2.5" onclick="updateHousekeepingStatus(${t.task_id}, 'Completed')">Complete</button>
+              </div>
+            ` : '<span class="text-success small fw-bold"><i class="fa-solid fa-check-circle me-1"></i> Ready</span>'}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function updateHousekeepingStatus(taskId, status) {
+      try {
+        await HotelDB.updateHousekeepingStatusAsync(taskId, status);
+        showToast(`Task updated to ${status}! Room status set to Available.`, 'Housekeeping Updated', 'success');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Update Error', 'danger');
+      }
+    }
+
+    async function submitAddHousekeeping() {
+      const roomNum = document.getElementById('ahkRoom').value.trim();
+      const taskType = document.getElementById('ahkType').value;
+      const notes = document.getElementById('ahkNotes').value.trim();
+
+      try {
+        await HotelDB.addHousekeepingTaskAsync({ room_number: roomNum, task_type: taskType, notes });
+        bootstrap.Modal.getInstance(document.getElementById('modalAddHousekeeping')).hide();
+        showToast(`Housekeeping task dispatched for Room #${roomNum}!`, 'Task Dispatched', 'success');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Dispatch Error', 'danger');
+      }
+    }
+
+    // 8. BILLS & INVOICES
+    async function renderAdminBills() {
+      const bills = await HotelDB.getBillsAsync();
+      const search = (document.getElementById('billSearchInput')?.value || '').toLowerCase();
+      const filter = document.getElementById('billFilterStatus')?.value || '';
+      const tbody = document.getElementById('adminBillsTableBody');
+      if (!tbody) return;
+
+      const filtered = bills.filter(b => {
+        const matchesSearch = (b.guest_name || '').toLowerCase().includes(search) || String(b.room_number).includes(search);
+        const matchesFilter = filter === '' || b.payment_status === filter;
+        return matchesSearch && matchesFilter;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-3">No matching billing invoices found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(b => `
+        <tr>
+          <td><span class="badge bg-dark">INV-${b.bill_id}</span></td>
+          <td><strong>${b.guest_name}</strong></td>
+          <td><strong class="text-navy">#${b.room_number}</strong></td>
+          <td>Rs. ${parseFloat(b.room_charge).toLocaleString()}</td>
+          <td>Rs. ${parseFloat(b.service_charge).toLocaleString()}</td>
+          <td>Rs. ${parseFloat(b.tax).toLocaleString()}</td>
+          <td><strong class="text-gold">Rs. ${parseFloat(b.total_amount).toLocaleString()}</strong></td>
+          <td><span class="badge ${b.payment_status === 'Paid' ? 'bg-success' : 'bg-danger'}">${b.payment_status}</span></td>
+          <td>
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm btn-outline-navy rounded-pill px-2.5" onclick="viewInvoiceDetails(${b.bill_id})">
+                <i class="fa-solid fa-file-invoice me-1"></i> Breakdown
+              </button>
+              ${b.payment_status === 'Pending' ? `
+                <button class="btn btn-sm btn-success rounded-pill px-2.5" onclick="payBillAdmin(${b.bill_id})">Mark Paid</button>
+              ` : ''}
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function viewInvoiceDetails(billId) {
+      const data = await HotelDB.getAdminBillDetailsAsync(billId);
+      if (!data || !data.bill) {
+        showToast('Bill details unavailable.', 'Error', 'danger');
+        return;
+      }
+      const b = data.bill;
+      const items = data.serviceItems || [];
+
+      const modalBody = document.getElementById('viewInvoiceModalBody');
+      modalBody.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+          <div>
+            <h5 class="font-serif text-dark mb-0">Invoice INV-${b.bill_id}</h5>
+            <small class="text-muted">Reservation RES-${b.reservation_id} &bull; Room #${b.room_number} (${b.room_type})</small>
+          </div>
+          <span class="badge ${b.payment_status === 'Paid' ? 'bg-success fs-6' : 'bg-danger fs-6'}">${b.payment_status}</span>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-6">
+            <strong>Guest Name:</strong> ${b.guest_name}<br>
+            <strong>Email:</strong> ${b.guest_email}<br>
+            <strong>Phone:</strong> ${b.guest_phone || 'N/A'}
+          </div>
+          <div class="col-6 text-end">
+            <strong>Check-In:</strong> ${b.check_in}<br>
+            <strong>Check-Out:</strong> ${b.check_out}<br>
+            <strong>Guests:</strong> ${b.number_of_guests || 1}
+          </div>
+        </div>
+
+        <h6 class="font-serif text-navy mt-3 mb-2">Financial Tariff Breakdown</h6>
+        <table class="table table-bordered align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Description</th>
+              <th class="text-end">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Room Tariff Charge (${b.room_type})</td>
+              <td class="text-end">Rs. ${parseFloat(b.room_charge).toLocaleString()}</td>
+            </tr>
+            ${items.map(i => `
+              <tr>
+                <td>Service: ${i.service_name} (${i.quantity}x @ Rs. ${parseFloat(i.unit_price).toLocaleString()})</td>
+                <td class="text-end">Rs. ${parseFloat(i.item_total).toLocaleString()}</td>
+              </tr>
+            `).join('')}
+            <tr>
+              <td>Total Add-On Service Charges</td>
+              <td class="text-end">Rs. ${parseFloat(b.service_charge).toLocaleString()}</td>
+            </tr>
+            <tr>
+              <td>State & Hotel Luxury Tax (5%)</td>
+              <td class="text-end">Rs. ${parseFloat(b.tax).toLocaleString()}</td>
+            </tr>
+            <tr class="table-dark">
+              <td><strong>Grand Total Payable</strong></td>
+              <td class="text-end"><strong class="text-gold fs-5">Rs. ${parseFloat(b.total_amount).toLocaleString()}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      `;
+
+      new bootstrap.Modal(document.getElementById('modalViewInvoice')).show();
+    }
+
+    async function payBillAdmin(billId) {
+      await HotelDB.payBillAsync(billId);
+      showToast(`Bill INV-${billId} marked as Paid in PostgreSQL!`, 'Payment Cleared', 'success');
+      await initAdminDashboard();
+    }
+
+    // 9. REPORTS & ANALYTICS
+    async function renderAdminReports() {
+      const analytics = await HotelDB.getAdminAnalyticsAsync();
+      if (!analytics) return;
+
+      // Revenue breakdown
+      const revBody = document.getElementById('adminReportsRevenueBody');
+      if (revBody) {
+        revBody.innerHTML = (analytics.revenueByRoomType || []).map(r => `
+          <tr>
+            <td><strong>${r.room_type}</strong></td>
+            <td>${r.total_bookings} Bookings</td>
+            <td>Rs. ${parseFloat(r.total_room_revenue).toLocaleString()}</td>
+            <td>Rs. ${parseFloat(r.total_service_revenue).toLocaleString()}</td>
+            <td>Rs. ${parseFloat(r.total_tax_collected || 0).toLocaleString()}</td>
+            <td><strong class="text-gold">Rs. ${parseFloat(r.grand_total_revenue).toLocaleString()}</strong></td>
+          </tr>
+        `).join('');
+      }
+
+      // Loyalty leaderboard
+      const loyaltyBody = document.getElementById('adminReportsLoyaltyBody');
+      if (loyaltyBody) {
+        loyaltyBody.innerHTML = (analytics.customerLoyaltyRanking || []).map(l => `
+          <tr>
+            <td><strong>${l.guest_name}</strong><br><small class="text-muted">${l.guest_email}</small></td>
+            <td>${l.lifetime_reservations}</td>
+            <td><strong class="text-success">Rs. ${parseFloat(l.lifetime_expenditure).toLocaleString()}</strong></td>
+            <td><span class="badge ${l.loyalty_tier === 'Platinum VIP' ? 'bg-danger' : (l.loyalty_tier === 'Gold Preferred' ? 'bg-gold text-dark' : 'bg-secondary')}">${l.loyalty_tier}</span></td>
+          </tr>
+        `).join('');
+      }
+
+      // Service popularity leaderboard
+      const svcPopBody = document.getElementById('adminReportsServicePopularityBody');
+      if (svcPopBody) {
+        svcPopBody.innerHTML = (analytics.servicePopularity || []).map(s => `
+          <tr>
+            <td><strong>${s.service_name}</strong></td>
+            <td>${s.total_orders_placed}</td>
+            <td>${s.total_units_consumed} units</td>
+            <td><strong class="text-gold">Rs. ${parseFloat(s.total_revenue_generated).toLocaleString()}</strong></td>
+          </tr>
+        `).join('');
+      }
+
+      // Monthly financial report
+      const monthlyBody = document.getElementById('adminReportsMonthlyBody');
+      if (monthlyBody) {
+        const monthly = analytics.monthlyReports || [];
+        if (monthly.length === 0) {
+          monthlyBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No monthly financial records available.</td></tr>`;
+        } else {
+          monthlyBody.innerHTML = monthly.map(m => `
+            <tr>
+              <td><strong>${m.billing_month}</strong></td>
+              <td>${m.total_invoices} Invoices</td>
+              <td>Rs. ${parseFloat(m.gross_room_revenue || 0).toLocaleString()}</td>
+              <td>Rs. ${parseFloat(m.gross_service_revenue || 0).toLocaleString()}</td>
+              <td>Rs. ${parseFloat(m.gross_tax_collected || 0).toLocaleString()}</td>
+              <td><strong class="text-gold">Rs. ${parseFloat(m.net_revenue || 0).toLocaleString()}</strong></td>
+            </tr>
+          `).join('');
+        }
+      }
+    }
+
+    // 10. AUDIT LOGS
+    async function renderAdminAuditLogs() {
+      const logs = await HotelDB.getAuditLogsAsync();
+      const tbody = document.getElementById('adminAuditLogsTableBody');
+      if (!tbody) return;
+
+      if (logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-3">No PostgreSQL audit log entries generated yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = logs.map(l => `
+        <tr>
+          <td><span class="badge bg-secondary">LOG-${l.log_id}</span></td>
+          <td><code class="text-dark fw-bold">${l.table_name}</code></td>
+          <td>
+            <span class="badge ${l.operation === 'INSERT' ? 'bg-success' : (l.operation === 'UPDATE' ? 'bg-warning text-dark' : 'bg-danger')}">
+              ${l.operation}
+            </span>
+          </td>
+          <td><strong>ID #${l.record_id}</strong></td>
+          <td><span class="small">${l.changed_by || 'postgres'}</span></td>
+          <td><span class="small text-muted">${new Date(l.changed_at).toLocaleString()}</span></td>
+          <td>
+            <button class="btn btn-sm btn-outline-navy rounded-pill px-2.5" onclick="viewAuditLogDiff(${l.log_id})">
+              <i class="fa-solid fa-code me-1"></i> View Diff
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      window.currentAuditLogs = logs;
+    }
+
+    function viewAuditLogDiff(logId) {
+      const log = (window.currentAuditLogs || []).find(l => l.log_id === logId);
+      if (!log) return;
+
+      const body = document.getElementById('viewAuditLogModalBody');
+      body.innerHTML = `
+        <div class="mb-3">
+          <strong>Log ID:</strong> LOG-${log.log_id} &bull; 
+          <strong>Table:</strong> ${log.table_name} &bull; 
+          <strong>Operation:</strong> <span class="badge bg-dark">${log.operation}</span> &bull; 
+          <strong>User:</strong> ${log.changed_by}
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-2">
+            <h6 class="text-danger"><i class="fa-solid fa-arrow-left me-1"></i> Pre-Operation State (Old Data)</h6>
+            <div class="json-box">${log.old_data ? JSON.stringify(log.old_data, null, 2) : 'null (INSERT)'}</div>
+          </div>
+          <div class="col-md-6 mb-2">
+            <h6 class="text-success"><i class="fa-solid fa-arrow-right me-1"></i> Post-Operation State (New Data)</h6>
+            <div class="json-box">${log.new_data ? JSON.stringify(log.new_data, null, 2) : 'null (DELETE)'}</div>
+          </div>
+        </div>
+      `;
+
+      new bootstrap.Modal(document.getElementById('modalViewAuditLog')).show();
     }
 
     // Initial load

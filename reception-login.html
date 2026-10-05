@@ -29,6 +29,16 @@
         <h2 class="brand-title mb-1">Front Desk Staff Portal</h2>
         <p class="brand-subtitle mb-4 text-warning">Crowne Plaza Reception & Management</p>
 
+        <!-- Quick Role Switcher -->
+        <div class="d-flex justify-content-center gap-2 mb-3">
+          <button type="button" id="btnRoleReception" class="btn btn-sm btn-outline-success active rounded-pill px-3" onclick="setRolePreset('reception')">
+            <i class="fa-solid fa-concierge-bell me-1"></i> Reception Officer
+          </button>
+          <button type="button" id="btnRoleAdmin" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="setRolePreset('admin')">
+            <i class="fa-solid fa-user-shield me-1"></i> System Admin
+          </button>
+        </div>
+
         <div id="loginAlert" class="alert alert-danger d-none py-2 px-3 small rounded-3" role="alert"></div>
 
         <form id="receptionLoginForm" onsubmit="event.preventDefault(); handleReceptionLogin();">
@@ -55,18 +65,26 @@
               <label class="form-check-label text-slate-300 small" for="rememberStaff">Keep staff session active</label>
             </div>
             <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 small px-2 py-1">
-              <i class="fa-solid fa-shield-halved me-1"></i> Front Desk Secure
+              <i class="fa-solid fa-shield-halved me-1"></i> Staff Portal Secure
             </span>
           </div>
 
-          <button type="submit" class="btn btn-gold py-3 w-100 fs-6 mb-3">
-            <i class="fa-solid fa-right-to-bracket me-2"></i> Sign In to Front Desk Dashboard
-          </button>
+          <div class="d-grid gap-2 mb-3">
+            <button type="submit" class="btn btn-gold py-2.5 fs-6">
+              <i class="fa-solid fa-right-to-bracket me-2"></i> Sign In to Front Desk Dashboard
+            </button>
+            <button type="button" class="btn btn-outline-danger py-2.5 fs-6" onclick="loginAsAdminDirect()">
+              <i class="fa-solid fa-crown me-2"></i> Sign In to Admin Control Center
+            </button>
+          </div>
         </form>
 
         <div class="d-flex justify-content-between border-top border-secondary pt-3 mt-4 text-start">
           <a href="login.html" class="text-gold text-decoration-none small">
             <i class="fa-solid fa-arrow-left me-1"></i> Change Portal
+          </a>
+          <a href="admin.html" class="text-danger text-decoration-none small fw-bold">
+            <i class="fa-solid fa-shield-halved me-1"></i> Admin Portal
           </a>
           <a href="customer-login.html" class="text-slate-300 text-decoration-none small">
             Guest Login <i class="fa-solid fa-user me-1"></i>
@@ -83,6 +101,41 @@
 
   <script src="assets/js/auth.js"></script>
   <script>
+    function setRolePreset(role) {
+      const emailField = document.getElementById('staffEmail');
+      const passField = document.getElementById('staffPassword');
+      const btnRec = document.getElementById('btnRoleReception');
+      const btnAdmin = document.getElementById('btnRoleAdmin');
+
+      if (role === 'admin') {
+        emailField.value = 'admin@crowneplaza.com';
+        passField.value = 'admin123';
+        btnAdmin.classList.add('active');
+        btnRec.classList.remove('active');
+      } else {
+        emailField.value = 'reception@crowneplaza.com';
+        passField.value = 'staff123';
+        btnRec.classList.add('active');
+        btnAdmin.classList.remove('active');
+      }
+    }
+
+    async function loginAsAdminDirect() {
+      setRolePreset('admin');
+      const email = document.getElementById('staffEmail').value.trim();
+      const password = document.getElementById('staffPassword').value.trim();
+      const alertBox = document.getElementById('loginAlert');
+
+      alertBox.classList.add('d-none');
+      const result = await performStaffLogin(email, password);
+      if (result.success) {
+        window.location.href = 'admin.html';
+      } else {
+        alertBox.textContent = result.error || 'Admin authentication failed.';
+        alertBox.classList.remove('d-none');
+      }
+    }
+
     async function handleReceptionLogin() {
       const email = document.getElementById('staffEmail').value.trim();
       const password = document.getElementById('staffPassword').value.trim();

@@ -106,7 +106,7 @@ STEP 2: SETUP & INITIALIZE THE POSTGRESQL DATABASE
 Make sure PostgreSQL service is running.
 
 Command 2 (Automated Python bootstrap for database & initial hashes):
-python backend/init_db.py
+python backendpy/init_db.
 
 --------------------------------------------------------------------------------
 STEP 3: START THE BACKEND FLASK API SERVER
