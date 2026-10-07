@@ -220,3 +220,8 @@ Run these commands in PowerShell to inspect live PostgreSQL data:
    d. Exit:
       \q
 ================================================================================
+
+
+Temporary Mail ID
+arjunrmenon@gmail.com
+arjunrmenon
