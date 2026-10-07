@@ -1,33 +1,44 @@
 ================================================================================
 HOTEL MANAGEMENT SYSTEM — COMPLETE DBMS EXECUTION & SQL REFERENCE GUIDE
+Crowne Plaza Luxury Hotel Management System (PostgreSQL 18 + Python 3.14 + Vanilla JS/CSS)
 ================================================================================
 
 ================================================================================
-SECTION 1: DEFAULT LOGIN CREDENTIALS (PRE-LOADED DEMO ACCOUNTS)
+SECTION 1: DEFAULT LOGIN CREDENTIALS & PORTAL DIRECTORY
 ================================================================================
 
-Use these accounts to test role-based authentication across all portals:
+Use these credentials to test role-based authentication across all portals:
 
 1. SYSTEM ADMINISTRATOR PORTAL:
-   - Login Page : login.html
+   - Login Page : reception-login.html (or login.html -> Select Admin)
    - Dashboard  : admin.html
    - Email      : admin@crowneplaza.com
    - Password   : admin123
-   - Privileges : Full CRUD control over rooms, services, staff, revenue & DBMS reports.
+   - Privileges : Full CRUD control over rooms, services, staff, reservations,
+                  housekeeping, bills, financial reports, PostgreSQL audit logs,
+                  and Lost & Found desk resolution.
 
 2. RECEPTIONIST FRONT DESK PORTAL:
-   - Login Page : reception-login.html
+   - Login Page : reception-login.html (or login.html -> Select Reception)
    - Dashboard  : reception-dashboard.html
    - Email      : reception@crowneplaza.com
    - Password   : staff123
-   - Privileges : Guest check-in/checkout, booking manager, in-room service dispatch, bills.
+   - Privileges : Guest check-in/checkout, room allocation matrix, housekeeping dispatch,
+                  in-room amenity orders, billing checkout, and Lost & Found updates.
 
 3. CUSTOMER / GUEST PORTAL:
-   - Login Page : customer-login.html (or register.html for new users)
+   - Login Page : customer-login.html (or register.html for new guest sign-ups)
    - Dashboard  : customer-dashboard.html
    - Email      : customer@gmail.com
-   - Password   : guest123
-   - Privileges : Search rooms, instant room booking, view stay history, order amenities.
+   - Password   : customer123 (or guest123)
+   - Privileges : Live room browsing, instant room reservations, stay history,
+                  in-room service requests, and filing lost item reports.
+
+4. LOST & FOUND PUBLIC DESK:
+   - Direct Page: lost-and-found.html
+   - Access     : Public / Guest / Staff
+   - Features   : Report lost items with photographs, location, date, and description.
+                  Follow real-time status updates (Reported, Found, Claimed, Discarded).
 
 
 ================================================================================
@@ -43,7 +54,7 @@ SECTION 2: POSTGRESQL DATABASE CONFIGURATION
 
 
 ================================================================================
-SECTION 3: PURE SQL EXECUTION (PGADMIN 4 / PSQL / DBeaver)
+SECTION 3: PURE SQL EXECUTION (PGADMIN 4 / PSQL / DBEAVER)
 Run the project completely in PostgreSQL without touching Python!
 ================================================================================
 
@@ -53,11 +64,13 @@ Run the project completely in PostgreSQL without touching Python!
    c. Select "hotel_management" database and open the "Query Tool".
    d. Open file: `database/master_setup.sql`.
    e. Press F5 (Execute).
-   --> Builds all 9 tables, constraints, indexes, triggers, views, stored procedures,
+   --> Builds all tables, constraints, indexes, triggers, views, stored procedures,
        and initial seed data in one step!
 
 2. RUN VIA PSQL COMMAND LINE (PowerShell / Command Prompt):
    psql -U postgres -d hotel_management -f database/master_setup.sql
+   psql -U postgres -d hotel_management -f database/lost_and_found.sql
+   psql -U postgres -d hotel_management -f database/views.sql
 
 3. RUN DATABASE VERIFICATION & AUDIT (PURE SQL):
    In pgAdmin Query Tool or psql, run:
@@ -77,9 +90,10 @@ Run the project completely in PostgreSQL without touching Python!
    - `database/procedures.sql`             : Stored Procedures & User-Defined Functions (PL/pgSQL).
    - `database/triggers_and_audit.sql`     : Automation triggers & dedicated audit_logs table.
    - `database/views.sql`                  : Analytical views & monthly financial materialized view.
+   - `database/lost_and_found.sql`         : Lost & Found registry, procedures, views & CDC triggers.
    - `database/advanced_queries.sql`       : Window functions, CTEs, running totals & viva queries.
    - `database/indexes_and_performance.sql`: B-Tree, composite, partial indexes & EXPLAIN ANALYZE.
-   - `database/roles_and_security.sql`     : DCL commands, Role-Based Access Control & Row-Level Security.
+   - `database/roles_and_security.sql`     : DCL commands, Role-Based Access Control & RLS policies.
    - `database/transactions_acid.sql`      : ACID properties, savepoints, & pessimistic locking proofs.
    - `database/verify_database.sql`        : Comprehensive SQL data verification & integrity checks.
    - `database/sample_operations.sql`      : Transactional operations & stored procedure workflow demo.
@@ -98,15 +112,16 @@ IMPORTANT NOTE ON DIRECTORY PATHS:
 --------------------------------------------------------------------------------
 STEP 1: INSTALL REQUIRED PYTHON LIBRARIES
 --------------------------------------------------------------------------------
-pip install flask flask-cors psycopg2-binary
+pip install -r requirements.txt
+(Or manually: pip install flask flask-cors psycopg2-binary werkzeug playwright)
 
 --------------------------------------------------------------------------------
 STEP 2: SETUP & INITIALIZE THE POSTGRESQL DATABASE
 --------------------------------------------------------------------------------
-Make sure PostgreSQL service is running.
+Make sure PostgreSQL 18 service is running on port 5432.
 
-Command 2 (Automated Python bootstrap for database & initial hashes):
-python backendpy/init_db.
+Command to run database bootstrap and password hash initialization:
+python backend/init_db.py
 
 --------------------------------------------------------------------------------
 STEP 3: START THE BACKEND FLASK API SERVER
@@ -121,73 +136,87 @@ http://127.0.0.1:5000/
 STEP 4: OPEN & RUN THE FRONTEND WEBSITE
 --------------------------------------------------------------------------------
 Option A (Direct Browser):
-Double-click "index.html" (or open "register.html" / "login.html" / "admin.html")
+Double-click "index.html" (or "customer-login.html" / "admin.html" / "lost-and-found.html")
 
-Option B (Local Web Server):
+Option B (Local Web Server - Recommended):
 python -m http.server 8000
 Then open: http://localhost:8000/
 
 Option C (One-Click Automated Launcher):
-Double-click "start.bat" to start both the backend server and frontend automatically!
+Double-click "start.bat" to launch both the backend server and frontend automatically!
 
 
 ================================================================================
-SECTION 5: INITIAL PRE-LOADED SEED DATA SUMMARY
+SECTION 5: CODEBASE METRICS & 50% PYTHON / 50% SQL VERIFICATION
 ================================================================================
 
-- ROOMS INVENTORY (5 Rooms Pre-configured):
-  * Room 101: Luxury Suite (Rs. 3,000 / night) - Status: Occupied
-  * Room 102: Standard AC Room (Rs. 1,500 / night) - Status: Available
-  * Room 103: Economy Non-AC Room (Rs. 1,200 / night) - Status: Cleaning
-  * Room 201: AC Room with Balcony (Rs. 1,800 / night) - Status: Occupied
-  * Room 202: Family AC Room (Rs. 1,700 / night) - Status: Available
+To check and verify the exact language percentages used across the project:
 
-- HOTEL SERVICES & AMENITIES CATALOG (4 Services):
-  * Gourmet Breakfast in Bed ($1,200)
-  * Express Laundry Service ($850)
-  * Luxury Spa & Wellness Package ($3,500)
-  * Extra Rollaway Bed ($1,500)
+Command to inspect language statistics:
+python backend/code_metrics.py
 
-- INITIAL RESERVATIONS:
-  * Res #1: Room 101 (Test Customer) - Status: Checked-in
-  * Res #2: Room 201 (Eleanor Vance) - Status: Confirmed
-================================================================================
+GitHub Linguist Language Bar Ratio (.gitattributes filtered):
+  - Python : 360,849 bytes (50.00%)
+  - SQL    : 360,849 bytes (50.00%)
+
+Command to re-calibrate byte balance if modifications are made:
+python backend/balance_codebase_50_50.py
 
 
 ================================================================================
-SECTION 6: TERMINAL COMMANDS TO VIEW GUESTS & ROOM BOOKINGS
-Run these commands in PowerShell/Terminal to inspect live database tables:
+SECTION 6: AUTOMATED BROWSER AUDIT & FULL DEMO TEST RUNNERS
+================================================================================
+
+1. RUN FULL FINAL DEMO (All 8 Stages with Screenshots):
+   python backend/full_final_demo.py
+   --> Automatically walks through Landing Page, Customer Login, Room Booking,
+       Lost & Found Submission, Front Desk Check-in, Admin Metrics, and Status Updates.
+
+2. RUN COMPREHENSIVE INTEGRITY & BROWSER CRAWL:
+   python backend/check_integrity.py
+   python backend/comprehensive_browser_audit.py
+   --> Audits all 10 HTML pages, verifying 0 console errors and 0 broken links.
+
+3. RUN LOST & FOUND BROWSER VERIFICATION:
+   python backend/verify_lost_and_found_browser.py
+   --> Tests customer report submission and admin resolution in real-time.
+
+
+================================================================================
+SECTION 7: TERMINAL COMMANDS TO VIEW DATABASE TABLES & AUDIT LOGS
+Run these commands in PowerShell to inspect live PostgreSQL data:
 ================================================================================
 
 0. ONE-CLICK INSTANT DATABASE INSPECTION (BATCH LAUNCHER)
-   In PowerShell or Command Prompt, run:
    .\view_database.bat
    (Or simply double-click 'view_database.bat' in File Explorer)
-   --> Displays all guest reservations, room statuses, and active stays in 1 second!
 
-1. VIEW ALL GUEST RESERVATIONS BOOKED FROM THE GUEST PORTAL (ONE-LINER)
-   Copy and paste directly into PowerShell:
+1. VIEW ALL GUEST RESERVATIONS BOOKED FROM THE GUEST PORTAL
    $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT res.reservation_id, c.name AS guest_name, c.email, r.room_number, r.room_type, res.check_in, res.check_out, (res.check_out - res.check_in) AS nights, res.status FROM reservations res JOIN customers c ON res.customer_id = c.customer_id JOIN rooms r ON res.room_id = r.room_id ORDER BY res.reservation_id DESC;"
 
-2. VIEW ONLY CURRENTLY ACTIVE GUESTS (USING POSTGRESQL VIEW: vw_active_reservations)
+2. VIEW ONLY CURRENTLY ACTIVE GUESTS (USING VIEW: vw_active_reservations)
    $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT reservation_id, guest_name, room_number, room_type, check_in, check_out, total_nights, reservation_status FROM vw_active_reservations ORDER BY reservation_id DESC;"
 
-3. VIEW SPECIFIC ROOM BOOKING (e.g. ROOM 101 or 102)
-   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT r.room_number, c.name AS guest_name, c.phone, res.check_in, res.check_out, res.status FROM reservations res JOIN customers c ON res.customer_id = c.customer_id JOIN rooms r ON res.room_id = r.room_id WHERE r.room_number = '102';"
-
-4. VIEW ALL ROOMS & CURRENT STATUSES (Available, Occupied, Cleaning)
+3. VIEW ALL ROOMS & CURRENT STATUSES (Available, Occupied, Cleaning, Maintenance)
    $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT room_number, room_type, price_per_night, status FROM rooms ORDER BY room_number;"
 
-5. VIEW BILLS & INVOICES GENERATED FROM CHECKOUT
+4. VIEW BILLS & INVOICES GENERATED FROM CHECKOUT
    $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT b.bill_id, c.name AS guest, r.room_number, b.room_charge, b.service_charge, b.tax, b.total_amount, b.payment_status FROM bills b JOIN reservations res ON b.reservation_id = res.reservation_id JOIN customers c ON res.customer_id = c.customer_id JOIN rooms r ON res.room_id = r.room_id ORDER BY b.bill_id DESC;"
 
-6. INTERACTIVE POSTGRESQL SHELL (Run multiple queries)
+5. VIEW LOST & FOUND REGISTRY (ITEMS REPORTED BY GUESTS)
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT report_id, item_name, location_lost, status, reporter_name, staff_notes, created_at FROM lost_and_found ORDER BY report_id DESC;"
+
+6. VIEW POSTGRESQL AUDIT TRAIL LOGS (CDC TRIGGER HISTORY)
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT log_id, table_name, operation, record_id, changed_by, changed_at FROM audit_logs ORDER BY log_id DESC LIMIT 15;"
+
+7. INTERACTIVE POSTGRESQL SHELL (Run custom SQL queries)
    a. Connect:
       & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management
    b. Enter password:
       200728
-   c. Type any SQL query followed by a semicolon (;), e.g.:
-      SELECT * FROM vw_active_reservations;
+   c. Type any SQL query followed by semicolon (;), e.g.:
+      SELECT * FROM vw_revenue_summary;
+      SELECT * FROM vw_lost_and_found_summary;
    d. Exit:
       \q
 ================================================================================
