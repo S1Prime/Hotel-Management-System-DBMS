@@ -1788,5 +1788,138 @@ def get_admin_audit_logs():
     except Exception as e:
         return jsonify({"error": f"Database error: {str(e)}"}), 500
 
+
+# ------------------------------------------------------------------------------
+# 11. LOST & FOUND CENTRAL REGISTRY APIs
+# ------------------------------------------------------------------------------
+@app.route("/api/lost-and-found", methods=["GET"])
+def get_lost_and_found_reports():
+    try:
+        status_filter = request.args.get("status")
+        connection = get_db_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+
+        query = """
+            SELECT lf.report_id, 
+                   lf.report_id AS item_id,
+                   lf.item_name, 
+                   lf.category, 
+                   lf.location_lost,
+                   lf.location_lost AS location,
+                   lf.lost_date, 
+                   lf.lost_date AS lost_at,
+                   lf.description, 
+                   lf.image_url, 
+                   lf.image_url AS image_data,
+                   lf.reporter_name, 
+                   lf.reporter_name AS customer_name,
+                   lf.reporter_email, 
+                   lf.reporter_email AS customer_email,
+                   lf.reporter_phone, 
+                   lf.reporter_phone AS customer_phone,
+                   lf.status,
+                   s.name AS resolved_by_staff, 
+                   lf.staff_notes, 
+                   lf.staff_notes AS resolution_notes,
+                   lf.created_at, 
+                   lf.resolved_at
+            FROM lost_and_found lf
+            LEFT JOIN staff s ON lf.found_by_staff_id = s.staff_id
+        """
+        params = []
+        if status_filter and status_filter != 'All':
+            query += " WHERE lf.status = %s"
+            params.append(status_filter)
+        query += " ORDER BY lf.created_at DESC;"
+
+        cursor.execute(query, tuple(params))
+        reports = cursor.fetchall()
+
+        cursor.close()
+        connection.close()
+        return jsonify({"reports": reports, "items": reports})
+    except Exception as e:
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+
+@app.route("/api/lost-and-found", methods=["POST"])
+def create_lost_and_found_report():
+    try:
+        data = request.get_json() or {}
+        item_name = (data.get("item_name") or data.get("item") or "").strip()
+        location_lost = (data.get("location") or data.get("location_lost") or "").strip()
+        lost_date = data.get("lost_date") or data.get("lost_at")
+        description = (data.get("description") or "").strip()
+        image_url = data.get("image_url") or data.get("image_data")
+        customer_id = data.get("customer_id")
+        reporter_name = (data.get("reporter_name") or data.get("customer_name") or "Valued Guest").strip()
+        reporter_email = (data.get("reporter_email") or data.get("customer_email") or "customer@gmail.com").strip()
+        reporter_phone = (data.get("reporter_phone") or data.get("customer_phone") or "").strip()
+        category = (data.get("category") or "Personal Belonging").strip()
+
+        if not item_name or not location_lost or not lost_date or not description:
+            return jsonify({"error": "Item name, location, date, and description are required."}), 400
+
+        connection = get_db_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("""
+            CALL sp_report_lost_item(
+                %s, %s, %s, %s, %s::timestamptz, %s, %s, %s, %s, %s, NULL
+            );
+        """, (
+            customer_id, item_name, category, location_lost,
+            lost_date, description, image_url,
+            reporter_name, reporter_email, reporter_phone
+        ))
+        row = cursor.fetchone()
+        connection.commit()
+
+        new_report_id = None
+        if row and isinstance(row, dict):
+            new_report_id = row.get("p_report_id") or list(row.values())[0]
+
+        cursor.close()
+        connection.close()
+
+        return jsonify({
+            "message": "Lost item report registered successfully with Front Desk!",
+            "report_id": new_report_id,
+            "item_id": new_report_id
+        }), 201
+    except Exception as e:
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+
+@app.route("/api/lost-and-found/<int:report_id>/status", methods=["PUT"])
+def update_lost_and_found_status(report_id):
+    try:
+        data = request.get_json() or {}
+        new_status = data.get("status")
+        staff_id = data.get("staff_id") or 1
+        staff_notes = data.get("resolution_notes") or data.get("notes") or ""
+
+        valid_statuses = ["Reported", "Pending", "Investigating", "Found", "Claimed", "Closed", "Discarded"]
+        if not new_status or new_status not in valid_statuses:
+            return jsonify({"error": f"Valid status is required. Choose from {valid_statuses}."}), 400
+
+        connection = get_db_connection()
+        cursor = connection.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("""
+            CALL sp_update_lost_item_status(%s, %s, %s, %s);
+        """, (report_id, staff_id, new_status, staff_notes))
+        connection.commit()
+
+        cursor.close()
+        connection.close()
+
+        return jsonify({
+            "message": f"Report #{report_id} status updated to '{new_status}' successfully."
+        })
+    except Exception as e:
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)

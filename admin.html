@@ -105,6 +105,9 @@
           <a class="admin-nav-link" id="tab-audit-logs" data-bs-toggle="pill" href="#pane-audit-logs">
             <i class="fa-solid fa-shield-halved"></i> Audit Logs
           </a>
+          <a class="admin-nav-link" id="tab-lost-found" data-bs-toggle="pill" href="#pane-lost-found">
+            <i class="fa-solid fa-box-archive"></i> Lost & Found
+          </a>
         </div>
       </div>
 
@@ -616,6 +619,104 @@
           </div>
         </div>
 
+        <!-- 12. LOST & FOUND TAB -->
+        <div class="tab-pane fade" id="pane-lost-found">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">Lost & Found Management</h2>
+              <p class="text-muted mb-0">Review guest lost item reports, coordinate recovery, and log resolutions directly to PostgreSQL.</p>
+            </div>
+            <div class="d-flex gap-2">
+              <a href="lost-and-found.html" class="btn btn-outline-navy rounded-pill px-3" target="_blank">
+                <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Guest Lost &amp; Found Portal
+              </a>
+              <button class="btn btn-gold rounded-pill px-3" onclick="renderAdminLostFound()">
+                <i class="fa-solid fa-rotate me-1"></i> Refresh Items
+              </button>
+            </div>
+          </div>
+
+          <!-- KPI Metric Cards -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-3">
+              <div class="card p-3 border-0 shadow-sm rounded-4 bg-white text-center">
+                <div class="text-muted small fw-semibold">Total Reports</div>
+                <h3 class="font-serif text-dark mb-0 mt-1" id="lfMetricTotal">0</h3>
+                <small class="text-muted">Recorded in DB</small>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card p-3 border-0 shadow-sm rounded-4 bg-white text-center">
+                <div class="text-muted small fw-semibold">Pending Search</div>
+                <h3 class="font-serif text-danger mb-0 mt-1" id="lfMetricPending">0</h3>
+                <small class="text-danger">Awaiting recovery</small>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card p-3 border-0 shadow-sm rounded-4 bg-white text-center">
+                <div class="text-muted small fw-semibold">Located / Found</div>
+                <h3 class="font-serif text-warning mb-0 mt-1" id="lfMetricFound">0</h3>
+                <small class="text-warning">At Front Desk</small>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card p-3 border-0 shadow-sm rounded-4 bg-white text-center">
+                <div class="text-muted small fw-semibold">Claimed & Returned</div>
+                <h3 class="font-serif text-success mb-0 mt-1" id="lfMetricClaimed">0</h3>
+                <small class="text-success">Safely returned</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter & Search Toolbar -->
+          <div class="card p-3 border-0 shadow-sm rounded-4 bg-white mb-4">
+            <div class="row g-3 align-items-center">
+              <div class="col-md-5">
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-0"><i class="fa-solid fa-search text-muted"></i></span>
+                  <input type="text" id="adminLfSearch" class="form-control border-0 bg-light" placeholder="Search by item, location, guest name or phone..." onkeyup="filterAdminLostFound()">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <select id="adminLfStatusFilter" class="form-select border-0 bg-light" onchange="filterAdminLostFound()">
+                  <option value="All">All Statuses (Pending, Found, Claimed, Discarded)</option>
+                  <option value="Pending">Pending Recovery</option>
+                  <option value="Found">Located / Held at Front Desk</option>
+                  <option value="Claimed">Claimed by Guest</option>
+                  <option value="Discarded">Discarded / Closed</option>
+                </select>
+              </div>
+              <div class="col-md-3 text-end">
+                <span class="small text-muted" id="adminLfCountLabel">Showing all records</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lost & Found Data Table -->
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Item ID</th>
+                    <th>Photo</th>
+                    <th>Item Name</th>
+                    <th>Reported By</th>
+                    <th>Lost Location</th>
+                    <th>Date / Time</th>
+                    <th>Status</th>
+                    <th>Resolution Notes</th>
+                    <th>Staff Action</th>
+                  </tr>
+                </thead>
+                <tbody id="adminLostFoundTableBody">
+                  <tr><td colspan="9" class="text-center py-4 text-muted">Loading lost &amp; found reports...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -1101,6 +1202,7 @@
       await renderAdminBills();
       await renderAdminReports();
       await renderAdminAuditLogs();
+      await renderAdminLostFound();
     }
 
     // 1. OVERVIEW & ANALYTICS
@@ -1974,6 +2076,157 @@
       `;
 
       new bootstrap.Modal(document.getElementById('modalViewAuditLog')).show();
+    }
+
+    // 11. LOST & FOUND MANAGEMENT
+    let adminLostFoundItems = [];
+
+    async function renderAdminLostFound() {
+      const tbody = document.getElementById('adminLostFoundTableBody');
+      if (!tbody) return;
+
+      try {
+        const res = await fetch('http://127.0.0.1:5000/api/lost-and-found');
+        if (!res.ok) throw new Error('Failed to retrieve lost & found reports');
+        const data = await res.json();
+        adminLostFoundItems = data.items || [];
+
+        // Update KPI metrics
+        const total = adminLostFoundItems.length;
+        const pending = adminLostFoundItems.filter(i => i.status === 'Pending').length;
+        const found = adminLostFoundItems.filter(i => i.status === 'Found').length;
+        const claimed = adminLostFoundItems.filter(i => i.status === 'Claimed').length;
+
+        const elTotal = document.getElementById('lfMetricTotal');
+        const elPending = document.getElementById('lfMetricPending');
+        const elFound = document.getElementById('lfMetricFound');
+        const elClaimed = document.getElementById('lfMetricClaimed');
+        if (elTotal) elTotal.textContent = total;
+        if (elPending) elPending.textContent = pending;
+        if (elFound) elFound.textContent = found;
+        if (elClaimed) elClaimed.textContent = claimed;
+
+        filterAdminLostFound();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4"><i class="fa-solid fa-triangle-exclamation me-1"></i> Error loading Lost & Found items: ${err.message}</td></tr>`;
+      }
+    }
+
+    function filterAdminLostFound() {
+      const query = (document.getElementById('adminLfSearch')?.value || '').toLowerCase().trim();
+      const statusFilter = document.getElementById('adminLfStatusFilter')?.value || 'All';
+      const tbody = document.getElementById('adminLostFoundTableBody');
+      if (!tbody) return;
+
+      const filtered = adminLostFoundItems.filter(item => {
+        const matchesStatus = statusFilter === 'All' || item.status === statusFilter;
+        const searchStr = `${item.item_name} ${item.location} ${item.description || ''} ${item.customer_name || ''} ${item.customer_phone || ''} ${item.customer_email || ''}`.toLowerCase();
+        const matchesQuery = !query || searchStr.includes(query);
+        return matchesStatus && matchesQuery;
+      });
+
+      const countLabel = document.getElementById('adminLfCountLabel');
+      if (countLabel) {
+        countLabel.textContent = `Showing ${filtered.length} of ${adminLostFoundItems.length} records`;
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">No matching Lost &amp; Found records found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => {
+        const statusBadge = 
+          item.status === 'Pending' ? '<span class="badge bg-danger">Pending</span>' :
+          item.status === 'Found' ? '<span class="badge bg-warning text-dark">Found</span>' :
+          item.status === 'Claimed' ? '<span class="badge bg-success">Claimed</span>' :
+          '<span class="badge bg-secondary">Discarded</span>';
+
+        const photoHtml = item.image_data 
+          ? `<img src="${item.image_data}" alt="${item.item_name}" class="rounded-3 shadow-sm" style="width:48px;height:48px;object-fit:cover;cursor:pointer;" onclick="window.open('${item.image_data}')">`
+          : `<div class="rounded-3 bg-light d-flex align-items-center justify-content-center text-muted" style="width:48px;height:48px;"><i class="fa-solid fa-image"></i></div>`;
+
+        const reporter = item.customer_name 
+          ? `<div><strong>${item.customer_name}</strong><br><small class="text-muted">${item.customer_email || ''} ${item.customer_phone ? ' &bull; ' + item.customer_phone : ''}</small></div>`
+          : `<span class="text-muted fst-italic">Anonymous Guest</span>`;
+
+        return `
+          <tr>
+            <td><span class="badge bg-secondary">LF-${item.item_id}</span></td>
+            <td>${photoHtml}</td>
+            <td>
+              <strong>${item.item_name}</strong>
+              <div class="small text-muted text-truncate" style="max-width:220px;" title="${item.description || ''}">${item.description || 'No description provided'}</div>
+            </td>
+            <td>${reporter}</td>
+            <td><i class="fa-solid fa-location-dot text-danger me-1"></i>${item.location}</td>
+            <td><small class="text-muted">${new Date(item.lost_at || item.created_at).toLocaleString()}</small></td>
+            <td>${statusBadge}</td>
+            <td><small class="text-muted">${item.resolution_notes || '<span class="fst-italic">None</span>'}</small></td>
+            <td>
+              <div class="d-flex flex-wrap gap-1">
+                ${item.status === 'Pending' ? `
+                  <button class="btn btn-sm btn-outline-warning rounded-pill px-2.5" onclick="updateAdminLostFoundStatus(${item.item_id}, 'Found')">
+                    <i class="fa-solid fa-check me-1"></i> Mark Found
+                  </button>
+                ` : ''}
+                ${item.status === 'Found' ? `
+                  <button class="btn btn-sm btn-outline-success rounded-pill px-2.5" onclick="updateAdminLostFoundStatus(${item.item_id}, 'Claimed')">
+                    <i class="fa-solid fa-handshake me-1"></i> Mark Claimed
+                  </button>
+                ` : ''}
+                ${item.status !== 'Claimed' && item.status !== 'Discarded' ? `
+                  <button class="btn btn-sm btn-outline-secondary rounded-pill px-2" onclick="promptCustomLostFoundStatus(${item.item_id}, '${item.status}')" title="Change status or add note">
+                    <i class="fa-solid fa-ellipsis"></i>
+                  </button>
+                ` : ''}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function updateAdminLostFoundStatus(itemId, newStatus, customNotes = null) {
+      const user = getCurrentUser();
+      const staffId = (user && user.staff_id) ? user.staff_id : null;
+      let notes = customNotes;
+      if (notes === null) {
+        notes = prompt(`Enter resolution notes for status "${newStatus}":`, `Handled by Front Desk / Admin: ${user?.name || 'Staff'}`);
+        if (notes === null) return; // user cancelled prompt
+      }
+
+      try {
+        const res = await fetch(`http://127.0.0.1:5000/api/lost-and-found/${itemId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status: newStatus,
+            staff_id: staffId,
+            resolution_notes: notes
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update item status');
+
+        showToast(`Item LF-${itemId} status updated to "${newStatus}"!`, 'Lost & Found Updated', 'success');
+        await renderAdminLostFound();
+      } catch (err) {
+        showToast(err.message, 'Update Failed', 'danger');
+      }
+    }
+
+    function promptCustomLostFoundStatus(itemId, currentStatus) {
+      const target = prompt(`Enter new status (Pending, Found, Claimed, Discarded):`, currentStatus);
+      if (!target) return;
+      const valid = ['Pending', 'Found', 'Claimed', 'Discarded'];
+      const formatted = valid.find(s => s.toLowerCase() === target.trim().toLowerCase());
+      if (!formatted) {
+        alert('Invalid status! Choose from: Pending, Found, Claimed, Discarded');
+        return;
+      }
+      updateAdminLostFoundStatus(itemId, formatted);
     }
 
     // Initial load

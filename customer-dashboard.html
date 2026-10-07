@@ -26,10 +26,13 @@
         </div>
         <div>
           <strong class="d-block text-white" id="navGuestName">Valued Guest</strong>
-          <span class="badge bg-success text-white style="font-size:0.65rem;" id="navGuestRoom">Room #101</span>
+          <span class="badge bg-success text-white" style="font-size:0.65rem;" id="navGuestRoom">Room #101</span>
         </div>
       </div>
-      <button onclick="logoutUser()" class="btn btn-sm btn-outline-light rounded-pill px-3 ms-2">
+      <a href="lost-and-found.html" class="btn btn-sm btn-outline-warning rounded-pill px-3 ms-2">
+        <i class="fa-solid fa-box-archive me-1"></i> Lost & Found
+      </a>
+      <button onclick="logoutUser()" class="btn btn-sm btn-outline-light rounded-pill px-3 ms-1">
         <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
       </button>
     </div>
@@ -68,12 +71,15 @@
         </div>
 
         <div class="col-lg-4 text-lg-end">
-          <button class="btn btn-gold py-2.5 px-4 rounded-pill shadow mb-2 w-100" onclick="document.getElementById('guestServiceForm').scrollIntoView({behavior: 'smooth'})">
+          <button class="btn btn-gold py-2 px-4 rounded-pill shadow mb-2 w-100" onclick="document.getElementById('guestServiceForm').scrollIntoView({behavior: 'smooth'})">
             <i class="fa-solid fa-bell-concierge me-2"></i> Request Room Service
           </button>
-          <button class="btn btn-outline-light py-2 px-4 rounded-pill w-100" onclick="scrollToRooms()">
+          <button class="btn btn-outline-light py-2 px-4 rounded-pill w-100 mb-2" onclick="scrollToRooms()">
             <i class="fa-solid fa-plus me-1"></i> Book Another Suite
           </button>
+          <a href="lost-and-found.html" class="btn btn-sm btn-outline-warning py-1.5 px-3 rounded-pill w-100">
+            <i class="fa-solid fa-box-archive me-1"></i> Lost & Found Desk
+          </a>
         </div>
       </div>
     </div>
