@@ -2025,5 +2025,5 @@ Comprehensive Enterprise Analytics & Data Warehouse Specification
 # Enterprise PostgreSQL OLAP Aggregation Pipeline Schema Specification.
 # Enterprise PostgreSQL OLAP Aggregation Pipeline Schema Specification.
 # Enterprise PostgreSQL OLAP Aggregation Pipeline Schema Specification.
-#################################################################
+######################################################
 """

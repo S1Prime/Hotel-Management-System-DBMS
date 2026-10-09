@@ -206,7 +206,9 @@ const HotelDB = {
     try {
       const cleanId = String(reservationId).replace('RES-', '');
       const res = await fetch(`${API_BASE_URL}/reservations/${cleanId}/check-in`, {
-        method: 'POST'
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to check in');
@@ -217,11 +219,13 @@ const HotelDB = {
     }
   },
 
-  async checkOutBookingAsync(reservationId) {
+  async checkOutBookingAsync(reservationId, discount = 0) {
     try {
       const cleanId = String(reservationId).replace('RES-', '');
       const res = await fetch(`${API_BASE_URL}/reservations/${cleanId}/check-out`, {
-        method: 'POST'
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ discount: Number(discount) || 0 })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to check out');

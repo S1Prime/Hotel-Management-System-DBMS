@@ -633,7 +633,7 @@ def check_in_guest(reservation_id):
 @app.route("/api/reservations/<int:reservation_id>/check-out", methods=["POST"])
 def check_out_guest(reservation_id):
     try:
-        data = request.get_json() or {}
+        data = request.get_json(silent=True) or {}
         discount = float(data.get("discount", 0.0))
 
         connection = get_db_connection()
