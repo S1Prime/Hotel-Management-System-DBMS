@@ -130,7 +130,7 @@ Frontend
 | **JavaScript** | 4 | 1,184 | **5.52%** |
 | **CSS3** | 1 | 760 | **3.54%** |
 
-> **GitHub Linguist Language Bar**: Filtered via `.gitattributes` to emphasize core DBMS implementations: **55.00% SQL** / **45.00% Python**.
+> **GitHub Linguist Language Bar**: All 5 active technology layers detected with **SQL (38.25%)** leading as the #1 greatest segment.
 
 ---
 
