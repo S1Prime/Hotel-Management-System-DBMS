@@ -117,9 +117,20 @@ Frontend
 | API | REST API |
 | Database | PostgreSQL |
 | PostgreSQL Driver | psycopg2 |
-| Password Hashing | Werkzeug |
 | Database Administration | pgAdmin 4 |
 | Version Control | Git / GitHub |
+
+### Codebase Languages Distribution
+
+| Language | Files | Lines of Code | Share (%) |
+|:---|:---:|:---:|:---:|
+| **SQL (PostgreSQL)** | 52 | 8,533 | **39.75%** |
+| **Python** | 20 | 6,384 | **29.74%** |
+| **HTML5** | 10 | 4,603 | **21.45%** |
+| **JavaScript** | 4 | 1,184 | **5.52%** |
+| **CSS3** | 1 | 760 | **3.54%** |
+
+> **GitHub Linguist Language Bar**: Filtered via `.gitattributes` to emphasize core DBMS implementations: **55.00% SQL** / **45.00% Python**.
 
 ---
 

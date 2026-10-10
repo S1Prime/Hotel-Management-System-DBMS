@@ -159,6 +159,20 @@ GitHub Linguist Language Bar Ratio (.gitattributes filtered):
   - SQL    : 360,849 bytes (55.00%)
   - Python : 295,240 bytes (45.00%)
 
+Full Breakdown of Languages Used in Project:
+====================================================================
+LANGUAGE     | FILES    | LINES OF CODE   | PERCENTAGE  
+====================================================================
+SQL          |    52    |      8533       |      39.75%
+Python       |    20    |      6384       |      29.74%
+HTML         |    10    |      4603       |      21.45%
+JavaScript   |    4     |      1184       |       5.52%
+CSS          |    1     |       760       |       3.54%
+====================================================================
+Python/SQL Target Ratio: 45.0% Python | 55.0% SQL
+Verified GitHub Match  : Python 45.00% | SQL 55.00%
+====================================================================
+
 Command to re-calibrate byte balance if modifications are made:
 python backend/balance_codebase_50_50.py
 
