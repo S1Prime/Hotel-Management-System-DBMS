@@ -52,6 +52,6 @@ for lang, s in sorted(stats.items(), key=lambda x: x[1]['lines'], reverse=True):
     print(f"{lang:<12} | {s['files']:^8} | {s['lines']:^15} | {pct:>10.2f}%")
 
 print('=' * 68)
-print(f"Python/SQL Target Ratio: 50.0% Python | 50.0% SQL")
+print(f"Python/SQL Target Ratio: 45.0% Python | 55.0% SQL")
 print(f"Verified GitHub Match  : Python {py_linguist_pct:.2f}% | SQL {sql_linguist_pct:.2f}%")
 print('=' * 68)

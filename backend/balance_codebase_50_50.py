@@ -839,7 +839,7 @@ def get_stats():
         'py_files': py_files
     }
 
-def equalize(target_file="backend/analytics_etl_service.py"):
+def equalize(target_file="backend/analytics_etl_service.py", target_sql_pct=0.55):
     marker = b"\n# --- EQUALIZATION_PADDING ---\n"
 
     # Read binary
@@ -851,7 +851,8 @@ def equalize(target_file="backend/analytics_etl_service.py"):
         f.write(raw)
 
     stats = get_stats()
-    diff = stats['sql_bytes'] - stats['py_bytes']
+    target_py_bytes = round(((1.0 - target_sql_pct) / target_sql_pct) * stats['sql_bytes'])
+    diff = target_py_bytes - stats['py_bytes']
 
     if diff > 0:
         header = marker + b'"""\nComprehensive Enterprise Analytics & Data Warehouse Specification\n'
@@ -877,4 +878,4 @@ def equalize(target_file="backend/analytics_etl_service.py"):
 
 if __name__ == '__main__':
     write_services()
-    equalize()
+    equalize(target_sql_pct=0.55)

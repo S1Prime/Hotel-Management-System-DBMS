@@ -17,15 +17,47 @@ import os
 import sys
 import time
 import datetime
+import socket
+import subprocess
 from playwright.sync_api import sync_playwright
 
 ARTIFACTS_DIR = r"C:\Users\ADMIN\.gemini\antigravity-ide\brain\bcb42b63-8837-4d43-b2a4-feae8a876747"
+
+def is_port_active(port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(0.6)
+        return s.connect_ex(('127.0.0.1', port)) == 0
+
+def ensure_services():
+    print("[INIT] Verifying required application server dependencies...", flush=True)
+    if not is_port_active(5000):
+        print("  [*] Flask Backend (port 5000) not active. Auto-starting backend/app.py...", flush=True)
+        subprocess.Popen([sys.executable, "backend/app.py"])
+        for _ in range(30):
+            if is_port_active(5000):
+                print("  [+] Flask Backend successfully ready on http://127.0.0.1:5000", flush=True)
+                break
+            time.sleep(0.4)
+    else:
+        print("  [+] Flask Backend active on http://127.0.0.1:5000", flush=True)
+
+    if not is_port_active(8000):
+        print("  [*] Frontend Server (port 8000) not active. Auto-starting http.server 8000...", flush=True)
+        subprocess.Popen([sys.executable, "-m", "http.server", "8000"])
+        for _ in range(30):
+            if is_port_active(8000):
+                print("  [+] Frontend Server successfully ready on http://localhost:8000", flush=True)
+                break
+            time.sleep(0.4)
+    else:
+        print("  [+] Frontend Server active on http://localhost:8000", flush=True)
 
 def run_full_demo():
     print("=" * 80, flush=True)
     print("STARTING FULL FINAL DEMO - CROWNE PLAZA HOTEL MANAGEMENT SYSTEM", flush=True)
     print("=" * 80, flush=True)
     
+    ensure_services()
     demo_log = []
     
     with sync_playwright() as p:

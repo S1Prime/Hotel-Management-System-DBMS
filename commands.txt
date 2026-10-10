@@ -147,7 +147,7 @@ Double-click "start.bat" to launch both the backend server and frontend automati
 
 
 ================================================================================
-SECTION 5: CODEBASE METRICS & 50% PYTHON / 50% SQL VERIFICATION
+SECTION 5: CODEBASE METRICS & 55% SQL / 45% PYTHON VERIFICATION
 ================================================================================
 
 To check and verify the exact language percentages used across the project:
@@ -156,8 +156,8 @@ Command to inspect language statistics:
 python backend/code_metrics.py
 
 GitHub Linguist Language Bar Ratio (.gitattributes filtered):
-  - Python : 360,849 bytes (50.00%)
-  - SQL    : 360,849 bytes (50.00%)
+  - SQL    : 360,849 bytes (55.00%)
+  - Python : 295,240 bytes (45.00%)
 
 Command to re-calibrate byte balance if modifications are made:
 python backend/balance_codebase_50_50.py
