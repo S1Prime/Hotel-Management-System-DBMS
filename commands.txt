@@ -222,6 +222,6 @@ Run these commands in PowerShell to inspect live PostgreSQL data:
 ================================================================================
 
 
-Temporary Mail ID
+Temporary Mail ID for customer login :
 arjunrmenon@gmail.com
 arjunrmenon
