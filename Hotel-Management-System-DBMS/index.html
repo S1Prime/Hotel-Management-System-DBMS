@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crowne Plaza Hotel - Luxury Management & Guest Portal</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Luxury Stylesheet -->
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <!-- Top Navigation Header -->
+    <nav class="navbar navbar-expand-lg sticky-top bg-navy navbar-dark border-bottom border-gold shadow-sm" style="background: var(--primary-navy);">
+        <div class="container">
+            <a class="navbar-brand font-serif fs-4 d-flex align-items-center" href="index.html">
+                <i class="fa-solid fa-crown text-gold me-2 fs-3"></i>
+                <span class="fw-bold text-white">Crowne Plaza</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 gap-lg-2 align-items-lg-center">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#suites">Suites</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#foodMenu">Food Menu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#specialOffers">Special Offers</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#amenities">Amenities</a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Hero Banner Section -->
+    <div class="hero-wrapper text-white text-center">
+        <div class="container" style="max-width: 960px;">
+            <div class="card-luxury-dark py-5 px-4 shadow-lg border border-gold border-opacity-50 rounded-5">
+
+                <div class="brand-logo-badge mx-auto mb-3">
+                    <i class="fa-solid fa-crown"></i>
+                </div>
+
+                <h1 class="brand-title display-4 mb-2">Crowne Plaza Hotel</h1>
+                <p class="brand-subtitle fs-5 mb-4 text-warning">Welcome to your home away from home</p>
+
+                <!-- Dual Portal CTAs -->
+                <div class="row g-3 justify-content-center mb-4">
+                    <div class="col-md-5">
+                        <a href="reception-login.html" class="btn btn-navy py-3 w-100 fs-6 shadow d-flex align-items-center justify-content-center border border-gold">
+                            <i class="fa-solid fa-concierge-bell me-2 fs-5 text-gold"></i> Reception Desk Portal
+                        </a>
+                    </div>
+                    <div class="col-md-5">
+                        <a href="customer-login.html" class="btn btn-navy py-3 w-100 fs-6 shadow d-flex align-items-center justify-content-center border border-gold">
+                            <i class="fa-solid fa-key me-2 fs-5 text-gold"></i> Customer Portal
+                        </a>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-center gap-3 pt-3 border-top border-secondary text-slate-300 small">
+                    <span><i class="fa-solid fa-check-circle text-success me-1"></i> Role-Based Access Control</span>
+                    <span><i class="fa-solid fa-bolt text-warning me-1"></i> Instant Demo Logins</span>
+                    <span><i class="fa-solid fa-lock text-info me-1"></i> Live Room State Engine</span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Suites Section -->
+    <section class="py-5 bg-white" id="suites">
+        <div class="container py-4">
+            <div class="text-center mb-5">
+                <span class="badge bg-gold text-dark px-3 py-1 rounded-pill fw-bold mb-2">LUXURY ACCOMMODATIONS</span>
+                <h2 class="font-serif display-6 fw-bold text-navy">Signature Suites & Rooms</h2>
+                <p class="text-muted fs-6">Designed with elegant finishes, panoramic views, and premium amenities.</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Luxury Suite -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                        <img data-image-map-room="Luxury Suite" class="card-img-top" alt="Luxury Suite" style="height: 180px; object-fit: cover;">
+                        <div class="card-body p-3 d-flex flex-column justify-content-between">
+                            <div>
+                                <h4 class="font-serif fs-5 text-dark mb-2">Luxury Suite</h4>
+                                <p class="text-muted small mb-3">Skyline views, private balcony jacuzzi, master bed, and lounge access.</p>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                <span class="fw-bold text-navy fs-6">Rs. 3000 <small class="text-muted small">/ night</small></span>
+                                <a href="customer-login.html" class="btn btn-sm btn-outline-dark rounded-pill px-2.5">Reserve</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AC Room with Balcony -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                        <img data-image-map-room="AC Room with Balcony" class="card-img-top" alt="AC Room with Balcony" style="height: 180px; object-fit: cover;">
+                        <div class="card-body p-3 d-flex flex-column justify-content-between">
+                            <div>
+                                <h4 class="font-serif fs-5 text-dark mb-2">AC Room with Balcony</h4>
+                                <p class="text-muted small mb-3">Ocean vistas, private balcony terrace, workspace, and 24/7 dining orders.</p>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                <span class="fw-bold text-navy fs-6">Rs. 1800 <small class="text-muted small">/ night</small></span>
+                                <a href="customer-login.html" class="btn btn-sm btn-outline-dark rounded-pill px-2.5">Reserve</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Family AC Room (Spotlight UI!) -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card border-0 rounded-4 overflow-hidden h-100 card-spotlight-family">
+                        <img data-image-map-room="Family AC Room" class="card-img-top" alt="Family AC Room" style="height: 180px; object-fit: cover;">
+                        <div class="card-body p-3 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="mb-1"><span class="badge badge-family-deal">Best Value</span></div>
+                                <h4 class="font-serif fs-5 text-dark mb-1">Family AC Room</h4>
+                                <p class="text-muted small mb-3">Spacious layout for a family of 4, dual double beds, and smart media center.</p>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                <span class="fw-bold text-gold-dark fs-6">Rs. 1700 <small class="text-muted small">/ night</small></span>
+                                <a href="customer-login.html" class="btn btn-sm btn-gold rounded-pill px-2.5">Reserve</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Economy Non-AC Room -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                        <img data-image-map-room="Economy Non-AC Room" class="card-img-top" alt="Economy Non-AC Room" style="height: 180px; object-fit: cover;">
+                        <div class="card-body p-3 d-flex flex-column justify-content-between">
+                            <div>
+                                <h4 class="font-serif fs-5 text-dark mb-2">Economy Non-AC Room</h4>
+                                <p class="text-muted small mb-3">Courtyard view, budget-friendly layout, double twin beds, and workspace.</p>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                <span class="fw-bold text-navy fs-6">Rs. 1200 <small class="text-muted small">/ night</small></span>
+                                <a href="customer-login.html" class="btn btn-sm btn-outline-dark rounded-pill px-2.5">Reserve</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Public Food Menu -->
+    <section class="py-5 bg-light" id="foodMenu">
+        <div class="container py-4">
+            <div class="text-center mb-5">
+                <span class="badge bg-gold text-dark px-3 py-1 rounded-pill fw-bold mb-2">IN-ROOM DINING</span>
+                <h2 class="font-serif display-6 fw-bold text-navy">Explore Our Food Menu</h2>
+                <p class="text-muted fs-6">Browse dishes from our kitchens. Sign in to order them to your reservation.</p>
+            </div>
+            <div id="homeFoodMenuStatus" class="text-center text-muted mb-3" role="status">Loading menu…</div>
+            <div id="homeFoodMenu" class="home-food-menu" aria-live="polite"></div>
+        </div>
+    </section>
+
+    <!-- Special Offers -->
+    <section class="py-5 bg-white" id="specialOffers">
+        <div class="container py-4">
+            <div class="text-center mb-5">
+                <span class="badge bg-gold text-dark px-3 py-1 rounded-pill fw-bold mb-2">STAY &amp; SAVE</span>
+                <h2 class="font-serif display-6 fw-bold text-navy">Special Offers</h2>
+                <p class="text-muted fs-6">Verified savings for your room and eligible dining charges.</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6 col-xl-3"><div class="card p-4 border-0 shadow-sm rounded-4 h-100"><span class="badge bg-warning text-dark align-self-start mb-3">15% OFF ROOM</span><h3 class="font-serif fs-4">Student Offer</h3><p class="text-muted small">Save on your room tariff with a valid college or student ID.</p><div class="small mt-auto"><strong>Eligibility:</strong> Reception must verify uploaded ID.<br><strong>Applies to:</strong> Room charges only.<br><strong>Terms:</strong> Pending or rejected claims do not reduce the bill.</div></div></div>
+                <div class="col-md-6 col-xl-3"><div class="card p-4 border-0 shadow-sm rounded-4 h-100"><span class="badge bg-success align-self-start mb-3">25% OFF ELIGIBLE FOOD</span><h3 class="font-serif fs-4">Food &amp; Dining</h3><p class="text-muted small">Save on completed menu orders charged to your reservation.</p><div class="small mt-auto"><strong>Eligibility:</strong> Automatically checked at checkout.<br><strong>Applies to:</strong> Completed food menu orders only.<br><strong>Terms:</strong> Complimentary breakfast and non-food services are excluded.</div></div></div>
+                <div class="col-md-6 col-xl-3"><div class="card p-4 border-0 shadow-sm rounded-4 h-100"><span class="badge bg-primary align-self-start mb-3">10% OFF ROOM</span><h3 class="font-serif fs-4">Frequent Visitor</h3><p class="text-muted small">A thank-you discount for returning guests.</p><div class="small mt-auto"><strong>Eligibility:</strong> At least 3 previous completed stays, checked from hotel records.<br><strong>Applies to:</strong> Room charges only.<br><strong>Terms:</strong> No guest-entered visit count or evidence.</div></div></div>
+                <div class="col-md-6 col-xl-3"><div class="card p-4 border-0 shadow-sm rounded-4 h-100"><span class="badge bg-info text-dark align-self-start mb-3">15% OFF ROOM</span><h3 class="font-serif fs-4">Long Stay</h3><p class="text-muted small">Stay five nights or longer and save on your room tariff.</p><div class="small mt-auto"><strong>Eligibility:</strong> Calculated from reservation dates.<br><strong>Applies to:</strong> Room charges only.<br><strong>Terms:</strong> Room discounts cannot be combined; the highest eligible room discount is applied.</div></div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Amenities Section -->
+    <section class="py-5 bg-light" id="amenities">
+        <div class="container py-4">
+            <div class="text-center mb-5">
+                <span class="badge bg-navy text-white px-3 py-1 rounded-pill fw-bold mb-2">WORLD CLASS SERVICES</span>
+                <h2 class="font-serif display-6 fw-bold text-navy">Hotel Features & Portal Services</h2>
+            </div>
+
+            <div class="row g-4 text-center">
+                <div class="col-md-3">
+                    <div class="p-4 bg-white rounded-4 border shadow-sm h-100">
+                        <div class="stat-icon mx-auto mb-3" style="background: rgba(212, 175, 55, 0.15); color: #b89320;">
+                            <i class="fa-solid fa-concierge-bell"></i>
+                        </div>
+                        <h5 class="font-serif text-dark">Front Desk Control</h5>
+                        <p class="text-muted small mb-0">Instant room allocation, guest check-in/out, and status updates.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="p-4 bg-white rounded-4 border shadow-sm h-100">
+                        <div class="stat-icon mx-auto mb-3" style="background: rgba(16, 185, 129, 0.15); color: #047857;">
+                            <i class="fa-solid fa-utensils"></i>
+                        </div>
+                        <h5 class="font-serif text-dark">In-Room Dining</h5>
+                        <p class="text-muted small mb-0">Order gourmet dining directly to your suite from the Guest Portal.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="p-4 bg-white rounded-4 border shadow-sm h-100">
+                        <div class="stat-icon mx-auto mb-3" style="background: rgba(59, 130, 246, 0.15); color: #1d4ed8;">
+                            <i class="fa-solid fa-spa"></i>
+                        </div>
+                        <h5 class="font-serif text-dark">Spa & Wellness</h5>
+                        <p class="text-muted small mb-0">Aromatherapy massage, hydrotherapy pool, and fitness center access.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="p-4 bg-white rounded-4 border shadow-sm h-100">
+                        <div class="stat-icon mx-auto mb-3" style="background: rgba(239, 68, 68, 0.15); color: #dc2626;">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <h5 class="font-serif text-dark">Role-Based Security</h5>
+                        <p class="text-muted small mb-0">Protected login portals for reception staff and hotel guests.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-navy text-slate-300 py-4 border-top border-gold" style="background: var(--primary-navy);">
+        <div class="container text-center">
+            <div class="mb-2">
+                <i class="fa-solid fa-crown text-gold fs-4"></i>
+            </div>
+            <p class="mb-1 fw-bold text-white">Crowne Plaza Hotel & Management System</p>
+            <p class="small text-slate-400 mb-0">&copy; 2026 Crowne Plaza. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/image-map.js"></script>
+    <script src="assets/js/data.js"></script>
+    <script>
+        function escapeMenuText(value) {
+            return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+        }
+        let homeFoodItems = [];
+        let selectedHomeCuisine = null;
+        function renderHomeFoodMenu() {
+            const grid = document.getElementById('homeFoodMenu');
+            const cuisines = [...new Set(homeFoodItems.map(item => item.service_category))];
+            const cuisineButtons = cuisines.map(cuisine => {
+                const representative = homeFoodItems.find(item => item.service_category === cuisine);
+                return `<button class="home-cuisine-button${selectedHomeCuisine === cuisine ? ' is-selected' : ''}" type="button" data-cuisine="${escapeMenuText(cuisine)}" aria-expanded="${selectedHomeCuisine === cuisine}" aria-controls="homeCuisineDishes">
+                    <i class="fa-solid fa-utensils" aria-hidden="true"></i><span>${escapeMenuText(cuisine)}</span></button>`;
+            }).join('');
+            const selectedDishes = selectedHomeCuisine === null ? [] : homeFoodItems.filter(item => item.service_category === selectedHomeCuisine);
+            const dishesMarkup = selectedHomeCuisine === null ? '' : `<section class="home-cuisine-dishes" id="homeCuisineDishes" aria-label="${escapeMenuText(selectedHomeCuisine)} dishes">
+                <h3 class="font-serif fs-4 text-navy mb-3"><i class="fa-solid fa-utensils text-gold me-2" aria-hidden="true"></i>${escapeMenuText(selectedHomeCuisine)}</h3>
+                <div class="row g-3">${selectedDishes.map(food => `<div class="col-md-6 col-xl-4"><article class="home-food-dish d-flex gap-3 align-items-center h-100 p-3 bg-white rounded-4 shadow-sm border">
+                    <img class="home-food-image rounded-3" src="${escapeMenuText(food.image_url || '')}" data-image-map-food="${escapeMenuText(food.service_name)}" data-image-map-category="${escapeMenuText(food.service_category)}" alt="${escapeMenuText(food.service_name)}" loading="lazy" decoding="async">
+                    <div class="home-food-content flex-grow-1"><div class="fw-bold text-dark">${escapeMenuText(food.service_name)}</div>
+                    <div class="small text-muted">${escapeMenuText(food.description || '')}</div>
+                    <div class="d-flex justify-content-between align-items-center gap-2 mt-2"><span class="fw-bold text-navy">₹${Number(food.price).toLocaleString()} <small class="text-muted fw-normal">/ serving</small></span>
+                    <div class="d-flex align-items-center gap-2"><label class="small mb-0" for="homeFoodQty${Number(food.service_id)}">Qty</label><input id="homeFoodQty${Number(food.service_id)}" class="form-control form-control-sm" type="number" min="1" max="20" step="1" value="1" aria-label="Quantity of ${escapeMenuText(food.service_name)}" style="width:72px">
+                    <button class="btn btn-sm btn-gold rounded-pill px-3" type="button" onclick="startHomeFoodOrder(${Number(food.service_id)})">Order</button></div></div></div>
+                </article></div>`).join('')}</div></section>`;
+            const repeatedCuisineButtons = cuisineButtons.replace(/<button /g, '<button tabindex="-1" ');
+            grid.innerHTML = `<div class="home-cuisine-marquee" aria-label="Browse cuisines"><div class="home-cuisine-track">${cuisineButtons}<div class="home-cuisine-duplicate" aria-hidden="true">${repeatedCuisineButtons}</div></div></div>${dishesMarkup}`;
+            HotelImageMap.hydrate(grid);
+            grid.querySelectorAll('.home-cuisine-button').forEach(button => button.addEventListener('click', () => {
+                const cuisine = button.dataset.cuisine;
+                selectedHomeCuisine = selectedHomeCuisine === cuisine ? null : cuisine;
+                renderHomeFoodMenu();
+            }));
+        }
+        async function loadHomeFoodMenu() {
+            const status = document.getElementById('homeFoodMenuStatus');
+            try {
+                const items = await HotelDB.getFoodMenuAsync();
+                if (!items.length) {
+                    status.textContent = 'Our food menu is temporarily unavailable.';
+                    return;
+                }
+                status.textContent = '';
+                homeFoodItems = items;
+                renderHomeFoodMenu();
+            } catch (error) {
+                status.textContent = 'Our food menu is temporarily unavailable. Please try again later.';
+            }
+        }
+        function startHomeFoodOrder(serviceId) {
+            const user = (() => { try { return JSON.parse(sessionStorage.getItem('cp_user') || 'null'); } catch (_) { return null; } })();
+            const quantityInput = document.getElementById(`homeFoodQty${Number(serviceId)}`);
+            const quantity = Number.parseInt(quantityInput?.value, 10);
+            if (!Number.isInteger(quantity) || quantity < 1 || quantity > 20) {
+                alert('Choose a quantity between 1 and 20.');
+                quantityInput?.focus();
+                return;
+            }
+            const order = { serviceId: Number(serviceId), quantity };
+            sessionStorage.setItem('cp_pending_food_order', JSON.stringify(order));
+            const target = user?.role?.toLowerCase() === 'customer' ? 'customer-dashboard.html' : 'customer-login.html';
+            window.location.href = `${target}?order_food=${encodeURIComponent(order.serviceId)}&quantity=${encodeURIComponent(order.quantity)}`;
+        }
+        HotelImageMap.hydrate(document);
+        document.addEventListener('DOMContentLoaded', loadHomeFoodMenu);
+    </script>
+    <style>
+        .home-cuisine-marquee { overflow: hidden; padding: .75rem 0 1.25rem; }
+        .home-cuisine-track { display: flex; width: max-content; gap: 1rem; animation: homeCuisineScroll 24s linear infinite; }
+        .home-cuisine-duplicate { display: flex; gap: 1rem; }
+        .home-cuisine-marquee:hover .home-cuisine-track, .home-cuisine-marquee:focus-within .home-cuisine-track { animation-play-state: paused; }
+        .home-cuisine-button { display:flex; align-items:center; gap:.7rem; flex:0 0 190px; min-height:76px; padding:.9rem 1rem; border:1px solid rgba(11,19,41,.12); border-radius:.85rem; background:#fff; color:var(--primary-navy); font-weight:700; box-shadow:0 4px 12px rgba(11,19,41,.08); transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease; }
+        .home-cuisine-button i { color:var(--accent-gold-dark); font-size:1.2rem; }
+        .home-cuisine-button:hover, .home-cuisine-button:focus-visible, .home-cuisine-button.is-selected { transform: translateY(-3px); border-color: var(--accent-gold); box-shadow: 0 8px 20px rgba(11,19,41,.2); outline: none; }
+        .home-cuisine-dishes { margin-top: .5rem; }
+        .home-food-dish { overflow: hidden; border-color: rgba(11,19,41,.08) !important; transition: transform .2s ease, box-shadow .2s ease; }
+        .home-food-dish:hover { transform: translateY(-4px); box-shadow: 0 14px 28px rgba(11,19,41,.14) !important; }
+        .home-food-content { min-width:0; }
+        .home-food-image { width:82px; height:82px; flex:0 0 82px; object-fit:cover; background:#f1f5f9; }
+        @keyframes homeCuisineScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        @media (prefers-reduced-motion: reduce) { .home-cuisine-track { animation: none; } }
+        @media (max-width: 575.98px) { .home-cuisine-button { flex-basis: 164px; } }
+    </style>
+</body>
+
+</html>

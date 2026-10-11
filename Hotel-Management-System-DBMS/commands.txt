@@ -1,0 +1,184 @@
+================================================================================
+HOTEL MANAGEMENT SYSTEM — COMPLETE DBMS EXECUTION & SQL REFERENCE GUIDE
+================================================================================
+
+================================================================================
+SECTION 1: DEFAULT LOGIN CREDENTIALS (PRE-LOADED DEMO ACCOUNTS)
+================================================================================
+
+Use these accounts to test role-based authentication across all portals:
+
+1. SYSTEM ADMINISTRATOR PORTAL:
+   - Login Page : login.html
+   - Dashboard  : admin.html
+   - Email      : admin@crowneplaza.com
+   - Password   : admin123
+   - Privileges : Full CRUD control over rooms, services, staff, revenue & DBMS reports.
+
+2. RECEPTIONIST FRONT DESK PORTAL:
+   - Login Page : reception-login.html
+   - Dashboard  : reception-dashboard.html
+   - Email      : reception@crowneplaza.com
+   - Password   : staff123
+   - Privileges : Guest check-in/checkout, booking manager, in-room service dispatch, bills.
+
+3. CUSTOMER / GUEST PORTAL:
+   - Login Page : customer-login.html (or register.html for new users)
+   - Dashboard  : customer-dashboard.html
+   - Email      : customer@gmail.com
+   - Password   : guest123
+   - Privileges : Search rooms, instant room booking, view stay history, order amenities.
+
+
+================================================================================
+SECTION 2: POSTGRESQL DATABASE CONFIGURATION
+================================================================================
+
+- Database Management System : PostgreSQL 18
+- Database Name              : hotel_management
+- Host                       : localhost (127.0.0.1)
+- Port                       : 5432
+- Database Superuser         : postgres
+- Database Password          : 200728
+
+
+================================================================================
+SECTION 3: PURE SQL EXECUTION (PGADMIN 4 / PSQL / DBeaver)
+Run the project completely in PostgreSQL without touching Python!
+================================================================================
+
+1. ONE-CLICK SETUP IN PGADMIN 4:
+   a. Open pgAdmin 4.
+   b. Right-click "Databases" -> Create -> Database -> Name: "hotel_management".
+   c. Select "hotel_management" database and open the "Query Tool".
+   d. Open file: `database/master_setup.sql`.
+   e. Press F5 (Execute).
+   --> Builds all 9 tables, constraints, indexes, triggers, views, stored procedures,
+       and initial seed data in one step!
+
+2. RUN VIA PSQL COMMAND LINE (PowerShell / Command Prompt):
+   psql -U postgres -d hotel_management -f database/master_setup.sql
+
+3. RUN DATABASE VERIFICATION & AUDIT (PURE SQL):
+   In pgAdmin Query Tool or psql, run:
+   `database/verify_database.sql`
+   --> Checks table counts, guest accounts, room states, constraints, views, and audit log.
+
+4. RUN SAMPLE BUSINESS WORKFLOWS & TRANSACTIONS (PURE SQL):
+   In pgAdmin Query Tool or psql, run:
+   `database/sample_operations.sql`
+   --> Demonstrates customer registration, stored procedure booking, check-in, amenity order,
+       automated checkout invoice generation, and cancellation trigger release.
+
+5. DEDICATED SQL FILES CATALOG (`database/` folder):
+   - `database/master_setup.sql`           : Complete standalone all-in-one SQL setup script.
+   - `database/schema.sql`                 : Core relational entity definitions & constraints.
+   - `database/data.sql`                   : Initial seed records (guests, staff, rooms, amenities).
+   - `database/procedures.sql`             : Stored Procedures & User-Defined Functions (PL/pgSQL).
+   - `database/triggers_and_audit.sql`     : Automation triggers & dedicated audit_logs table.
+   - `database/views.sql`                  : Analytical views & monthly financial materialized view.
+   - `database/advanced_queries.sql`       : Window functions, CTEs, running totals & viva queries.
+   - `database/indexes_and_performance.sql`: B-Tree, composite, partial indexes & EXPLAIN ANALYZE.
+   - `database/roles_and_security.sql`     : DCL commands, Role-Based Access Control & Row-Level Security.
+   - `database/transactions_acid.sql`      : ACID properties, savepoints, & pessimistic locking proofs.
+   - `database/verify_database.sql`        : Comprehensive SQL data verification & integrity checks.
+   - `database/sample_operations.sql`      : Transactional operations & stored procedure workflow demo.
+   - `database/queries.sql`                : Standard SQL queries demonstrating joins & aggregates.
+
+
+================================================================================
+SECTION 4: WEB APPLICATION EXECUTION (3-TIER APPLICATION)
+================================================================================
+
+IMPORTANT NOTE ON DIRECTORY PATHS:
+- All commands below must be run from the main project folder:
+  `Hotel-Management-System-DBMS`
+- If terminal is in parent folder, run: cd "Hotel-Management-System-DBMS"
+
+--------------------------------------------------------------------------------
+STEP 1: INSTALL REQUIRED PYTHON LIBRARIES
+--------------------------------------------------------------------------------
+pip install flask flask-cors psycopg2-binary
+
+--------------------------------------------------------------------------------
+STEP 2: SETUP & INITIALIZE THE POSTGRESQL DATABASE
+--------------------------------------------------------------------------------
+Make sure PostgreSQL service is running.
+
+Command 2 (Automated Python bootstrap for database & initial hashes):
+python backend/init_db.py
+
+--------------------------------------------------------------------------------
+STEP 3: START THE BACKEND FLASK API SERVER
+--------------------------------------------------------------------------------
+python backend/app.py
+
+Backend will start running at:
+http://127.0.0.1:5000/
+(Keep this terminal running in the background!)
+
+--------------------------------------------------------------------------------
+STEP 4: OPEN & RUN THE FRONTEND WEBSITE
+--------------------------------------------------------------------------------
+Option A (Direct Browser):
+Double-click "index.html" (or open "register.html" / "login.html" / "admin.html")
+
+Option B (Local Web Server):
+python -m http.server 8000
+Then open: http://localhost:8000/
+
+Option C (One-Click Automated Launcher):
+Double-click "start.bat" to start both the backend server and frontend automatically!
+
+
+================================================================================
+SECTION 5: INITIAL PRE-LOADED SEED DATA SUMMARY
+================================================================================
+
+- ROOMS INVENTORY (5 Rooms Pre-configured):
+  * Room 101: Luxury Suite (Rs. 3,000 / night) - Status: Occupied
+  * Room 102: Standard AC Room (Rs. 1,500 / night) - Status: Available
+  * Room 103: Economy Non-AC Room (Rs. 1,200 / night) - Status: Cleaning
+  * Room 201: AC Room with Balcony (Rs. 1,800 / night) - Status: Occupied
+  * Room 202: Family AC Room (Rs. 1,700 / night) - Status: Available
+
+- HOTEL SERVICES & AMENITIES CATALOG (4 Services):
+  * Gourmet Breakfast in Bed ($1,200)
+  * Express Laundry Service ($850)
+  * Luxury Spa & Wellness Package ($3,500)
+  * Extra Rollaway Bed ($1,500)
+
+- INITIAL RESERVATIONS:
+  * Res #1: Room 101 (Test Customer) - Status: Checked-in
+  * Res #2: Room 201 (Eleanor Vance) - Status: Confirmed
+================================================================================
+
+
+================================================================================
+SECTION 6: TERMINAL COMMANDS TO VIEW GUESTS & ROOM BOOKINGS
+Run these commands in PowerShell/Terminal to inspect live database tables:
+================================================================================
+
+1. INSTANT LOOKUP: VIEW ALL GUESTS ENROLLED/BOOKED FOR ROOMS (ONE-LINER)
+   Copy and paste directly into PowerShell:
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT r.room_number, r.room_type, c.name AS guest_name, c.phone, c.email, res.check_in, res.check_out, res.status FROM reservations res JOIN customers c ON res.customer_id = c.customer_id JOIN rooms r ON res.room_id = r.room_id ORDER BY r.room_number;"
+
+2. VIEW ONLY CURRENTLY ACTIVE GUESTS (USING BUILT-IN VIEW)
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT room_number, room_type, guest_name, guest_phone, check_in, check_out, total_nights, reservation_status FROM vw_active_reservations;"
+
+3. VIEW SPECIFIC ROOM BOOKING (e.g. ROOM 101)
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT r.room_number, c.name AS guest_name, c.phone, res.check_in, res.check_out, res.status FROM reservations res JOIN customers c ON res.customer_id = c.customer_id JOIN rooms r ON res.room_id = r.room_id WHERE r.room_number = '101';"
+
+4. VIEW ALL ROOMS & CURRENT STATUSES (Available, Occupied, Cleaning)
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT room_number, room_type, price_per_night, status FROM rooms ORDER BY room_number;"
+
+5. INTERACTIVE POSTGRESQL SHELL (Run multiple queries)
+   a. Connect:
+      & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management
+   b. Enter password:
+      200728
+   c. Type any SQL query followed by a semicolon (;), e.g.:
+      SELECT * FROM vw_active_reservations;
+   d. Exit:
+      \q
+================================================================================

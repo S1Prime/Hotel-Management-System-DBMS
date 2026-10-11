@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guest Portal - Crowne Plaza Hotel</title>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom Luxury Stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body style="background-color: #f8fafc;">
+
+  <!-- Guest Header Navbar -->
+  <nav class="dashboard-navbar">
+    <a href="index.html" class="dashboard-brand">
+      <i class="fa-solid fa-crown text-warning me-2"></i>
+      <span>Crowne Plaza &bull; Guest Portal</span>
+    </a>
+    <div class="d-flex align-items-center gap-3">
+      <a href="lost-found.html" class="btn btn-sm btn-outline-warning rounded-pill px-3 text-white"><i class="fa-solid fa-magnifying-glass-location me-1"></i> Lost &amp; Found</a>
+      <div class="d-flex align-items-center gap-2 text-white small">
+        <div class="rounded-circle bg-gold text-dark font-weight-bold d-flex align-items-center justify-content-center" style="width:36px; height:36px;">
+          G
+        </div>
+        <div>
+          <strong class="d-block text-white" id="navGuestName">Valued Guest</strong>
+          <span class="badge bg-secondary text-white" style="font-size:0.65rem;" id="navGuestRoom">No room booked</span>
+        </div>
+      </div>
+      <button onclick="logoutUser()" class="btn btn-sm btn-outline-light rounded-pill px-3 ms-2">
+        <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
+      </button>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    
+    <!-- Active Stay Card Banner -->
+    <div class="card p-4 border-0 shadow-sm rounded-4 bg-navy text-white mb-4" style="background: linear-gradient(135deg, #0b1329 0%, #1a294d 100%);">
+      <div class="row align-items-center g-3">
+        <div class="col-lg-8">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge bg-gold text-dark px-3 py-1 rounded-pill fw-bold" id="activeStayBadge">NO ROOM BOOKED</span>
+            <span class="text-gold small"><i class="fa-solid fa-star"></i> VIP Guest Service</span>
+          </div>
+          <h2 class="font-serif fs-2 text-white mb-1" id="activeSuiteTitle">No room booked yet</h2>
+          <p class="text-slate-300 mb-3" id="activeDates">Choose a room and your stay dates below to make a reservation.</p>
+          
+          <div class="d-flex flex-wrap gap-4 pt-2 border-top border-secondary d-none" id="activeStayDetails">
+            <div>
+              <span class="text-slate-400 small d-block">Digital Key Access Code</span>
+              <strong class="text-gold fs-5 font-monospace"><i class="fa-solid fa-key me-1"></i> CP-8842</strong>
+            </div>
+            <div>
+              <span class="text-slate-400 small d-block">High-Speed Wi-Fi (SSID: CrownePlaza_WiFi)</span>
+              <strong class="text-white fs-6">
+                <i class="fa-solid fa-wifi text-success me-1"></i> 
+                <span id="wifiPasswordText">hotelmanagement</span>
+              </strong>
+            </div>
+            <div>
+              <span class="text-slate-400 small d-block">Breakfast Plan</span>
+              <strong class="text-white fs-6"><i class="fa-solid fa-utensils text-warning me-1"></i> Executive Buffet Included</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4 text-lg-end">
+          <button id="requestRoomServiceButton" class="btn btn-gold py-2.5 px-4 rounded-pill shadow mb-2 w-100 d-none" onclick="scrollToInRoomServices()">
+            <i class="fa-solid fa-bell-concierge me-2"></i> Request Amenities
+          </button>
+          <button id="housekeepingButton" class="btn btn-outline-light py-2 px-4 rounded-pill w-100 mb-2 d-none" onclick="scrollToHousekeeping()">
+            <i class="fa-solid fa-broom me-2"></i> Housekeeping
+          </button>
+          <button id="bookRoomButton" class="btn btn-outline-light py-2 px-4 rounded-pill w-100" onclick="scrollToRooms()">
+            <i class="fa-solid fa-calendar-plus me-1"></i> Choose a Room &amp; Dates
+          </button>
+          <button id="orderFoodButton" class="btn btn-outline-light py-2 px-4 rounded-pill w-100 mt-2 d-none" onclick="scrollToGuestFood()">
+            <i class="fa-solid fa-utensils me-1"></i> Order Food
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Suite Reservations Hub -->
+    <div class="mb-5" id="roomsSection">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <div>
+          <h3 class="font-serif fs-3 text-dark mb-1">Explore & Reserve Rooms</h3>
+          <p class="text-muted mb-0">Choose one of the five room types and your stay dates; we will assign an available room of that type.</p>
+        </div>
+        <div class="d-flex gap-2">
+          <select id="roomFilterType" class="form-select form-select-sm rounded-pill" style="width: 170px;" onchange="renderRoomsCatalog()">
+            <option value="">All Categories</option>
+            <option value="Luxury Suite">Luxury Suites</option>
+            <option value="AC Room with Balcony">AC with Balcony</option>
+            <option value="Family AC Room">Family AC Rooms</option>
+            <option value="Standard AC Room">Standard AC Rooms</option>
+            <option value="Economy Non-AC Room">Economy Non-AC</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row g-4" id="roomsCatalogGrid">
+        <!-- Rooms Catalog Rendered via JS -->
+      </div>
+    </div>
+
+    <section class="card p-4 border-0 shadow-sm rounded-4 bg-white mb-4" id="guestOffersSection">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div><h3 class="font-serif fs-4 mb-1 text-dark"><i class="fa-solid fa-tags text-gold me-2"></i>Offers for Your Rooms</h3><p class="text-muted small mb-0">Review each offer's availability and requirements for your reservation. Submit any required application here.</p></div>
+        <a href="index.html#specialOffers" class="btn btn-sm btn-outline-navy rounded-pill px-3">All Offer Terms</a>
+      </div>
+      <div id="guestOffersContainer" class="row g-3"><div class="col-12 text-muted small">Loading your offers...</div></div>
+    </section>
+
+    <!-- In-Room Services & History Split -->
+    <div class="row g-4 mb-4" id="inRoomServicesSection">
+      
+      <!-- Room Service Quick Order Form -->
+      <div class="col-lg-5">
+        <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
+          <h3 class="font-serif fs-4 mb-1 text-dark">
+            <i class="fa-solid fa-bell-concierge text-gold me-2"></i> In-Room Amenities
+          </h3>
+          <p class="text-muted small mb-4">Request amenities or housekeeping delivered straight to your suite.</p>
+
+          <form id="guestServiceForm" onsubmit="event.preventDefault(); handleGuestServiceOrder();">
+            <div class="mb-3">
+              <label class="form-label-custom">Select an Amenity</label>
+              <select id="svcName" class="form-select form-control-luxury" required><option value="">Loading available amenities...</option></select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label-custom">Request Notes</label>
+              <textarea id="svcNotes" class="form-control form-control-luxury" rows="2" placeholder="Add any details for your amenity request..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-navy w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-paper-plane me-2"></i> Submit Amenity Request
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- My Booking History & Charges -->
+      <div class="col-lg-7">
+        <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
+          <h3 class="font-serif fs-4 mb-1 text-dark">
+            <i class="fa-solid fa-receipt text-gold me-2"></i> Stay History & Service Orders
+          </h3>
+          <p class="text-muted small mb-3">View all your current and past reservations and service charges.</p>
+
+          <div class="table-luxury-wrapper mb-3">
+            <table class="table-luxury">
+              <thead>
+                <tr>
+                  <th>Item / Stay</th>
+                  <th>Dates / Time</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="guestHistoryTableBody">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
+            <span class="text-muted small">Total Folio Charge Accrued:</span>
+            <strong class="text-navy fs-5 font-serif" id="guestTotalFolio">Rs. 0</strong>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <section class="card p-4 border-0 shadow-sm rounded-4 bg-white mb-4" id="guestFoodOrderSection">
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
+        <div><h3 class="font-serif fs-4 mb-1 text-dark"><i class="fa-solid fa-utensils text-gold me-2"></i>Order Food During Your Stay</h3><p class="text-muted small mb-0">Choose a current stay and send menu items directly to the front desk.</p></div>
+        <div class="d-flex flex-wrap gap-2 align-items-end"><div><label class="form-label small mb-1" for="guestFoodReservation">Stay</label><select class="form-select form-select-sm" id="guestFoodReservation" style="min-width:220px"></select></div><div><label class="form-label small mb-1" for="guestFoodCuisine">Cuisine</label><select class="form-select form-select-sm" id="guestFoodCuisine" onchange="renderGuestFoodMenu()"><option>South Indian</option><option>North Indian</option><option>Chinese</option><option>Thai</option><option>Continental</option></select></div></div>
+      </div>
+      <div id="guestFoodMenuItems" class="row g-3"><div class="col-12 text-muted small">Loading food menu...</div></div>
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 border-top pt-3 mt-3"><span class="small text-muted">Selected: <strong id="guestFoodOrderSummary">0 items · Rs. 0</strong></span><button class="btn btn-gold rounded-pill px-4" type="button" onclick="placeGuestFoodOrder()"><i class="fa-solid fa-paper-plane me-2"></i>Place Food Order</button></div>
+      <div id="guestFoodOrderStatus" class="small mt-2" role="status"></div>
+    </section>
+
+    <section class="card p-4 border-0 shadow-sm rounded-4 bg-white mb-5" id="housekeepingSection">
+      <h3 class="font-serif fs-4 mb-1 text-dark"><i class="fa-solid fa-broom text-gold me-2"></i>Housekeeping Request</h3>
+      <p class="text-muted small mb-3">Send a request for a room on one of your current stays.</p>
+      <form class="row g-3" onsubmit="event.preventDefault(); submitGuestHousekeepingRequest();">
+        <div class="col-md-4"><label class="form-label small" for="housekeepingReservation">Stay</label><select id="housekeepingReservation" class="form-select" required></select></div>
+        <div class="col-md-4"><label class="form-label small" for="housekeepingRequestType">Request</label><select id="housekeepingRequestType" class="form-select"><option>Room cleaning</option><option>Fresh towels</option><option>Extra amenities</option><option>Other guest request</option></select></div>
+        <div class="col-md-4"><label class="form-label small" for="housekeepingNotes">Details</label><input id="housekeepingNotes" class="form-control" maxlength="500" placeholder="Optional details"></div>
+        <div class="col-12"><button class="btn btn-outline-navy rounded-pill px-4" type="submit"><i class="fa-solid fa-paper-plane me-2"></i>Send Housekeeping Request</button><span id="housekeepingRequestStatus" class="small ms-2" role="status"></span></div>
+      </form>
+    </section>
+
+  </div>
+
+  <!-- Book Suite Modal -->
+  <div class="modal fade" id="bookModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-calendar-check me-2"></i> Reserve Room</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="bookSuiteForm" onsubmit="event.preventDefault(); handleConfirmBooking();">
+            <div class="mb-3">
+              <label class="form-label-custom">Selected Room Type</label>
+              <input type="text" id="bmRoomCategory" class="form-control form-control-luxury bg-light" readonly>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label-custom">Check-In Date</label>
+                <input type="date" id="bmCheckIn" class="form-control form-control-luxury" onchange="onCheckInDateChange()" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label-custom">Check-Out Date</label>
+                <input type="date" id="bmCheckOut" class="form-control form-control-luxury" onchange="calculateModalTotal()" required>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label-custom" for="bmPhone">Phone Number</label>
+              <input type="tel" id="bmPhone" class="form-control form-control-luxury" autocomplete="tel" inputmode="tel" pattern="[0-9+().\s-]{7,24}" maxlength="24" placeholder="e.g. +91 98765 43210" title="Enter a phone number with 7 to 15 digits." required>
+              <div class="form-text">Used by the front desk for your reservation. It is not shown to other guests.</div>
+            </div>
+
+            <section class="booking-food-menu mb-4" aria-labelledby="bookingFoodTitle">
+              <div class="d-flex justify-content-between align-items-end gap-2 mb-2">
+                <div><span class="badge bg-gold text-dark mb-1">OPTIONAL DINING</span><h6 id="bookingFoodTitle" class="font-serif fs-5 mb-1">Explore the Food Menu</h6><p class="small text-muted mb-0">Choose a cuisine to browse; selected dishes are sent to the front desk with your reservation.</p></div>
+                <span id="foodSelectionCount" class="badge rounded-pill bg-light text-dark">0 selected</span>
+              </div>
+              <div id="foodCuisineTrack" class="food-cuisine-track" aria-label="Food cuisine categories" aria-live="polite"><span class="small text-muted p-3">Loading menu…</span></div>
+              <div id="foodMenuStatus" class="small text-muted mt-2" role="status"></div>
+              <div id="foodDishViewport" class="food-dish-viewport mt-2" hidden>
+                <div class="d-flex justify-content-between align-items-center mb-2"><strong id="foodDishHeading" class="small text-navy"></strong><span class="small text-muted">Swipe or scroll to browse</span></div>
+                <div id="foodDishTrack" class="food-dish-track"></div>
+                <div class="d-flex justify-content-between mt-2"><small class="text-muted">Optional food estimate: <strong id="foodSelectionTotal">Rs. 0</strong></small><small class="text-muted">Food is billed after it is fulfilled.</small></div>
+              </div>
+            </section>
+
+            <!-- Complimentary Features & Special Add-ons -->
+            <div class="mb-3">
+              <label class="form-label-custom d-flex justify-content-between align-items-center mb-1">
+                <span><i class="fa-solid fa-gift text-gold me-1"></i> Complimentary Features & Add-ons</span>
+                <span class="badge bg-gold text-dark" style="font-size:0.65rem;">Customized Stay</span>
+              </label>
+              
+              <div class="card p-3 bg-light border-0 rounded-3 mb-2">
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="featBreakfast" checked>
+                  <label class="form-check-label small fw-semibold" for="featBreakfast">
+                    <i class="fa-solid fa-utensils text-warning me-1"></i> Complimentary Executive Breakfast Buffet (Included)
+                  </label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="featAirport">
+                  <label class="form-check-label small" for="featAirport">
+                    <i class="fa-solid fa-plane-arrival text-primary me-1"></i> Airport Chauffeur Pickup & Drop
+                  </label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="featView">
+                  <label class="form-check-label small" for="featView">
+                    <i class="fa-solid fa-mountain-sun text-info me-1"></i> High Floor / City Panoramic View
+                  </label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="featWelcome">
+                  <label class="form-check-label small" for="featWelcome">
+                    <i class="fa-solid fa-wine-glass text-danger me-1"></i> Welcome Fruit Basket & Sparkling Drink
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="featLateCheckout">
+                  <label class="form-check-label small" for="featLateCheckout">
+                    <i class="fa-solid fa-clock text-secondary me-1"></i> Priority Late Check-Out (Until 2:00 PM)
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label class="form-label-custom small mb-1">Special Requests & Dietary Requirements</label>
+                <textarea id="bmSpecialNotes" class="form-control form-control-luxury small" rows="2" placeholder="e.g. Vegetarian buffet, quiet corner suite, extra pillows..."></textarea>
+              </div>
+            </div>
+
+            <div class="p-3 bg-gold bg-opacity-10 border border-gold rounded-3 text-center mb-4">
+              <span class="text-muted small d-block">Estimated Total Tariff</span>
+              <strong class="text-gold fs-3 font-serif" id="bmEstimatedTotal">Rs. 0</strong>
+            </div>
+
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-credit-card me-2"></i> Confirm Reservation
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/image-map.js"></script>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/auth.js"></script>
+    <script src="assets/js/ui-helpers.js"></script>
+  <script src="assets/js/offers.js"></script>
+  <script>
+    // Route Guard
+    checkAuth('customer');
+
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      document.getElementById('navGuestName').textContent = currentUser.name;
+    }
+
+    function scrollToRooms() {
+      document.getElementById('roomsSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function scrollToInRoomServices() {
+      document.getElementById('inRoomServicesSection').scrollIntoView({behavior:'smooth', block:'start'});
+    }
+
+    function scrollToHousekeeping() {
+      document.getElementById('housekeepingSection').scrollIntoView({behavior:'smooth', block:'start'});
+    }
+
+    function scrollToGuestFood() {
+      document.getElementById('guestFoodOrderSection').scrollIntoView({behavior:'smooth', block:'start'});
+    }
+
+    async function renderGuestDashboard() {
+      const bookings = await HotelDB.getBookingsAsync();
+      await renderActiveStay(bookings);
+      await renderRoomsCatalog();
+      renderGuestStaySelectors(bookings);
+      await renderGuestHistory(bookings);
+    }
+
+    async function renderActiveStay(bookings) {
+      bookings = bookings || await HotelDB.getBookingsAsync();
+      const active = bookings.find(b => b.guestEmail === (currentUser?.email || 'guest@crowneplaza.com') && (b.status === 'Occupied' || b.status === 'Booked' || b.status === 'Confirmed' || b.status === 'Checked-in'));
+      const hasReservation = Boolean(active);
+      document.getElementById('activeStayBadge').textContent = hasReservation ? 'YOUR RESERVATION' : 'NO ROOM BOOKED';
+      document.getElementById('activeStayDetails').classList.toggle('d-none', !hasReservation);
+      document.getElementById('navGuestRoom').textContent = hasReservation ? `Room #${active.roomNumber}` : 'No room booked';
+      document.getElementById('requestRoomServiceButton').classList.toggle('d-none', !hasReservation);
+      document.getElementById('housekeepingButton').classList.toggle('d-none', !hasReservation);
+      document.getElementById('orderFoodButton').classList.toggle('d-none', !hasReservation);
+      document.getElementById('bookRoomButton').innerHTML = hasReservation
+        ? '<i class="fa-solid fa-plus me-1"></i> Book Another Suite'
+        : '<i class="fa-solid fa-calendar-plus me-1"></i> Choose a Room &amp; Dates';
+      if (active) {
+        document.getElementById('activeSuiteTitle').textContent = `${active.category} (#${active.roomNumber})`;
+        document.getElementById('activeDates').textContent = `Check-In: ${active.checkIn} \u2022 Check-Out: ${active.checkOut}`;
+        document.getElementById('wifiPasswordText').textContent = active.wifiPassword || 'hotelmanagement';
+        
+        // Update breakfast & features badge
+        const bkBadge = document.querySelector('#activeDates + div > div:last-child strong');
+        if (bkBadge) {
+          const req = active.specialRequests || '';
+          if (req.includes('Breakfast')) {
+            bkBadge.innerHTML = '<i class="fa-solid fa-utensils text-warning me-1"></i> Complimentary Buffet Included';
+          } else if (req) {
+            bkBadge.innerHTML = `<i class="fa-solid fa-star text-gold me-1"></i> ${req.split('|')[0]}`;
+          } else {
+            bkBadge.innerHTML = '<i class="fa-solid fa-utensils text-secondary me-1"></i> Standard Room Only';
+          }
+        }
+      } else {
+        document.getElementById('activeSuiteTitle').textContent = 'No room booked yet';
+        document.getElementById('activeDates').textContent = 'Choose a room and your stay dates below to make a reservation.';
+      }
+    }
+
+    const guestRoomTypeOrder = [
+      'Luxury Suite',
+      'Standard AC Room',
+      'Economy Non-AC Room',
+      'AC Room with Balcony',
+      'Family AC Room'
+    ];
+    const guestRoomTypePrices = {
+      'Luxury Suite': 3000,
+      'Standard AC Room': 1500,
+      'Economy Non-AC Room': 1200,
+      'AC Room with Balcony': 1800,
+      'Family AC Room': 1700
+    };
+
+    async function renderRoomsCatalog() {
+      const rooms = await HotelDB.getRoomsAsync();
+      const typeFilter = document.getElementById('roomFilterType').value;
+      const roomsByType = new Map();
+      rooms.forEach(room => {
+        if (!roomsByType.has(room.category)) roomsByType.set(room.category, []);
+        roomsByType.get(room.category).push(room);
+      });
+      const filteredTypes = guestRoomTypeOrder
+        .filter(type => !typeFilter || type === typeFilter)
+        .map(type => [type, roomsByType.get(type) || []]);
+      const grid = document.getElementById('roomsCatalogGrid');
+      grid.innerHTML = filteredTypes.map(([type, typeRooms]) => {
+        const r = typeRooms[0] || {
+          category: type,
+          image: HotelImageMap.resolveRoomImage({room_type: type}),
+          capacity: type.includes('Suite') || type.includes('Family') ? 4 : 2,
+          bed: type.includes('Suite') ? 'King Bed' : 'Double Bed',
+          view: 'City & Panorama View',
+          amenities: ['Wi-Fi', 'Smart TV', 'Air Conditioning', 'Executive Desk']
+        };
+        const availableRooms = typeRooms.filter(room => room.status === 'Available').length;
+        const available = availableRooms > 0;
+        const price = typeRooms.length ? Math.min(...typeRooms.map(room => Number(room.price))) : guestRoomTypePrices[type];
+        const isFamily = r.category === 'Family AC Room';
+        const cardClass = isFamily ? 'room-card card-spotlight-family h-100 d-flex flex-column justify-content-between' : 'room-card h-100 d-flex flex-column justify-content-between';
+        return `
+          <div class="col-md-6 col-lg-4">
+            <div class="${cardClass}">
+              <div>
+                <img src="${r.image}" class="room-card-img" data-image-map-room="${escapeFoodText(r.category)}" alt="${escapeFoodText(r.category)}" loading="lazy" decoding="async">
+                <div class="room-card-body">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge ${available ? 'badge-available' : 'badge-gold'}">${available ? `${availableRooms} room${availableRooms === 1 ? '' : 's'} available` : 'Currently unavailable'}</span>
+                    <span class="text-muted small"><i class="fa-solid fa-user me-1"></i> Up to ${r.capacity} Guests</span>
+                  </div>
+                  ${isFamily ? `<div class="mb-2"><span class="badge badge-family-deal">Best Family Deal</span></div>` : ''}
+                  <h4 class="font-serif fs-5 text-dark mb-1">${escapeFoodText(type)}</h4>
+                  <p class="text-muted small mb-2"><i class="fa-solid fa-bed me-1 text-gold"></i> ${r.bed} &bull; ${r.view}</p>
+                  <div class="d-flex flex-wrap gap-1 mb-3">
+                    ${r.amenities.map(a => `<span class="badge bg-light text-secondary border font-weight-normal">${a}</span>`).join('')}
+                  </div>
+                </div>
+              </div>
+              <div class="p-3 border-top bg-light d-flex align-items-center justify-content-between">
+                <div>
+                  <span class="room-card-price">Rs. ${price.toLocaleString()}</span>
+                  <span class="text-muted small">/ night</span>
+                </div>
+                <button class="btn btn-sm btn-gold rounded-pill px-3 py-2" ${available ? `data-book-room-type="${escapeFoodText(type)}" data-room-price="${price}"` : 'disabled'}>
+                  <i class="fa-solid fa-calendar-plus me-1"></i> Choose Type
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      HotelImageMap.hydrate(grid);
+    }
+
+    document.getElementById('roomsCatalogGrid').addEventListener('click', event => {
+      const button = event.target.closest('[data-book-room-type]');
+      if (button) openBookModal(button.dataset.bookRoomType, Number(button.dataset.roomPrice));
+    });
+
+    let selectedRoomPrice = 1500;
+    let selectedRoomType = '';
+    const foodCuisines = ['South Indian', 'North Indian', 'Chinese', 'Thai', 'Continental'];
+    let foodMenuItems = [];
+    let selectedCuisine = '';
+    const selectedFoodItems = new Map();
+    const guestPortalFoodSelection = new Map();
+    let guestServiceItems = [];
+
+    function renderGuestStaySelectors(bookings) {
+      const email = (currentUser?.email || '').toLowerCase();
+      const activeStays = bookings.filter(booking => (booking.guestEmail || '').toLowerCase() === email
+        && ['Occupied', 'Checked-in', 'Confirmed', 'Booked'].includes(booking.status));
+      const options = activeStays.map(stay => `<option value="${Number(stay.reservationId)}">Room #${escapeFoodText(stay.roomNumber)} · ${escapeFoodText(stay.checkIn)} to ${escapeFoodText(stay.checkOut)}</option>`).join('');
+      ['guestFoodReservation', 'housekeepingReservation'].forEach(id => {
+        const select = document.getElementById(id);
+        const selected = select.value;
+        select.innerHTML = options || '<option value="">No current stay found</option>';
+        if (activeStays.some(stay => String(stay.reservationId) === selected)) select.value = selected;
+      });
+      document.querySelectorAll('#guestFoodOrderSection button[onclick="placeGuestFoodOrder()"], #housekeepingSection button[type="submit"]')
+        .forEach(button => { button.disabled = activeStays.length === 0; });
+    }
+
+    async function loadGuestServiceItems() {
+      const select = document.getElementById('svcName');
+      try {
+        const catalog = await HotelDB.getServicesCatalogAsync();
+        const foodCategories = new Set(['food', 'south indian', 'north indian', 'chinese', 'thai', 'continental']);
+        const foodTerms = /\b(food|dining|breakfast|lunch|dinner|meal|restaurant|cuisine|beverage|drink|snack|pizza|pasta|noodles?|rice|curry|paneer|chicken|fish|soup|salad|sandwich|burger|fries|dessert|cake|coffee|tea|juice)\b/i;
+        guestServiceItems = catalog.filter(item => !foodCategories.has(String(item.service_category || '').trim().toLowerCase())
+          && !foodTerms.test(`${item.service_name || ''} ${item.description || ''}`));
+        select.innerHTML = `<option value="">Choose an amenity...</option>${guestServiceItems.map(item => `<option value="${Number(item.service_id)}">${escapeFoodText(item.service_name)} (Rs. ${Number(item.price).toLocaleString()})</option>`).join('')}`;
+        if (!guestServiceItems.length) select.innerHTML = '<option value="">No amenities are currently available</option>';
+      } catch (error) {
+        select.innerHTML = '<option value="">Amenities are temporarily unavailable</option>';
+      }
+    }
+
+    function renderGuestFoodMenu() {
+      const container = document.getElementById('guestFoodMenuItems');
+      if (!foodMenuItems.length) {
+        container.innerHTML = '<div class="col-12 text-muted small">The food menu is temporarily unavailable.</div>';
+        return;
+      }
+      const cuisine = document.getElementById('guestFoodCuisine').value;
+      const items = foodMenuItems.filter(item => item.service_category === cuisine);
+      container.innerHTML = items.map(item => {
+        const id = Number(item.service_id), quantity = guestPortalFoodSelection.get(id) || 0;
+        return `<div class="col-sm-6 col-lg-4"><article class="guest-menu-food-card h-100 d-flex gap-3 align-items-center p-3">
+          <img class="guest-menu-food-image" src="${escapeFoodText(item.image_url || '')}" data-image-map-food="${escapeFoodText(item.service_name)}" data-image-map-category="${escapeFoodText(item.service_category)}" alt="${escapeFoodText(item.service_name)}" loading="lazy" decoding="async">
+          <div class="guest-menu-food-content flex-grow-1"><strong>${escapeFoodText(item.service_name)}</strong><div class="small text-muted mb-2">Rs. ${Number(item.price).toLocaleString()} / serving</div>
+          <label class="small" for="guestFoodQty${id}">Quantity</label><input id="guestFoodQty${id}" class="form-control form-control-sm" type="number" min="0" max="20" value="${quantity}" onchange="setGuestPortalFoodQuantity(${id},this.value)"></div>
+        </article></div>`;
+      }).join('') || '<div class="col-12 text-muted small">No dishes are listed for this cuisine yet.</div>';
+      HotelImageMap.hydrate(container);
+      updateGuestFoodOrderSummary();
+    }
+
+    function setGuestPortalFoodQuantity(serviceId, rawQuantity) {
+      const quantity = Math.max(0, Math.min(20, Number.parseInt(rawQuantity, 10) || 0));
+      if (quantity) guestPortalFoodSelection.set(serviceId, quantity);
+      else guestPortalFoodSelection.delete(serviceId);
+      updateGuestFoodOrderSummary();
+    }
+
+    function updateGuestFoodOrderSummary() {
+      let count = 0, total = 0;
+      guestPortalFoodSelection.forEach((quantity, serviceId) => {
+        const item = foodMenuItems.find(entry => Number(entry.service_id) === Number(serviceId));
+        count += quantity;
+        if (item) total += quantity * Number(item.price);
+      });
+      document.getElementById('guestFoodOrderSummary').textContent = `${count} item${count === 1 ? '' : 's'} · Rs. ${total.toLocaleString()}`;
+    }
+
+    async function placeGuestFoodOrder() {
+      const reservationId = Number(document.getElementById('guestFoodReservation').value);
+      const choices = [...guestPortalFoodSelection.entries()];
+      const status = document.getElementById('guestFoodOrderStatus');
+      if (!reservationId) { status.textContent = 'Choose a current stay before ordering.'; return; }
+      if (!choices.length) { status.textContent = 'Choose at least one menu item.'; return; }
+      let submitted = 0;
+      for (const [serviceId, quantity] of choices) {
+        try {
+          await HotelDB.addServiceRequestAsync({reservationId, serviceId, quantity});
+          guestPortalFoodSelection.delete(serviceId);
+          submitted++;
+        } catch (error) {
+          status.textContent = submitted ? `${submitted} item(s) sent. The remaining items could not be sent: ${error.message}` : error.message;
+          renderGuestFoodMenu();
+          return;
+        }
+      }
+      status.textContent = `${submitted} food item(s) sent to the front desk. Charges are added to this stay's folio.`;
+      renderGuestFoodMenu();
+      await renderGuestHistory();
+      await renderGuestOffers();
+      showToast('Your food order was sent to the front desk.', 'Food Order Submitted', 'success');
+    }
+
+    async function submitGuestHousekeepingRequest() {
+      const status = document.getElementById('housekeepingRequestStatus');
+      try {
+        await HotelDB.requestHousekeepingAsync({
+          reservation_id: Number(document.getElementById('housekeepingReservation').value),
+          task_type: document.getElementById('housekeepingRequestType').value,
+          notes: document.getElementById('housekeepingNotes').value.trim()
+        });
+        document.getElementById('housekeepingNotes').value = '';
+        status.textContent = 'Request sent to the front desk.';
+        showToast('Your housekeeping request was sent.', 'Request Submitted', 'success');
+      } catch (error) {
+        status.textContent = error.message;
+      }
+    }
+
+    function escapeFoodText(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    }
+
+    function setupFoodAutoScroll(viewport, track, speed) {
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      let paused = reducedMotion.matches;
+      let last = performance.now();
+      viewport.scrollLeft = track.scrollWidth / 2;
+      const pause = () => { paused = true; };
+      const resume = () => { paused = reducedMotion.matches; last = performance.now(); };
+      reducedMotion.addEventListener('change', event => { paused = event.matches; });
+      viewport.addEventListener('mouseenter', pause);
+      viewport.addEventListener('mouseleave', resume);
+      viewport.addEventListener('focusin', pause);
+      viewport.addEventListener('focusout', e => { if (!viewport.contains(e.relatedTarget)) resume(); });
+      viewport.addEventListener('touchstart', pause, {passive:true});
+      viewport.addEventListener('touchend', () => setTimeout(resume, 1300), {passive:true});
+      viewport.addEventListener('wheel', pause, {passive:true});
+      viewport.addEventListener('pointerdown', pause);
+      viewport.addEventListener('pointerup', () => setTimeout(resume, 1300));
+      const step = now => {
+        const elapsed = Math.min(now - last, 40); last = now;
+        const loopWidth = track.scrollWidth / 2;
+        if (!paused && loopWidth > 0) {
+          viewport.scrollLeft -= speed * elapsed / 16.67;
+          if (viewport.scrollLeft <= 0) viewport.scrollLeft += loopWidth;
+        }
+        requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }
+
+    function foodCuisineCard(cuisine, image, imageKey, selected, decorative = false) {
+      return `<button type="button" class="food-cuisine-card ${selected ? 'is-selected' : ''}" data-cuisine="${escapeFoodText(cuisine)}" ${decorative ? 'tabindex="-1" aria-hidden="true"' : `aria-pressed="${selected}"`}>
+        <img src="${escapeFoodText(image || '')}" data-image-map-food="${escapeFoodText(imageKey || cuisine)}" data-image-map-category="${escapeFoodText(cuisine)}" alt="${escapeFoodText(cuisine)} cuisine" loading="lazy" decoding="async"><span>${escapeFoodText(cuisine)}</span></button>`;
+    }
+
+    function renderFoodCuisines() {
+      const viewport = document.getElementById('foodCuisineTrack');
+      const originals = foodCuisines.map(cuisine => {
+        const item = foodMenuItems.find(food => food.service_category === cuisine);
+        return foodCuisineCard(cuisine, item?.image_url, item?.service_name || cuisine, selectedCuisine === cuisine);
+      }).join('');
+      const copies = foodCuisines.map(cuisine => {
+        const item = foodMenuItems.find(food => food.service_category === cuisine);
+        return foodCuisineCard(cuisine, item?.image_url, item?.service_name || cuisine, false, true);
+      }).join('');
+      viewport.innerHTML = originals + copies;
+      HotelImageMap.hydrate(viewport);
+      if (!viewport.dataset.autoScrollReady) {
+        viewport.dataset.autoScrollReady = 'true';
+        setupFoodAutoScroll(viewport, viewport, .32);
+      }
+      if (selectedCuisine) renderFoodDishes();
+    }
+
+    function renderFoodDishes() {
+      const viewport = document.getElementById('foodDishViewport');
+      const track = document.getElementById('foodDishTrack');
+      const dishes = foodMenuItems.filter(item => item.service_category === selectedCuisine);
+      document.getElementById('foodDishHeading').textContent = `${selectedCuisine} · ${dishes.length} dishes`;
+      const renderCard = food => {
+        const id = Number(food.service_id), quantity = selectedFoodItems.get(id) || 0;
+        const veg = food.is_vegetarian ? '<span class="badge bg-success-subtle text-success">VEG</span>' : '<span class="badge bg-danger-subtle text-danger">NON-VEG</span>';
+        return `<article class="food-dish-card">
+          <img src="${escapeFoodText(food.image_url || '')}" data-image-map-food="${escapeFoodText(food.service_name)}" data-image-map-category="${escapeFoodText(food.service_category)}" alt="${escapeFoodText(food.service_name)}" loading="lazy" decoding="async">
+          <div class="food-dish-content"><div class="d-flex justify-content-between align-items-start gap-1 mb-1"><div class="food-dish-name">${escapeFoodText(food.service_name)}</div>${veg}</div>
+            <div class="food-dish-description">${escapeFoodText(food.description || '')}</div>
+            <div class="d-flex justify-content-between align-items-center gap-1 mt-2"><span class="food-price">Rs. ${Number(food.price).toLocaleString()} <small>/ serving</small></span>
+              ${quantity ? `<div class="d-flex align-items-center gap-1"><button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" data-food-action="minus" data-food-id="${id}" aria-label="Remove one ${escapeFoodText(food.service_name)}">−</button><span class="small fw-bold">${quantity}</span><button type="button" class="btn btn-sm btn-gold py-0 px-2" data-food-action="plus" data-food-id="${id}" aria-label="Add one ${escapeFoodText(food.service_name)}">+</button></div>` : `<button type="button" class="btn btn-sm btn-outline-warning py-0 px-2" data-food-action="plus" data-food-id="${id}">Add</button>`}
+            </div></div></article>`;
+      };
+      const cards = dishes.map(renderCard).join('');
+      track.innerHTML = cards + cards;
+      HotelImageMap.hydrate(track);
+      track.setAttribute('aria-label', `${selectedCuisine} dishes`);
+      viewport.hidden = false;
+      viewport.scrollLeft = 0;
+      if (!track.dataset.autoScrollReady) {
+        track.dataset.autoScrollReady = 'true';
+        setupFoodAutoScroll(viewport, track, .38);
+      }
+      updateFoodSelectionSummary();
+    }
+
+    function updateFoodSelectionSummary() {
+      let count = 0, total = 0;
+      selectedFoodItems.forEach((quantity, id) => {
+        count += quantity;
+        const item = foodMenuItems.find(food => Number(food.service_id) === Number(id));
+        if (item) total += Number(item.price) * quantity;
+      });
+      document.getElementById('foodSelectionCount').textContent = `${count} selected`;
+      document.getElementById('foodSelectionTotal').textContent = `Rs. ${total.toLocaleString()}`;
+    }
+
+    async function loadFoodMenu() {
+      try {
+        foodMenuItems = await HotelDB.getFoodMenuAsync();
+        renderFoodCuisines();
+        renderGuestFoodMenu();
+        if (!foodMenuItems.length) document.getElementById('foodMenuStatus').textContent = 'Menu items will appear after the database setup is run.';
+      } catch (error) {
+        document.getElementById('foodCuisineTrack').innerHTML = '<span class="small text-muted p-3">Food menu is temporarily unavailable. You can still reserve your room.</span>';
+      }
+    }
+
+    document.getElementById('foodCuisineTrack').addEventListener('click', event => {
+      const card = event.target.closest('[data-cuisine]');
+      if (!card || card.getAttribute('aria-hidden') === 'true') return;
+      selectedCuisine = card.dataset.cuisine;
+      renderFoodCuisines();
+      document.getElementById('foodDishViewport').scrollIntoView({block:'nearest',behavior:'smooth'});
+    });
+    document.getElementById('foodDishTrack').addEventListener('click', event => {
+      const button = event.target.closest('[data-food-action]');
+      if (!button) return;
+      const id = Number(button.dataset.foodId), current = selectedFoodItems.get(id) || 0;
+      const next = button.dataset.foodAction === 'plus' ? Math.min(current + 1, 20) : Math.max(current - 1, 0);
+      if (next) selectedFoodItems.set(id, next); else selectedFoodItems.delete(id);
+      renderFoodDishes();
+    });
+
+    function openBookModal(category, price) {
+      selectedRoomPrice = price;
+      selectedRoomType = category;
+      selectedFoodItems.clear();
+      const pendingFoodOrder = getPendingFoodOrder();
+      if (pendingFoodOrder) {
+        selectedFoodItems.set(pendingFoodOrder.serviceId, pendingFoodOrder.quantity || 1);
+        const pendingDish = foodMenuItems.find(food => Number(food.service_id) === pendingFoodOrder.serviceId);
+        if (pendingDish) selectedCuisine = pendingDish.service_category;
+      }
+      updateFoodSelectionSummary();
+      if (pendingFoodOrder && foodMenuItems.length) renderFoodCuisines();
+      document.getElementById('bmRoomCategory').value = category;
+      document.getElementById('bmPhone').value = currentUser?.phone || '';
+      
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      const tomorrow = new Date();
+      tomorrow.setDate(today.getDate() + 3);
+      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+      const ciInput = document.getElementById('bmCheckIn');
+      const coInput = document.getElementById('bmCheckOut');
+      ciInput.min = todayStr;
+      ciInput.value = todayStr;
+
+      const nextDay = new Date(today);
+      nextDay.setDate(nextDay.getDate() + 1);
+      coInput.min = nextDay.toISOString().split('T')[0];
+      coInput.value = tomorrowStr;
+      
+      calculateModalTotal();
+      const modal = new bootstrap.Modal(document.getElementById('bookModal'));
+      modal.show();
+    }
+
+    function onCheckInDateChange() {
+      const ciVal = document.getElementById('bmCheckIn').value;
+      if (!ciVal) return;
+
+      const ciDate = new Date(ciVal);
+      const minCo = new Date(ciDate);
+      minCo.setDate(minCo.getDate() + 1);
+
+      const minCoStr = minCo.toISOString().split('T')[0];
+      const coInput = document.getElementById('bmCheckOut');
+      coInput.min = minCoStr;
+
+      const currentCoVal = coInput.value;
+      if (!currentCoVal || new Date(currentCoVal) <= ciDate) {
+        const autoCo = new Date(ciDate);
+        autoCo.setDate(autoCo.getDate() + 3);
+        coInput.value = autoCo.toISOString().split('T')[0];
+      }
+
+      calculateModalTotal();
+    }
+
+    function calculateModalTotal() {
+      const ciVal = document.getElementById('bmCheckIn').value;
+      const coVal = document.getElementById('bmCheckOut').value;
+      if (!ciVal || !coVal) return;
+
+      const ci = new Date(ciVal);
+      const co = new Date(coVal);
+      if (isNaN(ci.getTime()) || isNaN(co.getTime()) || co <= ci) {
+        document.getElementById('bmEstimatedTotal').textContent = `Invalid Dates`;
+        return;
+      }
+      const nights = Math.max(1, Math.ceil((co - ci) / (1000 * 60 * 60 * 24)));
+      const total = selectedRoomPrice * nights;
+      document.getElementById('bmEstimatedTotal').textContent = `Rs. ${total.toLocaleString()}`;
+    }
+
+    async function handleConfirmBooking() {
+      const checkIn = document.getElementById('bmCheckIn').value;
+      const checkOut = document.getElementById('bmCheckOut').value;
+      const guestPhone = document.getElementById('bmPhone').value.trim();
+      const roomType = selectedRoomType;
+      
+      const ci = new Date(checkIn);
+      const co = new Date(checkOut);
+      if (co <= ci) {
+        showToast('Check-out date must be after check-in date.', 'Booking Validation Error', 'danger');
+        return;
+      }
+      if (!/^[0-9+().\-\s]{7,24}$/.test(guestPhone) || (guestPhone.match(/\d/g) || []).length < 7 || (guestPhone.match(/\d/g) || []).length > 15) {
+        showToast('Enter a valid phone number with 7 to 15 digits.', 'Booking Validation Error', 'danger');
+        return;
+      }
+
+      const nights = Math.max(1, Math.ceil((co - ci) / (1000 * 60 * 60 * 24)));
+
+      // Collect selected complimentary features & special notes
+      const selectedFeatures = [];
+      if (document.getElementById('featBreakfast')?.checked) selectedFeatures.push('Complimentary Breakfast');
+      if (document.getElementById('featAirport')?.checked) selectedFeatures.push('Airport Pickup');
+      if (document.getElementById('featView')?.checked) selectedFeatures.push('High Floor View');
+      if (document.getElementById('featWelcome')?.checked) selectedFeatures.push('Welcome Wine & Fruits');
+      if (document.getElementById('featLateCheckout')?.checked) selectedFeatures.push('Late Check-Out');
+
+      const customNotes = (document.getElementById('bmSpecialNotes')?.value || '').trim();
+      let specialRequests = selectedFeatures.join(', ');
+      if (customNotes) {
+        specialRequests = specialRequests ? `${specialRequests} | Notes: ${customNotes}` : `Notes: ${customNotes}`;
+      }
+
+      try {
+        await HotelDB.createBookingAsync({
+          roomType,
+          guestName: currentUser?.name || 'Valued Guest',
+          guestEmail: currentUser?.email || 'customer@gmail.com',
+          customerId: currentUser?.customerId,
+          guestPhone,
+          checkIn,
+          checkOut,
+          guestsCount: 2,
+          specialRequests,
+          foodItems: [...selectedFoodItems.entries()].map(([serviceId, quantity]) => ({service_id: serviceId, quantity}))
+        });
+        sessionStorage.removeItem('cp_pending_food_order');
+
+        const modalEl = document.getElementById('bookModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+
+        showToast(`${roomType} reserved successfully for ${nights} nights!`, 'Reservation Confirmed', 'success');
+        await renderGuestDashboard();
+        await renderGuestOffers();
+      } catch (err) {
+        const msg = err.message || '';
+        if (msg.includes('Double Booking') || msg.includes('booked')) {
+          showToast(msg, 'Double Booking Conflict', 'warning');
+        } else if (msg.includes('password authentication failed') || msg.includes('connection')) {
+          showToast('PostgreSQL authentication failed for user "postgres". Please set your PostgreSQL password in backend/database.py (DB_PASS).', 'PostgreSQL Connection Error', 'danger');
+        } else {
+          showToast(msg || 'Room is unavailable for selected dates.', 'Booking Error', 'danger');
+        }
+      }
+    }
+
+    async function handleGuestServiceOrder() {
+      const serviceId = Number(document.getElementById('svcName').value);
+      const activeBookings = await HotelDB.getBookingsAsync();
+      const userRes = activeBookings.find(b => (b.guestEmail || '').toLowerCase() === (currentUser?.email || '').toLowerCase()
+        && ['Occupied', 'Checked-in', 'Confirmed', 'Booked'].includes(b.status));
+
+      if (!userRes || !serviceId) {
+        showToast('No active room reservation found for an amenity request.', 'Request Error', 'warning');
+        return;
+      }
+
+      try {
+        await HotelDB.addServiceRequestAsync({
+          reservationId: userRes.reservationId || 1,
+          serviceId: parseInt(serviceId, 10),
+          quantity: 1
+        });
+
+        showToast('Your amenity request was sent to the front desk.', 'Amenity Requested', 'success');
+        document.getElementById('svcNotes').value = '';
+        await renderGuestDashboard();
+      } catch (err) {
+        showToast(err.message, 'Service Request Error', 'danger');
+      }
+    }
+
+    function getPendingFoodOrder() {
+      try {
+        const order = JSON.parse(sessionStorage.getItem('cp_pending_food_order') || 'null');
+        const serviceId = Number(order?.serviceId);
+        const parsedQuantity = Number(order?.quantity);
+        const quantity = Number.isInteger(parsedQuantity) && parsedQuantity >= 1 && parsedQuantity <= 20 ? parsedQuantity : 1;
+        return Number.isInteger(serviceId) && serviceId > 0 ? {serviceId, quantity} : null;
+      } catch (_) { return null; }
+    }
+
+    async function continueHomeFoodOrder() {
+      const params = new URLSearchParams(window.location.search);
+      const queryId = params.get('order_food');
+      if (queryId && /^\d+$/.test(queryId)) {
+        const queryQuantity = Number(params.get('quantity'));
+        const quantity = Number.isInteger(queryQuantity) && queryQuantity >= 1 && queryQuantity <= 20 ? queryQuantity : 1;
+        sessionStorage.setItem('cp_pending_food_order', JSON.stringify({serviceId: Number(queryId), quantity}));
+        params.delete('order_food');
+        params.delete('quantity');
+        const cleanUrl = `${window.location.pathname}${params.size ? `?${params}` : ''}${window.location.hash}`;
+        window.history.replaceState({}, '', cleanUrl);
+      }
+      const pending = getPendingFoodOrder();
+      if (!pending) return;
+
+      try {
+        const menu = foodMenuItems.length ? foodMenuItems : await HotelDB.getFoodMenuAsync();
+        foodMenuItems = menu;
+        const dish = menu.find(item => Number(item.service_id) === pending.serviceId);
+        if (!dish) {
+          sessionStorage.removeItem('cp_pending_food_order');
+          showToast('That menu item is no longer available. Please choose another dish.', 'Food Order', 'warning');
+          return;
+        }
+        const bookings = await HotelDB.getBookingsAsync();
+        const active = bookings.find(booking => booking.guestEmail === currentUser?.email && ['Occupied', 'Booked', 'Confirmed', 'Checked-in'].includes(booking.status));
+        if (active) {
+          await HotelDB.addServiceRequestAsync({reservationId: active.reservationId || active.id, serviceId: pending.serviceId, quantity: pending.quantity});
+          sessionStorage.removeItem('cp_pending_food_order');
+          showToast(`${dish.service_name} has been added to Room #${active.roomNumber}.`, 'Food Order Submitted', 'success');
+          await renderGuestDashboard();
+          return;
+        }
+        showToast(`${dish.service_name} is ready to add. Choose a room and confirm your reservation to include it in your order.`, 'Reserve a Room to Continue', 'info');
+        scrollToRooms();
+      } catch (error) {
+        showToast(error.message || 'Unable to continue your food order. Please try again.', 'Food Order', 'danger');
+      }
+    }
+
+    function renderGuestFolioDetails(folio) {
+      if (!folio) return '<div class="small text-muted">Order details are temporarily unavailable.</div>';
+      const renderOrders = (items, emptyText, isExpense = false) => items.length ? `
+        <div class="table-responsive mb-3"><table class="table table-sm table-bordered align-middle mb-0">
+          <thead class="table-light"><tr><th>${isExpense ? 'Expense / Description' : 'Item / Facility'}</th><th>Date / Time</th><th>Qty</th><th>Rate</th><th>Total</th><th>Status</th></tr></thead>
+          <tbody>${items.map(item => {
+            const status = isExpense ? 'Recorded' : item.status;
+            const statusClass = status === 'Completed' ? 'bg-success' : status === 'Cancelled' ? 'bg-secondary' : status === 'Recorded' ? 'bg-info text-dark' : 'bg-warning text-dark';
+            const name = isExpense ? `${escapeFoodText(item.expense_type)}<div class="small text-muted">${escapeFoodText(item.description)}</div>` : `${escapeFoodText(item.service_name)}<div class="small text-muted">${escapeFoodText(item.cuisine || 'Facility')}</div>`;
+            const date = item.request_date || item.created_at;
+            const total = isExpense ? Number(item.total_amount) : Number(item.total_price);
+            return `<tr><td>${name}</td><td class="small">${date ? escapeFoodText(new Date(date).toLocaleString()) : '—'}</td><td>${Number(item.quantity)}</td><td>Rs. ${Number(item.unit_price).toLocaleString()}</td><td class="fw-semibold">Rs. ${total.toLocaleString()}</td><td><span class="badge ${statusClass}">${escapeFoodText(status)}</span></td></tr>`;
+          }).join('')}</tbody></table></div>` : `<div class="small text-muted mb-3">${emptyText}</div>`;
+      return `<h6 class="mb-2">Food Orders</h6>${renderOrders(folio.food_orders || [], 'No food orders for this stay.')}
+        <h6 class="mb-2">Other Services &amp; Facilities</h6>${renderOrders(folio.other_services || [], 'No other service or facility orders for this stay.')}
+        <h6 class="mb-2">Additional Expenses</h6>${renderOrders(folio.additional_expenses || [], 'No additional expenses recorded.', true)}`;
+    }
+
+    async function saveGuestStayDates(reservationId) {
+      const checkIn = document.getElementById(`guestStayCheckIn${reservationId}`)?.value;
+      const checkOut = document.getElementById(`guestStayCheckOut${reservationId}`)?.value;
+      const status = document.getElementById(`guestDateUpdateStatus${reservationId}`);
+      if (!checkIn || !checkOut) {
+        if (status) status.textContent = 'Select both stay dates.';
+        return;
+      }
+      try {
+        await HotelDB.updateReservationDatesAsync(reservationId, checkIn, checkOut);
+        showToast('Your stay dates have been updated.', 'Stay Updated', 'success');
+        await renderGuestDashboard();
+        await renderGuestOffers();
+      } catch (error) {
+        if (status) status.textContent = error.message || 'Could not update your stay dates.';
+      }
+    }
+
+    async function renderGuestHistory(bookings) {
+      bookings = (bookings || await HotelDB.getBookingsAsync()).filter(b => (b.guestEmail || '').toLowerCase() === (currentUser?.email || '').toLowerCase());
+      const folios = await Promise.all(bookings.map(b => HotelDB.getReservationFolioAsync(b.reservationId).catch(() => null)));
+
+      const tbody = document.getElementById('guestHistoryTableBody');
+      let html = '';
+      let totalFolio = 0;
+
+      bookings.forEach((b, index) => {
+        const folio = folios[index];
+        const reservationId = Number(b.reservationId || String(b.id || '').replace('RES-', ''));
+        const canEditDates = !['Checked-out', 'Cancelled'].includes(b.status);
+        const checkedIn = ['Checked-in', 'Occupied'].includes(b.status);
+        const totals = folio?.totals;
+        const stayTotal = Number(totals?.total_amount ?? b.totalAmount ?? 0);
+        totalFolio += stayTotal;
+        const featuresTag = b.specialRequests ? `<div class="small text-gold mt-1"><i class="fa-solid fa-gift me-1"></i>${b.specialRequests}</div>` : '';
+        html += `
+          <tr>
+            <td>
+              <strong>${b.category}</strong> (#${b.roomNumber})
+              ${featuresTag}
+              <button class="btn btn-sm text-gold p-0 ms-1" onclick="openInvoiceModal('${b.id}')" title="View Folio">
+                <i class="fa-solid fa-file-invoice me-1"></i> Expenses &amp; Folio
+              </button>
+              ${folio ? `<details class="small mt-2"><summary class="text-navy fw-semibold">Food, facility &amp; expense details</summary><div class="mt-2">${renderGuestFolioDetails(folio)}</div></details>` : ''}
+            </td>
+            <td>${escapeFoodText(b.checkIn)} &bull; ${escapeFoodText(b.checkOut)}
+              ${canEditDates ? `<form class="mt-2" onsubmit="event.preventDefault(); saveGuestStayDates(${reservationId})">
+                <label class="small text-muted" for="guestStayCheckIn${reservationId}">Check-in</label><input id="guestStayCheckIn${reservationId}" class="form-control form-control-sm mb-1" type="date" value="${escapeFoodText(b.checkIn)}" ${checkedIn ? 'disabled' : ''} required>
+                <label class="small text-muted" for="guestStayCheckOut${reservationId}">Check-out</label><input id="guestStayCheckOut${reservationId}" class="form-control form-control-sm mb-1" type="date" value="${escapeFoodText(b.checkOut)}" required>
+                <button type="submit" class="btn btn-sm btn-outline-navy rounded-pill">Update dates</button>
+                <div id="guestDateUpdateStatus${reservationId}" class="small text-danger mt-1" role="status"></div>
+                ${checkedIn ? '<div class="small text-muted mt-1">Check-in date is fixed after arrival.</div>' : ''}
+              </form>` : ''}
+            </td>
+            <td class="fw-bold text-gold">Rs. ${stayTotal.toLocaleString()}${totals ? `<div class="small text-muted fw-normal">Food Rs. ${Number(totals.food_charge).toLocaleString()} · Other Rs. ${(Number(totals.other_service_charge)+Number(totals.additional_charge)).toLocaleString()} · Offers −Rs. ${Number(totals.discount).toLocaleString()}</div>` : ''}</td>
+            <td><span class="badge-luxury badge-gold">${b.status}</span>${folio?.bill?.payment_status ? `<div><span class="badge ${folio.bill.payment_status === 'Paid' ? 'bg-success' : 'bg-warning text-dark'}">${folio.bill.payment_status}</span></div>` : ''}</td>
+          </tr>
+        `;
+      });
+
+      if (!html) {
+        html = `<tr><td colspan="4" class="text-center text-muted py-3">No stay history found.</td></tr>`;
+      }
+
+      tbody.innerHTML = html;
+      document.getElementById('guestTotalFolio').textContent = `Rs. ${totalFolio.toLocaleString()}`;
+    }
+
+    // Initial render
+    document.addEventListener('DOMContentLoaded', () => {
+      renderGuestDashboard();
+      loadGuestServiceItems();
+      loadFoodMenu().then(continueHomeFoodOrder);
+    });
+  </script>
+</body>
+</html>
