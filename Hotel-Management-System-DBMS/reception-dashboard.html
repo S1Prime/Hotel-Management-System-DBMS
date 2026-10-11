@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Front Desk Control - Crowne Plaza Hotel</title>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom Luxury Stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body style="background-color: #f8fafc;">
+
+  <!-- Receptionist Header Navbar -->
+  <nav class="dashboard-navbar">
+    <a href="index.html" class="dashboard-brand">
+      <i class="fa-solid fa-crown text-warning me-2"></i>
+      <span>Crowne Plaza</span>
+    </a>
+    <div class="d-flex align-items-center gap-3">
+      <a href="lost-found.html" class="btn btn-sm btn-outline-warning rounded-pill px-3 text-white"><i class="fa-solid fa-magnifying-glass-location me-1"></i> Lost &amp; Found</a>
+      <div class="d-flex align-items-center gap-2 text-white small">
+        <div class="rounded-circle bg-warning text-dark font-weight-bold d-flex align-items-center justify-content-center" style="width:36px; height:36px;">
+          R
+        </div>
+        <div>
+          <strong class="d-block text-white" id="navStaffName">Front Desk Officer</strong>
+          <span class="badge bg-gold text-dark p-0 px-1 style="font-size:0.65rem;">STAFF</span>
+        </div>
+      </div>
+      <button onclick="logoutUser()" class="btn btn-sm btn-outline-light rounded-pill px-3 ms-2">
+        <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
+      </button>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    
+    <!-- Top Header Title Row -->
+    <div class="dashboard-header d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+      <div>
+        <h2 class="font-serif fs-2 mb-1 text-dark">Front Desk</h2>
+      </div>
+      <div class="dashboard-header-side d-flex flex-wrap justify-content-end align-items-center gap-2">
+        <div class="revenue-summary-card" aria-label="Total Revenue">
+          <div class="revenue-summary-icon">
+            <i class="fa-solid fa-vault"></i>
+          </div>
+          <div class="revenue-summary-content">
+            <span class="revenue-summary-label">Revenue Overview</span>
+            <h4>Total Revenue</h4>
+            <div class="revenue-summary-value" id="metricRevenue">Rs. 0</div>
+          </div>
+        </div>
+        <button class="btn btn-outline-navy border-2 px-3 py-2 rounded-pill shadow-sm" onclick="openReportsModal()">
+          <i class="fa-solid fa-chart-pie me-1 text-primary"></i> DBMS Analytics & Reports
+        </button>
+        <button class="btn btn-outline-navy border-2 px-4 py-2 rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#checkInModal">
+          <i class="fa-solid fa-user-plus me-2"></i> New Check-In
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Metrics Grid -->
+    <div class="stats-grid mb-4">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(239, 68, 68, 0.12); color: #dc2626;">
+          <i class="fa-solid fa-door-closed"></i>
+        </div>
+        <div class="stat-info">
+          <h4>Occupied Rooms</h4>
+          <div class="stat-value" id="metricOccupied">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.12); color: #047857;">
+          <i class="fa-solid fa-door-open"></i>
+        </div>
+        <div class="stat-info">
+          <h4>Vacant & Ready</h4>
+          <div class="stat-value" id="metricAvailable">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.12); color: #b45309;">
+          <i class="fa-solid fa-broom"></i>
+        </div>
+        <div class="stat-info">
+          <h4>Housekeeping</h4>
+          <div class="stat-value" id="metricCleaning">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(100, 116, 139, 0.15); color: #334155;">
+          <i class="fa-solid fa-wrench"></i>
+        </div>
+        <div class="stat-info">
+          <h4>Maintenance</h4>
+          <div class="stat-value" id="metricMaintenance">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Room Inventory Cards -->
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
+      <div>
+        <h3 class="font-serif fs-4 mb-1 text-dark" id="roomGridTitle">Recently Occupied Rooms</h3>
+        <p class="small text-muted mb-0" id="roomGridDescription">The latest occupied rooms are shown first.</p>
+      </div>
+      <button type="button" class="btn btn-outline-navy rounded-pill px-3" id="roomGridToggle" onclick="toggleRoomInventory()" aria-expanded="false">
+        <i class="fa-solid fa-table-cells-large me-2"></i>Show all rooms
+      </button>
+    </div>
+    <div class="row g-3 mb-4" id="roomGridContainer">
+      <!-- Room Cards Rendered via JS -->
+    </div>
+
+    <!-- Active Guest Bookings Table -->
+    <div class="card p-4 border-0 shadow-sm rounded-4 bg-white mb-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
+        <h3 class="font-serif fs-4 mb-0 text-dark">
+          <i class="fa-solid fa-clipboard-list me-2 text-gold"></i> Guest Stays &amp; History
+        </h3>
+        
+        <div class="d-flex gap-2">
+          <input type="search" id="bookingSearchInput" class="form-control form-control-sm rounded-pill px-3" placeholder="Search all stays by name, email or room..." aria-label="Search all stays by guest name, email, or room" style="width: min(360px, 90vw);" oninput="renderBookingsTable()">
+          <select id="bookingStatusFilter" class="form-select form-select-sm rounded-pill" style="width: 160px;" onchange="renderBookingsTable()">
+            <option value="">All Statuses</option>
+            <option value="Occupied">Occupied</option>
+            <option value="Checked-in">Checked-in</option>
+            <option value="Confirmed">Confirmed</option>
+            <option value="Checked-out">Checked-out</option>
+          </select>
+          <button type="button" class="btn btn-sm btn-outline-navy rounded-pill text-nowrap" id="bookingHistoryToggle" onclick="toggleBookingHistory()">Show all stays</button>
+        </div>
+      </div>
+      <p class="small text-muted mb-3">Search any past or current guest stay, then open Details to view payment, food, services, offers, and expenses.</p>
+
+      <div class="table-luxury-wrapper">
+        <table class="table-luxury">
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Room #</th>
+              <th>Suite Type</th>
+              <th>Guest Name</th>
+              <th>Check-In & Out</th>
+              <th>Features & Requests</th>
+              <th>Total Bill</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bookingsTableBody">
+            <!-- Bookings Rendered via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <section class="card p-4 border-0 shadow-sm rounded-4 bg-white mb-4" id="offerRedemptionsSection">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div><h3 class="font-serif fs-4 mb-1 text-dark"><i class="fa-solid fa-tags me-2 text-gold"></i>Offers &amp; Redemptions</h3><p class="text-muted small mb-0">Student offer claims that need document verification.</p></div>
+        <span id="pendingOfferBadge" class="badge bg-warning text-dark rounded-pill px-3 py-2">Loading...</span>
+      </div>
+      <div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead class="table-light"><tr><th>Room / Guest</th><th>Offer</th><th>Status</th><th>Evidence / Date / Remarks</th><th>Review</th></tr></thead><tbody id="offerRedemptionsBody"><tr><td colspan="5" class="text-muted text-center">Loading offer claims...</td></tr></tbody></table></div>
+    </section>
+
+    <!-- Housekeeping Task Management Desk (PostgreSQL Trigger Automation) -->
+    <div class="card p-4 border-0 shadow-sm rounded-4 bg-white mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="font-serif fs-4 mb-0 text-dark">
+          <i class="fa-solid fa-broom me-2 text-warning"></i> Housekeeping Tasks (Auto-Triggered on Checkout)
+        </h3>
+        <div class="d-flex align-items-center gap-2"><span class="badge bg-warning text-dark px-3 py-1 rounded-pill" id="pendingCleaningBadge">0 Pending Tasks</span><button type="button" class="btn btn-sm btn-outline-navy rounded-pill text-nowrap" id="housekeepingHistoryToggle" onclick="toggleHousekeepingHistory()">Show all</button></div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Task ID</th>
+              <th>Room #</th>
+              <th>Room Type</th>
+              <th>Task Type</th>
+              <th>Status</th>
+              <th>Created At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="housekeepingTableBody">
+            <!-- Housekeeping tasks rendered via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PostgreSQL Bills & Invoices Desk -->
+    <div class="card p-4 border-0 shadow-sm rounded-4 bg-white mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="font-serif fs-4 mb-0 text-dark">
+          <i class="fa-solid fa-file-invoice-dollar me-2 text-success"></i> Customer Bills & Payment Status
+        </h3>
+        <div class="d-flex align-items-center gap-2"><span class="badge bg-success text-white px-3 py-1 rounded-pill" id="pendingBillsBadge">0 Pending Payments</span><button type="button" class="btn btn-sm btn-outline-navy rounded-pill text-nowrap" id="billHistoryToggle" onclick="toggleBillHistory()">Show all</button></div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Bill ID</th>
+              <th>Guest Name</th>
+              <th>Room #</th>
+              <th>Room Charge</th>
+              <th>Other Services</th>
+              <th>Food Charges</th>
+              <th>Additional Expenses</th>
+              <th>Offer Discount</th>
+              <th>Tax (5%)</th>
+              <th>Total Amount</th>
+              <th>Payment Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="billsTableBody">
+            <!-- Bills rendered via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Food Orders Desk -->
+    <div class="card p-4 border-0 shadow-sm rounded-4 bg-white mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="font-serif fs-4 mb-0 text-dark"><i class="fa-solid fa-utensils me-2 text-gold"></i>Food Orders</h3>
+        <span class="badge bg-warning text-dark px-3 py-1 rounded-pill" id="pendingFoodBadge">0 Pending</span>
+      </div>
+      <div id="foodOrdersContainer"><p class="text-muted text-center py-3">No food orders.</p></div>
+    </div>
+
+    <!-- In-Room Service Requests Desk -->
+    <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="font-serif fs-4 mb-0 text-dark">
+          <i class="fa-solid fa-bell-concierge me-2 text-gold"></i> Guest Room Service Orders
+        </h3>
+        <div class="d-flex align-items-center gap-2"><span class="badge bg-warning text-dark px-3 py-1 rounded-pill" id="pendingServiceBadge">0 Pending</span><button type="button" class="btn btn-sm btn-outline-navy rounded-pill text-nowrap" id="serviceHistoryToggle" onclick="toggleServiceHistory()">Show all</button></div>
+      </div>
+
+      <div id="serviceOrdersContainer">
+        <!-- Service Requests Rendered via JS -->
+      </div>
+    </div>
+
+  </div>
+
+  <div class="modal fade" id="reservationFolioModal" tabindex="-1" aria-labelledby="reservationFolioTitle" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background:var(--primary-navy)">
+          <h5 class="modal-title font-serif text-gold" id="reservationFolioTitle"><i class="fa-solid fa-receipt me-2"></i>Room Details &amp; Folio</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4" id="reservationFolioBody"><div class="text-muted">Loading reservation expenses…</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Walk-In Check-In Modal -->
+  <div class="modal fade" id="checkInModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-user-check me-2"></i> Walk-In Guest Check-In</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="checkInForm" onsubmit="event.preventDefault(); handleNewCheckIn();">
+            <div class="mb-3">
+              <label class="form-label-custom">Guest Full Name</label>
+              <input type="text" id="ciGuestName" class="form-control form-control-luxury" placeholder="e.g. Jonathan Harker" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Guest Email</label>
+              <input type="email" id="ciGuestEmail" class="form-control form-control-luxury" placeholder="name@domain.com" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom" for="ciGuestPhone">Guest Phone Number</label>
+              <input type="tel" id="ciGuestPhone" class="form-control form-control-luxury" autocomplete="tel" inputmode="tel" pattern="[0-9+().\s-]{7,24}" maxlength="24" placeholder="e.g. +91 98765 43210" title="Enter a phone number with 7 to 15 digits." required>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label-custom">Check-In Date</label>
+                <input type="date" id="ciCheckInDate" class="form-control form-control-luxury" onchange="onCiCheckInChange()" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label-custom">Check-Out Date</label>
+                <input type="date" id="ciCheckOutDate" class="form-control form-control-luxury" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Assign Available Room</label>
+              <select id="ciRoomSelect" class="form-select form-control-luxury" required>
+                <!-- Available rooms options -->
+              </select>
+            </div>
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-key me-2"></i> Complete Check-In & Issue Key
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DBMS Analytics & Reports Modal -->
+  <div class="modal fade" id="reportsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-chart-line me-2"></i> PostgreSQL DBMS Reports & Financial Analytics</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4" id="reportsModalBody">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/image-map.js"></script>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/ui-helpers.js"></script>
+  <script src="assets/js/offers.js"></script>
+  <script>
+    // Route guard
+    checkAuth('receptionist');
+
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      document.getElementById('navStaffName').textContent = currentUser.name;
+    }
+
+    // Set default check-in date picker values
+    const todayStr = new Date().toISOString().split('T')[0];
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 3);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    document.getElementById('ciCheckInDate').value = todayStr;
+    document.getElementById('ciCheckOutDate').value = tomorrowStr;
+
+    function onCiCheckInChange() {
+      const ciVal = document.getElementById('ciCheckInDate').value;
+      if (!ciVal) return;
+      const ciDate = new Date(ciVal);
+      const coInput = document.getElementById('ciCheckOutDate');
+      const currentCo = coInput.value;
+      if (!currentCo || new Date(currentCo) <= ciDate) {
+        const autoCo = new Date(ciDate);
+        autoCo.setDate(autoCo.getDate() + 3);
+        coInput.value = autoCo.toISOString().split('T')[0];
+      }
+    }
+
+    async function renderDashboard() {
+      await renderMetricsCards();
+      await renderRoomGrid();
+      await renderBookingsTable();
+      await renderOfferRedemptions();
+      await renderHousekeepingTable();
+      await renderBillsTable();
+      await renderServiceOrders();
+      await populateAvailableRoomsSelect();
+    }
+
+    async function renderMetricsCards() {
+      const m = await HotelDB.getMetricsAsync();
+      document.getElementById('metricOccupied').textContent = m.occupied;
+      document.getElementById('metricAvailable').textContent = m.available;
+      document.getElementById('metricCleaning').textContent = m.cleaning;
+      document.getElementById('metricMaintenance').textContent = m.maintenance;
+      document.getElementById('metricRevenue').textContent = `Rs. ${Number(m.totalRevenue || 0).toLocaleString('en-IN')}`;
+    }
+
+    let showAllRooms = false;
+    let showAllBookings = false;
+    let showAllHousekeeping = false;
+    let showAllBills = false;
+    let showAllServices = false;
+
+    function toggleRoomInventory() {
+      showAllRooms = !showAllRooms;
+      renderRoomGrid();
+    }
+
+    function toggleBookingHistory() { showAllBookings = !showAllBookings; renderBookingsTable(); }
+    function toggleHousekeepingHistory() { showAllHousekeeping = !showAllHousekeeping; renderHousekeepingTable(); }
+    function toggleBillHistory() { showAllBills = !showAllBills; renderBillsTable(); }
+    function toggleServiceHistory() { showAllServices = !showAllServices; renderServiceOrders(); }
+
+    async function renderRoomGrid() {
+      const [rooms, bookings, redemptions] = await Promise.all([
+        HotelDB.getRoomsAsync(),
+        HotelDB.getBookingsAsync(),
+        HotelDB.getOfferRedemptionsAsync().catch(() => [])
+      ]);
+      latestOfferRedemptions = redemptions;
+      const container = document.getElementById('roomGridContainer');
+      const roomEntries = rooms.map(room => {
+        const roomBookings = bookings
+          .filter(booking => String(booking.roomNumber) === String(room.number) && ['Occupied','Checked-in','Confirmed','Booked'].includes(booking.status))
+          .sort((a, b) => new Date(b.checkIn) - new Date(a.checkIn));
+        const stay = roomBookings[0];
+        const currentStay = roomBookings.find(booking => ['Occupied', 'Checked-in'].includes(booking.status));
+        return {room, stay, isOccupied: room.status === 'Occupied' || Boolean(currentStay), recentDate: currentStay?.checkIn || (room.status === 'Occupied' ? stay?.checkIn : '') || ''};
+      });
+
+      const roomNumberSort = (a, b) => String(a.room.number).localeCompare(String(b.room.number), undefined, {numeric: true});
+      let sections;
+      if (showAllRooms) {
+        const byType = new Map();
+        roomEntries.forEach(entry => {
+          const type = entry.room.category || 'Other';
+          if (!byType.has(type)) byType.set(type, []);
+          byType.get(type).push(entry);
+        });
+        const firstRoomNumber = entries => Math.min(...entries.map(entry => Number(entry.room.number)));
+        sections = [...byType.entries()].sort(([, a], [, b]) => firstRoomNumber(a) - firstRoomNumber(b)).map(([type, entries]) => `
+          <section class="col-12" aria-label="${folioHtml(type)} rooms">
+            <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3 mt-2">
+              <h4 class="font-serif fs-5 text-navy mb-0">${folioHtml(type)}</h4>
+              <span class="badge bg-light text-dark border rounded-pill">${entries.length} room${entries.length === 1 ? '' : 's'}</span>
+            </div>
+            <div class="row g-3">${entries.sort(roomNumberSort).map(renderRoomCard).join('')}</div>
+          </section>`);
+      } else {
+        const recentRooms = roomEntries
+          .filter(entry => entry.isOccupied)
+          .sort((a, b) => new Date(b.recentDate || 0) - new Date(a.recentDate || 0) || roomNumberSort(a, b))
+          .slice(0, 8);
+        sections = recentRooms.length
+          ? [recentRooms.map(renderRoomCard).join('')]
+          : ['<div class="col-12"><div class="card p-4 border-0 shadow-sm rounded-4 bg-white text-center text-muted">No rooms are currently occupied.</div></div>'];
+      }
+
+      document.getElementById('roomGridTitle').textContent = showAllRooms ? 'All Rooms by Type' : 'Recently Occupied Rooms';
+      document.getElementById('roomGridDescription').textContent = showAllRooms
+        ? 'Rooms are grouped by type and ordered by room number.'
+        : 'The latest occupied rooms are shown first.';
+      const toggle = document.getElementById('roomGridToggle');
+      toggle.setAttribute('aria-expanded', String(showAllRooms));
+      toggle.innerHTML = showAllRooms
+        ? '<i class="fa-solid fa-clock-rotate-left me-2"></i>Show recent rooms'
+        : '<i class="fa-solid fa-table-cells-large me-2"></i>Show all rooms';
+      container.innerHTML = sections.join('');
+      HotelImageMap.hydrate(container);
+
+      function renderRoomCard(entry) {
+        const {room, stay} = entry;
+
+        return `
+          <div class="col-6 col-md-4 col-lg-3">
+            <div class="p-3 border rounded-4 bg-white h-100 d-flex flex-column justify-content-between shadow-sm">
+              <img class="room-card-img rounded-3 mb-3" data-image-map-room="${folioHtml(room.category)}" alt="${folioHtml(room.category)}">
+              <div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h4 class="font-serif mb-0 text-navy fw-bold">Room ${room.number}</h4>
+                  <span class="badge ${roomStatusBadge(room.status)} rounded-pill">${folioHtml(room.status || 'Unknown')}</span>
+                </div>
+                <div class="small text-muted mb-2">${room.category}</div>
+                <div class="small fw-semibold text-primary mb-2">Rs. ${room.price.toLocaleString()} / night</div>
+              </div>
+              <div class="d-flex gap-1 mt-2">
+                ${stay ? `<button class="btn btn-sm btn-outline-primary rounded-pill px-2" onclick="openReservationFolio(${Number(stay.reservationId)})" title="View full room details and expenses"><i class="fa-solid fa-circle-info me-1"></i>Details</button>` : ''}
+                <button class="btn btn-sm btn-outline-danger rounded-circle p-1" onclick="handleDeactivateRoom(${room.id})" title="Deactivate Room">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function roomStatusBadge(status) {
+        return ({Occupied: 'bg-danger', Available: 'bg-success', Cleaning: 'bg-warning text-dark', Maintenance: 'bg-secondary'})[status] || 'bg-secondary';
+      }
+    }
+
+    let activeFolioReservationId = null;
+    let activeFolioData = null;
+    let latestOfferRedemptions = [];
+    function folioHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    }
+    function folioMoney(value) { return `Rs. ${Number(value || 0).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2})}`; }
+
+    async function openReservationFolio(reservationId) {
+      activeFolioReservationId = reservationId;
+      document.getElementById('reservationFolioBody').innerHTML = '<div class="text-muted">Loading reservation expenses…</div>';
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('reservationFolioModal')).show();
+      await refreshReservationFolio();
+    }
+
+    async function refreshReservationFolio() {
+      try {
+        activeFolioData = await HotelDB.getReservationFolioAsync(activeFolioReservationId);
+        renderReservationFolio(activeFolioData);
+      } catch (error) {
+        document.getElementById('reservationFolioBody').innerHTML = `<div class="alert alert-danger">${folioHtml(error.message)}</div>`;
+      }
+    }
+
+    function renderReservationFolio(folio) {
+      const r = folio.reservation, t = folio.totals;
+      const completedFoodTotal = folio.food_orders.filter(item => item.status === 'Completed').reduce((sum,item) => sum + Number(item.total_price),0);
+      const foodRows = folio.food_orders.length ? folio.food_orders.map(item => `<tr><td>${folioHtml(item.service_name)}<div class="small text-muted">${folioHtml(item.cuisine)} · ${new Date(item.request_date).toLocaleString()}</div></td><td>${item.quantity}</td><td>${folioMoney(item.unit_price)}</td><td>${folioMoney(item.total_price)}</td><td><span class="badge ${item.status === 'Completed' ? 'bg-success' : item.status === 'Cancelled' ? 'bg-secondary' : 'bg-warning text-dark'}">${folioHtml(item.status)}</span></td></tr>`).join('') : '<tr><td colspan="5" class="text-muted">No food orders.</td></tr>';
+      const serviceRows = folio.other_services.length ? folio.other_services.map(item => `<tr><td>${folioHtml(item.service_name)}<div class="small text-muted">${new Date(item.request_date).toLocaleString()}</div></td><td>${item.quantity}</td><td>${folioMoney(item.unit_price)}</td><td>${folioMoney(item.total_price)}</td><td><span class="badge ${item.status === 'Completed' ? 'bg-success' : item.status === 'Cancelled' ? 'bg-secondary' : 'bg-warning text-dark'}">${folioHtml(item.status)}</span></td></tr>`).join('') : '<tr><td colspan="5" class="text-muted">No other room-service orders.</td></tr>';
+      const expenseRows = folio.additional_expenses.length ? folio.additional_expenses.map(item => `<tr><td>${folioHtml(item.expense_type)}<div class="small text-muted">${folioHtml(item.description)} · ${new Date(item.created_at).toLocaleString()}</div></td><td>${item.quantity}</td><td>${folioMoney(item.unit_price)}</td><td>${folioMoney(item.total_amount)}</td><td>${r.status !== 'Checked-out' && r.status !== 'Cancelled' ? `<button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="editReservationExpense(${item.expense_id})">Edit</button><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeReservationExpense(${item.expense_id})">Remove</button>` : '<span class="text-muted">Final</span>'}</td></tr>`).join('') : '<tr><td colspan="5" class="text-muted">No additional expenses recorded.</td></tr>';
+      const offers = folio.offers.length ? folio.offers.map(offer => `<li class="list-group-item d-flex justify-content-between gap-2"><span><strong>${folioHtml(offer.offer_name)}</strong> · ${Number(offer.discount_percent)}%<small class="d-block text-muted">${folioHtml(offer.eligibility_details || '')}${offer.remarks ? ` · ${folioHtml(offer.remarks)}` : ''}</small></span><span class="badge ${['Approved','Applied'].includes(offer.status) ? 'bg-success' : offer.status === 'Rejected' ? 'bg-danger' : 'bg-secondary'} align-self-center">${folioHtml(offer.status)}</span></li>`).join('') : '<li class="list-group-item text-muted">No offer claims recorded.</li>';
+      const automaticOffers = latestOfferRedemptions.filter(offer => Number(offer.reservation_id) === Number(r.reservation_id) && offer.offer_code !== 'STUDENT15');
+      const automaticOfferRows = automaticOffers.length ? automaticOffers.map(offer => `<li class="list-group-item d-flex justify-content-between gap-2"><span><strong>${folioHtml(offer.offer_name)}</strong><small class="d-block text-muted">${folioHtml(offer.eligibility_details)}</small></span><span class="badge ${offer.status === 'Eligible' || offer.status === 'Approved' || offer.status === 'Applied' ? 'bg-success' : 'bg-secondary'} align-self-center">${folioHtml(offer.status)}</span></li>`).join('') : '<li class="list-group-item text-muted">Automatic offer eligibility is unavailable.</li>';
+      const canEdit = !['Checked-out','Cancelled'].includes(r.status);
+      document.getElementById('reservationFolioBody').innerHTML = `
+        <div class="row g-3 mb-3"><div class="col-lg-7"><div class="p-3 bg-light rounded-3 h-100"><div class="row g-2 small">
+          <div class="col-sm-6"><strong>Guest:</strong> ${folioHtml(r.guest_name)}</div><div class="col-sm-6"><strong>Room:</strong> #${folioHtml(r.room_number)} · ${folioHtml(r.room_type)}</div>
+          <div class="col-sm-6"><strong>Check-in:</strong> ${folioHtml(r.check_in)}</div><div class="col-sm-6"><strong>Check-out:</strong> ${folioHtml(r.check_out)}</div>
+          <div class="col-sm-6"><strong>Phone:</strong> ${folioHtml(r.guest_phone || 'Not provided')}</div><div class="col-sm-6"><strong>Status:</strong> ${folioHtml(r.status)}</div>
+          <div class="col-12"><strong>Room tariff:</strong> ${folioMoney(r.price_per_night)} × ${Math.max(1, Math.round((new Date(r.check_out)-new Date(r.check_in))/86400000))} nights = ${folioMoney(t.room_charge)}</div>
+        </div></div></div><div class="col-lg-5"><div class="p-3 border rounded-3 h-100">
+          <div class="d-flex justify-content-between"><span>Room charges</span><strong>${folioMoney(t.room_charge)}</strong></div>
+          <div class="d-flex justify-content-between"><span>Food charges (completed)</span><strong>${folioMoney(t.food_charge)}</strong></div>
+          <div class="d-flex justify-content-between"><span>Other services (completed)</span><strong>${folioMoney(t.other_service_charge)}</strong></div>
+          <div class="d-flex justify-content-between"><span>Additional expenses</span><strong>${folioMoney(t.additional_charge)}</strong></div>
+          <hr class="my-2"><div class="d-flex justify-content-between"><span>Subtotal</span><strong>${folioMoney(t.subtotal)}</strong></div>
+          <div class="d-flex justify-content-between text-success"><span>Approved offer discounts</span><strong>−${folioMoney(t.discount)}</strong></div>
+          <div class="d-flex justify-content-between text-muted"><span>Tax (5%)</span><strong>${folioMoney(t.tax)}</strong></div>
+          <div class="d-flex justify-content-between fs-5 fw-bold text-navy mt-1"><span>${folio.bill ? 'Final bill' : 'Current total'}</span><strong>${folioMoney(t.total_amount)}</strong></div>
+          ${folio.bill ? `<div class="small text-muted">Invoice #${folio.bill.bill_id} · ${folioHtml(folio.bill.payment_status || '')}</div>` : '<div class="small text-muted">Estimate updates from completed orders and approved offers; pending orders are not charged.</div>'}
+        </div></div></div>
+        <h6 class="font-serif mt-3 mb-2">Food Orders</h6><div class="table-responsive mb-3"><table class="table table-sm align-middle"><thead><tr><th>Food / Cuisine / Date</th><th>Qty</th><th>Unit price</th><th>Total</th><th>Status</th></tr></thead><tbody>${foodRows}</tbody></table></div>
+        <h6 class="font-serif mb-2">Other Service Orders</h6><div class="table-responsive mb-3"><table class="table table-sm align-middle"><thead><tr><th>Service / Date</th><th>Qty</th><th>Unit price</th><th>Total</th><th>Status</th></tr></thead><tbody>${serviceRows}</tbody></table></div>
+        <h6 class="font-serif mb-2">Additional Expenses</h6><div class="table-responsive mb-3"><table class="table table-sm align-middle"><thead><tr><th>Type / Description / Date</th><th>Qty</th><th>Unit price</th><th>Total</th><th>Controls</th></tr></thead><tbody>${expenseRows}</tbody></table></div>
+        <h6 class="font-serif mb-2">Automatic Offer Eligibility</h6><ul class="list-group mb-3">${automaticOfferRows}</ul>
+        <h6 class="font-serif mb-2">Offers Requiring Verification / Claims</h6><ul class="list-group mb-3">${offers}</ul>
+        ${canEdit ? `<form id="reservationExpenseForm" class="p-3 bg-light rounded-3" onsubmit="event.preventDefault(); saveReservationExpense()">
+          <input type="hidden" id="expenseEditId"><div class="row g-2 align-items-end">
+          <div class="col-md-3"><label class="form-label small" for="expenseType">Expense type</label><select id="expenseType" class="form-select form-select-sm" required><option>Laundry</option><option>Room Service</option><option>Extra Bed</option><option>Extra Towels</option><option>Minibar</option><option>Housekeeping</option><option>Other Hotel Service</option></select></div>
+          <div class="col-md-4"><label class="form-label small" for="expenseDescription">Description</label><input id="expenseDescription" class="form-control form-control-sm" maxlength="250" required></div>
+          <div class="col-md-2"><label class="form-label small" for="expenseQuantity">Quantity</label><input id="expenseQuantity" class="form-control form-control-sm" type="number" min="1" max="100" value="1" required></div>
+          <div class="col-md-2"><label class="form-label small" for="expenseUnitPrice">Unit price (Rs.)</label><input id="expenseUnitPrice" class="form-control form-control-sm" type="number" min="0" step="0.01" max="1000000" required></div>
+          <div class="col-md-1"><button id="expenseSaveButton" class="btn btn-sm btn-gold w-100" type="submit">Add</button></div>
+          </div><button id="expenseCancelEdit" type="button" class="btn btn-sm btn-link px-0" onclick="resetReservationExpenseForm()" hidden>Cancel edit</button>
+        </form>` : '<div class="alert alert-secondary small mb-0">This reservation is finalized; expenses are read-only.</div>'}`;
+    }
+
+    async function saveReservationExpense() {
+      const expense = {expense_type:document.getElementById('expenseType').value,description:document.getElementById('expenseDescription').value.trim(),quantity:document.getElementById('expenseQuantity').value,unit_price:document.getElementById('expenseUnitPrice').value};
+      const editId = document.getElementById('expenseEditId').value;
+      try {
+        if (editId) await HotelDB.updateReservationExpenseAsync(editId, expense);
+        else await HotelDB.addReservationExpenseAsync(activeFolioReservationId, expense);
+        showToast(editId ? 'Reservation expense updated.' : 'Expense added to this room folio.', 'Expense Saved', 'success');
+        await refreshReservationFolio(); await renderBillsTable(); await renderBookingsTable();
+      } catch (error) { showToast(error.message, 'Expense Error', 'danger'); }
+    }
+    function editReservationExpense(expenseId) {
+      const item = activeFolioData?.additional_expenses.find(expense => expense.expense_id === expenseId);
+      if (!item) return;
+      document.getElementById('expenseEditId').value = item.expense_id;
+      const type = document.getElementById('expenseType');
+      if (![...type.options].some(option => option.value === item.expense_type)) type.add(new Option(item.expense_type,item.expense_type));
+      type.value = item.expense_type;
+      document.getElementById('expenseDescription').value = item.description;
+      document.getElementById('expenseQuantity').value = item.quantity;
+      document.getElementById('expenseUnitPrice').value = item.unit_price;
+      document.getElementById('expenseSaveButton').textContent = 'Save';
+      document.getElementById('expenseCancelEdit').hidden = false;
+      document.getElementById('reservationExpenseForm').scrollIntoView({behavior:'smooth',block:'nearest'});
+    }
+    function resetReservationExpenseForm() {
+      const form = document.getElementById('reservationExpenseForm'); if (!form) return;
+      form.reset(); document.getElementById('expenseEditId').value = '';
+      document.getElementById('expenseSaveButton').textContent = 'Add';
+      document.getElementById('expenseCancelEdit').hidden = true;
+      document.getElementById('expenseQuantity').value = 1;
+    }
+    async function removeReservationExpense(expenseId) {
+      if (!window.confirm('Remove this expense from the reservation?')) return;
+      try {
+        await HotelDB.deleteReservationExpenseAsync(expenseId);
+        showToast('Expense removed from this room folio.', 'Expense Removed', 'success');
+        await refreshReservationFolio(); await renderBillsTable(); await renderBookingsTable();
+      } catch (error) { showToast(error.message, 'Expense Error', 'danger'); }
+    }
+
+    async function renderBookingsTable() {
+      const bookings = await HotelDB.getBookingsAsync();
+      const search = document.getElementById('bookingSearchInput').value.trim().toLowerCase();
+      const filter = document.getElementById('bookingStatusFilter').value;
+
+      const filtered = bookings.filter(b => {
+        const matchesSearch = !search || [b.guestName, b.guestEmail, b.roomNumber].some(value => String(value || '').toLowerCase().includes(search));
+        const matchesFilter = filter === '' || b.status === filter;
+        return matchesSearch && matchesFilter;
+      }).sort((a, b) => Number(b.reservationId) - Number(a.reservationId));
+
+      const activeBookings = filtered.filter(b => ['Occupied', 'Checked-in'].includes(b.status));
+      const recentOtherBookings = filtered
+        .filter(b => !['Occupied', 'Checked-in'].includes(b.status))
+        .slice(0, 5);
+      const visibleBookings = !showAllBookings && !search
+        ? [...activeBookings, ...recentOtherBookings]
+            .sort((a, b) => Number(b.reservationId) - Number(a.reservationId))
+        : filtered;
+      const historyToggle = document.getElementById('bookingHistoryToggle');
+      historyToggle.hidden = Boolean(search);
+      historyToggle.textContent = showAllBookings ? 'Show recent stays' : `Show all stays (${filtered.length})`;
+
+      const tbody = document.getElementById('bookingsTableBody');
+      if (visibleBookings.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">${search ? 'No stays match that name, email, or room.' : 'No guest stays found.'}</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = visibleBookings.map(b => `
+        <tr>
+          <td><span class="badge bg-light text-dark font-monospace">${b.id}</span></td>
+          <td><strong class="text-navy">#${b.roomNumber}</strong></td>
+          <td>${b.category}</td>
+          <td><strong>${b.guestName}</strong><div class="small text-muted">${b.guestEmail}</div><div class="small text-muted">Phone: ${b.guestPhone || 'N/A'}</div></td>
+          <td>${b.checkIn} &bull; ${b.checkOut}</td>
+          <td>
+            ${b.specialRequests ? `
+              <div class="d-flex flex-column gap-1" style="min-width: 170px; max-width: 240px;">
+                ${b.specialRequests.includes('Breakfast') ? '<span class="badge bg-warning text-dark text-start py-1 px-2"><i class="fa-solid fa-utensils me-1"></i> Complimentary Breakfast</span>' : ''}
+                ${b.specialRequests.includes('Airport') ? '<span class="badge bg-primary text-white text-start py-1 px-2"><i class="fa-solid fa-plane-arrival me-1"></i> Airport Pickup</span>' : ''}
+                ${b.specialRequests.includes('High Floor') ? '<span class="badge bg-info text-dark text-start py-1 px-2"><i class="fa-solid fa-mountain-sun me-1"></i> High Floor</span>' : ''}
+                ${b.specialRequests.includes('Welcome') ? '<span class="badge bg-danger text-white text-start py-1 px-2"><i class="fa-solid fa-wine-glass me-1"></i> Welcome Basket</span>' : ''}
+                ${b.specialRequests.includes('Late Check-Out') || b.specialRequests.includes('Late Check-out') ? '<span class="badge bg-secondary text-white text-start py-1 px-2"><i class="fa-solid fa-clock me-1"></i> Late Check-out</span>' : ''}
+                ${b.specialRequests.includes('Notes:') ? `<div class="small text-muted fst-italic mt-1 border-start border-warning ps-1">${b.specialRequests.split('Notes:')[1].trim()}</div>` : (!b.specialRequests.includes('Breakfast') && !b.specialRequests.includes('Airport') && !b.specialRequests.includes('High Floor') && !b.specialRequests.includes('Welcome') && !b.specialRequests.includes('Late') ? `<span class="small text-dark">${b.specialRequests}</span>` : '')}
+              </div>
+            ` : '<span class="badge bg-light text-muted border">None</span>'}
+          </td>
+          <td><strong class="text-gold">Rs. ${b.totalAmount.toLocaleString()}</strong></td>
+          <td>
+            <span class="badge-luxury ${b.status === 'Checked-in' || b.status === 'Occupied' ? 'badge-occupied' : 'badge-gold'}">${b.status}</span>
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1" onclick="openReservationFolio(${b.reservationId})" title="Room expenses and bill details">
+                <i class="fa-solid fa-receipt me-1"></i> Details
+              </button>
+              ${(b.status === 'Checked-in' || b.status === 'Occupied' || b.status === 'Confirmed') ? `
+                <button class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1" onclick="handleCheckOut('${b.id}')">
+                  <i class="fa-solid fa-right-from-bracket me-1"></i> Check Out
+                </button>
+              ` : ''}
+              <button class="btn btn-sm btn-outline-gold rounded-pill px-2.5 py-1 text-gold border-gold" onclick="openInvoiceModal('${b.id}')" title="Print Invoice">
+                <i class="fa-solid fa-file-invoice me-1"></i> Folio
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function renderHousekeepingTable() {
+      const tasks = await HotelDB.getHousekeepingAsync();
+      const tbody = document.getElementById('housekeepingTableBody');
+      const pendingTasks = tasks.filter(t => t.status !== 'Completed');
+      document.getElementById('pendingCleaningBadge').textContent = `${pendingTasks.length} Pending Tasks`;
+      const recentCompleted = tasks.filter(t => t.status === 'Completed').slice(0, 8);
+      const visibleTasks = showAllHousekeeping ? tasks : [...pendingTasks, ...recentCompleted]
+        .sort((a, b) => Number(b.task_id) - Number(a.task_id));
+      document.getElementById('housekeepingHistoryToggle').textContent = showAllHousekeeping
+        ? 'Show recent' : `Show all (${tasks.length})`;
+
+      if (visibleTasks.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-3">No housekeeping tasks recorded.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = visibleTasks.map(t => `
+        <tr>
+          <td><span class="badge bg-secondary font-monospace">HK-${t.task_id}</span></td>
+          <td><strong class="text-navy">#${t.room_number}</strong></td>
+          <td>${t.room_type}</td>
+          <td><span class="badge bg-light text-dark">${t.task_type}</span></td>
+          <td>
+            <span class="badge ${t.status === 'Completed' ? 'bg-success' : 'bg-warning text-dark'}">${t.status}</span>
+          </td>
+          <td><span class="small text-muted">${new Date(t.created_at).toLocaleDateString()}</span></td>
+          <td>
+            ${t.status !== 'Completed' ? `
+              <button class="btn btn-sm btn-success rounded-pill px-3" onclick="handleCompleteHousekeeping(${t.task_id})">
+                <i class="fa-solid fa-check me-1"></i> ${t.is_guest_request ? 'Mark Request Completed' : 'Mark Clean & Free Room'}
+              </button>
+            ` : (t.is_guest_request
+              ? '<span class="text-success small fw-bold"><i class="fa-solid fa-circle-check me-1"></i> Request Completed</span>'
+              : '<span class="text-success small fw-bold"><i class="fa-solid fa-circle-check me-1"></i> Room Clean & Ready</span>')}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function handleCompleteHousekeeping(taskId) {
+      await HotelDB.updateHousekeepingStatusAsync(taskId, 'Completed');
+      showToast('Housekeeping task completed and updated in PostgreSQL.', 'Cleaning Complete', 'success');
+      await renderDashboard();
+    }
+
+    async function renderBillsTable() {
+      const bills = await HotelDB.getBillsAsync();
+      const tbody = document.getElementById('billsTableBody');
+      const pendingBills = bills.filter(b => b.payment_status === 'Pending');
+      document.getElementById('pendingBillsBadge').textContent = `${pendingBills.length} Pending Payments`;
+      const recentPaidBills = bills.filter(b => b.payment_status === 'Paid').slice(0, 5);
+      const visibleBills = showAllBills
+        ? bills
+        : (pendingBills.length ? pendingBills : recentPaidBills)
+            .sort((a, b) => Number(b.bill_id) - Number(a.bill_id));
+      document.getElementById('billHistoryToggle').textContent = showAllBills
+        ? 'Show recent' : `Show all (${bills.length})`;
+
+      if (visibleBills.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="12" class="text-center text-muted py-3">No bills issued yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = visibleBills.map(b => `
+        <tr>
+          <td><span class="badge bg-dark font-monospace">INV-${b.bill_id}</span></td>
+          <td><strong>${b.guest_name}</strong></td>
+          <td><strong class="text-navy">#${b.room_number}</strong></td>
+          <td>Rs. ${parseFloat(b.room_charge).toLocaleString()}</td>
+          <td>Rs. ${Math.max(0, parseFloat(b.service_charge) - parseFloat(b.food_charge || 0)).toLocaleString()}</td>
+          <td>Rs. ${parseFloat(b.food_charge || 0).toLocaleString()}</td>
+          <td>Rs. ${parseFloat(b.additional_charge || 0).toLocaleString()}</td>
+          <td><strong class="text-success">-Rs. ${parseFloat(b.discount || 0).toLocaleString()}</strong>${(b.offer_discounts || []).map(o => `<div class="small text-muted">${o.offer_name} (${o.discount_percent}% of Rs. ${parseFloat(o.applied_charge).toLocaleString()})</div>`).join('')}</td>
+          <td>Rs. ${parseFloat(b.tax).toLocaleString()}</td>
+          <td><strong class="text-gold">Rs. ${parseFloat(b.total_amount).toLocaleString()}</strong></td>
+          <td>
+            <span class="badge ${b.payment_status === 'Paid' ? 'bg-success' : 'bg-danger'}">${b.payment_status}</span>
+          </td>
+          <td>
+            ${b.payment_status === 'Pending' ? `
+              <button class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="handlePayBill(${b.bill_id})">
+                <i class="fa-solid fa-dollar-sign me-1"></i> Mark Paid
+              </button>
+            ` : '<span class="text-success small"><i class="fa-solid fa-check me-1"></i> Paid in Full</span>'}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function handlePayBill(billId) {
+      await HotelDB.payBillAsync(billId);
+      showToast(`Bill INV-${billId} status updated to Paid in PostgreSQL!`, 'Payment Cleared', 'success');
+      await renderDashboard();
+    }
+
+    async function renderServiceOrders() {
+      const [allRequests, bookings, bills] = await Promise.all([
+        HotelDB.getServiceRequestsAsync(), HotelDB.getBookingsAsync(), HotelDB.getBillsAsync()
+      ]);
+      const reservationById = new Map(bookings.map(booking => [Number(booking.reservationId), booking]));
+      const billByReservation = new Map(bills.map(bill => [Number(bill.reservation_id), bill]));
+      allRequests.forEach(request => {
+        request.reservationStatus = reservationById.get(Number(request.reservationId))?.status || request.reservationStatus;
+      });
+      const currentRequests = allRequests.filter(request => {
+        const reservation = reservationById.get(Number(request.reservationId));
+        if (!reservation || reservation.status === 'Cancelled') return false;
+        const bill = billByReservation.get(Number(request.reservationId));
+        return !(reservation.status === 'Checked-out' && bill?.payment_status === 'Paid');
+      });
+      const pendingRequests = currentRequests.filter(s => s.status === 'Requested' || s.status === 'Processing');
+      const recentCompletedRequests = currentRequests.filter(s => s.status === 'Completed').slice(0, 8);
+      const requests = showAllServices ? allRequests.filter(request => request.reservationStatus !== 'Cancelled') : [...pendingRequests, ...recentCompletedRequests]
+        .filter((request, index, list) => list.findIndex(item => item.requestId === request.requestId) === index)
+        .sort((a, b) => Number(b.requestId) - Number(a.requestId));
+      document.getElementById('serviceHistoryToggle').textContent = showAllServices
+        ? 'Show recent' : `Show all (${allRequests.length})`;
+      const foodCategories = new Set(['Food', 'South Indian', 'North Indian', 'Chinese', 'Thai', 'Continental']);
+      const foodOrders = requests.filter(request => foodCategories.has(request.serviceCategory));
+      const roomServiceRequests = requests.filter(request => !foodCategories.has(request.serviceCategory));
+      document.getElementById('pendingFoodBadge').textContent = `${foodOrders.filter(s => s.status === 'Requested' || s.status === 'Processing').length} Pending`;
+      document.getElementById('pendingServiceBadge').textContent = `${roomServiceRequests.filter(s => s.status === 'Requested' || s.status === 'Processing').length} Pending`;
+
+      const renderGroupedOrders = (orderList, containerId, emptyMessage) => {
+        const container = document.getElementById(containerId);
+        if (!orderList.length) {
+          container.innerHTML = `<p class="text-muted text-center py-3">${emptyMessage}</p>`;
+          return;
+        }
+        const grouped = new Map();
+        orderList.forEach(request => {
+        const key = String(request.reservationId);
+        if (!grouped.has(key)) grouped.set(key, []);
+        grouped.get(key).push(request);
+      });
+        container.innerHTML = [...grouped.entries()].map(([reservationId, roomRequests]) => {
+        const stay = reservationById.get(Number(reservationId));
+        const sorted = roomRequests.sort((a, b) => Number(a.requestId) - Number(b.requestId));
+        return `<section class="border rounded-4 mb-3 overflow-hidden"><header class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 bg-light">
+          <div><h4 class="font-serif fs-5 text-navy mb-1">Room #${folioHtml(stay?.roomNumber || sorted[0].roomNumber)} · ${folioHtml(stay?.guestName || sorted[0].guestName)}</h4>
+          <div class="small text-muted">${folioHtml(stay?.checkIn || '')} to ${folioHtml(stay?.checkOut || '')} · ${folioHtml(stay?.status || '')} · ${sorted.length} request${sorted.length === 1 ? '' : 's'}</div></div>
+          <button class="btn btn-sm btn-outline-primary rounded-pill" onclick="openReservationFolio(${Number(reservationId)})"><i class="fa-solid fa-circle-info me-1"></i>Room details</button>
+        </header><div class="p-2">${sorted.map(service => `<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 p-2 border-bottom">
+          <div><strong class="text-dark">${folioHtml(service.serviceName)}</strong><span class="text-muted small ms-2">Qty ${Number(service.quantity)} · ${folioHtml(service.date || '')} ${folioHtml(service.time || '')}</span></div>
+          <div class="d-flex flex-wrap align-items-center gap-2"><span class="fw-bold text-gold">Rs. ${Number(service.amount).toLocaleString()}</span>
+            <label class="visually-hidden" for="serviceStatus${Number(service.requestId)}">Update ${folioHtml(service.serviceName)} status</label>
+            <select class="form-select form-select-sm" style="width:auto" id="serviceStatus${Number(service.requestId)}" onchange="updateServiceOrderStatus(${Number(service.requestId)},this.value)">
+              ${['Requested','Processing','Completed','Cancelled'].map(status => `<option value="${status}" ${service.status === status ? 'selected' : ''}>${status}</option>`).join('')}
+            </select></div></div>`).join('')}</div></section>`;
+        }).join('');
+      };
+      renderGroupedOrders(foodOrders, 'foodOrdersContainer', 'No food orders.');
+      renderGroupedOrders(roomServiceRequests, 'serviceOrdersContainer', 'No room service requests.');
+    }
+
+    async function fulfillService(requestId) {
+      await updateServiceOrderStatus(String(requestId).replace('SR-', ''), 'Completed');
+    }
+
+    async function updateServiceOrderStatus(requestId, status) {
+      try {
+        await HotelDB.updateServiceStatusAsync(requestId, status);
+        showToast(`Room service request updated to ${status}.`, 'Room Service Updated', 'success');
+        await renderServiceOrders();
+        await renderBillsTable();
+        await renderBookingsTable();
+        if (activeFolioReservationId && document.getElementById('reservationFolioModal').classList.contains('show')) {
+          await refreshReservationFolio();
+        }
+      } catch (error) {
+        showToast(error.message || 'Could not update this service request.', 'Room Service Update Failed', 'danger');
+        await renderServiceOrders();
+      }
+    }
+
+    async function populateAvailableRoomsSelect() {
+      const rooms = await HotelDB.getRoomsAsync();
+      const available = rooms.filter(r => r.status === 'Available');
+      const select = document.getElementById('ciRoomSelect');
+      if (available.length === 0) {
+        select.innerHTML = `<option value="">No vacant rooms available</option>`;
+        return;
+      }
+      select.innerHTML = available.map(r => `
+        <option value="${r.number}">Room ${r.number} - ${r.category} (Rs. ${r.price.toLocaleString()}/night)</option>
+      `).join('');
+    }
+
+    async function handleDeactivateRoom(roomId) {
+      if (!confirm("Are you sure you want to deactivate this room?")) return;
+      try {
+        await HotelDB.deleteRoomAsync(roomId);
+        showToast("Room deactivated in PostgreSQL.", "Room Deactivated", "info");
+        await renderDashboard();
+      } catch (err) {
+        showToast(err.message, "Cannot Deactivate Room", "danger");
+      }
+    }
+
+    async function handleNewCheckIn() {
+      const guestName = document.getElementById('ciGuestName').value.trim();
+      const guestEmail = document.getElementById('ciGuestEmail').value.trim();
+      const checkIn = document.getElementById('ciCheckInDate').value;
+      const checkOut = document.getElementById('ciCheckOutDate').value;
+      const roomNumber = document.getElementById('ciRoomSelect').value;
+
+      if (!roomNumber) {
+        showToast('Please select an available room.', 'Check-In Error', 'warning');
+        return;
+      }
+
+      try {
+        await HotelDB.createBookingAsync({
+          roomNumber,
+          guestName,
+          guestEmail,
+          guestPhone: document.getElementById('ciGuestPhone').value.trim(),
+          checkIn,
+          checkOut,
+          guestsCount: 2
+        });
+
+        const modalEl = document.getElementById('checkInModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+
+        showToast(`Guest ${guestName} checked into Room #${roomNumber}!`, 'Check-In Complete', 'success');
+        await renderDashboard();
+      } catch (err) {
+        showToast(err.message || 'Failed to create reservation.', 'Double Booking / DB Error', 'danger');
+      }
+    }
+
+    async function handleCheckOut(bookingId) {
+      try {
+        await HotelDB.checkOutBookingAsync(bookingId);
+        showToast(`Check-out completed! PostgreSQL trigger generated the cleaning task and bill.`, 'Guest Checked Out', 'success');
+        await renderDashboard();
+      } catch (err) {
+        showToast(err.message, 'Check-Out Error', 'danger');
+      }
+    }
+
+    async function openReportsModal() {
+      const reports = await HotelDB.getReportsAsync();
+      const m = reports.metrics || {};
+      const breakdown = reports.revenueByRoomType || [];
+
+      const body = document.getElementById('reportsModalBody');
+      body.innerHTML = `
+        <div class="row g-3 mb-4 text-center">
+          <div class="col-md-4">
+            <div class="p-3 bg-light rounded-3 border">
+              <div class="text-muted small">Total Rooms</div>
+              <h3 class="text-navy mb-0">${m.totalRooms || 0}</h3>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 bg-light rounded-3 border">
+              <div class="text-muted small">Total Reservations</div>
+              <h3 class="text-primary mb-0">${m.totalReservations || 0}</h3>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 bg-light rounded-3 border">
+              <div class="text-muted small">Paid Revenue</div>
+              <h3 class="text-gold mb-0">Rs. ${(m.totalRevenue || 0).toLocaleString()}</h3>
+            </div>
+          </div>
+        </div>
+
+        <h5 class="font-serif text-dark mb-3"><i class="fa-solid fa-table me-2 text-gold"></i> Revenue Breakdown by Room Type (PostgreSQL View: <code>vw_revenue_summary</code>)</h5>
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle">
+            <thead class="table-dark">
+              <tr>
+                <th>Room Type</th>
+                <th>Total Bookings</th>
+                <th>Room Revenue</th>
+                <th>Service Revenue</th>
+                <th>Grand Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${breakdown.map(r => `
+                <tr>
+                  <td><strong>${r.room_type}</strong></td>
+                  <td>${r.total_bookings}</td>
+                  <td>Rs. ${parseFloat(r.total_room_revenue).toLocaleString()}</td>
+                  <td>Rs. ${parseFloat(r.total_service_revenue).toLocaleString()}</td>
+                  <td><strong class="text-gold">Rs. ${parseFloat(r.grand_total_revenue).toLocaleString()}</strong></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      const modal = new bootstrap.Modal(document.getElementById('reportsModal'));
+      modal.show();
+    }
+
+    // Initial render
+    document.addEventListener('DOMContentLoaded', () => {
+      renderDashboard();
+      window.setInterval(() => {
+        if (document.hidden || document.getElementById('reservationFolioModal').classList.contains('show')) return;
+        const serviceList = document.getElementById('serviceOrdersContainer');
+        if (serviceList && !serviceList.contains(document.activeElement)) renderServiceOrders();
+      }, 20000);
+    });
+  </script>
+</body>
+</html>
+
