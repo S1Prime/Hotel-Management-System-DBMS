@@ -1,0 +1,2391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Control Center - Crowne Plaza Hotel</title>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom Luxury Stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .admin-sidebar {
+      width: 270px;
+      min-height: 100vh;
+      background: var(--primary-navy, #0b1329);
+      color: #fff;
+    }
+    .admin-nav-link {
+      color: #94a3b8;
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-bottom: 4px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      font-size: 0.92rem;
+    }
+    .admin-nav-link:hover, .admin-nav-link.active {
+      color: #fff;
+      background: rgba(212, 175, 55, 0.18);
+      border-left: 4px solid var(--accent-gold, #d4af37);
+    }
+    .admin-nav-link i {
+      width: 20px;
+      text-align: center;
+      color: var(--accent-gold, #d4af37);
+    }
+    .main-wrapper {
+      max-width: calc(100vw - 270px);
+      overflow-x: hidden;
+    }
+    .json-box {
+      background: #1e293b;
+      color: #38bdf8;
+      font-family: monospace;
+      padding: 12px;
+      border-radius: 8px;
+      max-height: 250px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body style="background-color: #f8fafc;">
+
+  <div class="d-flex">
+    <!-- Sidebar Navigation -->
+    <div class="admin-sidebar p-3 d-flex flex-column justify-content-between shadow">
+      <div>
+        <a href="index.html" class="d-flex align-items-center text-white text-decoration-none mb-4 ps-2 pt-2">
+          <i class="fa-solid fa-crown text-warning fs-3 me-2"></i>
+          <div>
+            <h5 class="font-serif mb-0 text-gold">Crowne Plaza</h5>
+            <small class="text-slate-400">ADMIN CONTROL CENTER</small>
+          </div>
+        </a>
+
+        <div class="nav flex-column nav-pills" role="tablist">
+          <a class="admin-nav-link active" id="tab-overview" data-bs-toggle="pill" href="#pane-overview">
+            <i class="fa-solid fa-chart-pie"></i> Overview
+          </a>
+          <a class="admin-nav-link" id="tab-rooms" data-bs-toggle="pill" href="#pane-rooms">
+            <i class="fa-solid fa-building"></i> Room Inventory
+          </a>
+          <a class="admin-nav-link" id="tab-customers" data-bs-toggle="pill" href="#pane-customers">
+            <i class="fa-solid fa-users"></i> Customer Records
+          </a>
+          <a class="admin-nav-link" id="tab-staff" data-bs-toggle="pill" href="#pane-staff">
+            <i class="fa-solid fa-user-shield"></i> Staff Management
+          </a>
+          <a class="admin-nav-link" id="tab-reservations" data-bs-toggle="pill" href="#pane-reservations">
+            <i class="fa-solid fa-calendar-check"></i> Reservations
+          </a>
+          <a class="admin-nav-link" id="tab-services" data-bs-toggle="pill" href="#pane-services">
+            <i class="fa-solid fa-bell-concierge"></i> Hotel Services
+          </a>
+          <a class="admin-nav-link" id="tab-service-requests" data-bs-toggle="pill" href="#pane-service-requests">
+            <i class="fa-solid fa-list-check"></i> Service Requests
+          </a>
+          <a class="admin-nav-link" id="tab-housekeeping" data-bs-toggle="pill" href="#pane-housekeeping">
+            <i class="fa-solid fa-broom"></i> Housekeeping Board
+          </a>
+          <a class="admin-nav-link" id="tab-bills" data-bs-toggle="pill" href="#pane-bills">
+            <i class="fa-solid fa-file-invoice-dollar"></i> Bills & Invoices
+          </a>
+          <a class="admin-nav-link" id="tab-reports" data-bs-toggle="pill" href="#pane-reports">
+            <i class="fa-solid fa-chart-line"></i> Analytics & Reports
+          </a>
+          <a class="admin-nav-link" id="tab-audit-logs" data-bs-toggle="pill" href="#pane-audit-logs">
+            <i class="fa-solid fa-shield-halved"></i> Audit Logs
+          </a>
+          <a class="admin-nav-link" id="tab-lost-found" data-bs-toggle="pill" href="#pane-lost-found">
+            <i class="fa-solid fa-box-archive"></i> Lost & Found
+          </a>
+        </div>
+      </div>
+
+      <div class="border-top border-secondary pt-3 ps-2">
+        <div class="d-flex align-items-center justify-content-between text-white">
+          <div>
+            <strong class="d-block text-gold" id="adminNameDisplay">System Admin</strong>
+            <span class="badge bg-danger text-white">ADMINISTRATOR</span>
+          </div>
+          <button onclick="logoutUser()" class="btn btn-sm btn-outline-light rounded-circle" title="Logout">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex-grow-1 p-4 main-wrapper">
+      
+      <div class="tab-content">
+        
+        <!-- 1. OVERVIEW TAB -->
+        <div class="tab-pane fade show active" id="pane-overview">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">System Executive Overview</h2>
+              <p class="text-muted mb-0">Live central control panel powered by PostgreSQL views, triggers, and procedures.</p>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-primary rounded-pill px-3" onclick="initAdminDashboard()">
+                <i class="fa-solid fa-rotate me-1"></i> Refresh Data
+              </button>
+              <a href="reception-dashboard.html" class="btn btn-outline-navy rounded-pill px-3">
+                <i class="fa-solid fa-concierge-bell me-1"></i> Front Desk View
+              </a>
+            </div>
+          </div>
+
+          <!-- Live Metrics Cards -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-3">
+              <div class="card p-3 border-0 shadow-sm rounded-4 bg-white">
+                <div class="text-muted small fw-semibold">Total Inventory</div>
+                <h3 class="font-serif text-navy mb-0 mt-1" id="ovTotalRooms">0 Rooms</h3>
+                <div class="small text-muted mt-1" id="ovOccupancyRate">0% Occupancy Rate</div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card p-3 border-0 shadow-sm rounded-4 bg-white">
+                <div class="text-muted small fw-semibold">Occupied / Available</div>
+                <h3 class="font-serif text-success mb-0 mt-1" id="ovOccupiedVacant">0 / 0</h3>
+                <div class="small text-muted mt-1" id="ovCleaningMaint">0 Cleaning | 0 Maint.</div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card p-3 border-0 shadow-sm rounded-4 bg-white">
+                <div class="text-muted small fw-semibold">Registered Customers</div>
+                <h3 class="font-serif text-primary mb-0 mt-1" id="ovTotalCustomers">0</h3>
+                <div class="small text-muted mt-1" id="ovActiveReservations">0 Active Reservations</div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card p-3 border-0 shadow-sm rounded-4 bg-white">
+                <div class="text-muted small fw-semibold">Total Paid Revenue</div>
+                <h3 class="font-serif text-gold mb-0 mt-1" id="ovTotalRevenue">Rs. 0</h3>
+                <div class="small text-muted mt-1" id="ovStaffCount">0 Active Staff Accounts</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action Cards -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
+                <h4 class="font-serif text-dark mb-3"><i class="fa-solid fa-bolt me-2 text-gold"></i> Quick Administrative Actions</h4>
+                <div class="d-flex flex-wrap gap-2">
+                  <button class="btn btn-gold rounded-pill px-3 py-2" data-bs-toggle="modal" data-bs-target="#modalAddRoom">
+                    <i class="fa-solid fa-plus me-1"></i> Add New Room
+                  </button>
+                  <button class="btn btn-success rounded-pill px-3 py-2" data-bs-toggle="modal" data-bs-target="#modalAddStaff">
+                    <i class="fa-solid fa-user-plus me-1"></i> Create Staff Account
+                  </button>
+                  <button class="btn btn-primary rounded-pill px-3 py-2" data-bs-toggle="modal" data-bs-target="#modalAddService">
+                    <i class="fa-solid fa-concierge-bell me-1"></i> Add Service Item
+                  </button>
+                  <button class="btn btn-outline-warning text-dark rounded-pill px-3 py-2" data-bs-toggle="modal" data-bs-target="#modalAddHousekeeping">
+                    <i class="fa-solid fa-broom me-1"></i> Dispatch Housekeeping
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
+                <h4 class="font-serif text-dark mb-2"><i class="fa-solid fa-shield-halved me-2 text-primary"></i> RDBMS Health & Security</h4>
+                <p class="text-muted small mb-3">Connected to PostgreSQL database <code>hotel_management</code> with parameterized queries, hashed passwords, foreign key constraints, views, and automated audit logging.</p>
+                <div class="d-flex gap-2">
+                  <div class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill">
+                    <i class="fa-solid fa-check-circle me-1"></i> Triggers Active
+                  </div>
+                  <div class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-3 py-2 rounded-pill">
+                    <i class="fa-solid fa-lock me-1"></i> Scrypt Hashes
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. ROOM MANAGEMENT TAB -->
+        <div class="tab-pane fade" id="pane-rooms">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">Room Inventory Management</h2>
+              <p class="text-muted mb-0">Add rooms, modify pricing, update room status, and handle safe deactivation.</p>
+            </div>
+            <button class="btn btn-gold rounded-pill px-4 py-2" data-bs-toggle="modal" data-bs-target="#modalAddRoom">
+              <i class="fa-solid fa-plus me-2"></i> Add New Room
+            </button>
+          </div>
+
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="btn-group" role="group" id="roomStatusFilterGroup">
+                <button type="button" class="btn btn-outline-secondary btn-sm active" onclick="filterAdminRooms('All')">All Statuses</button>
+                <button type="button" class="btn btn-outline-success btn-sm" onclick="filterAdminRooms('Available')">Available</button>
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="filterAdminRooms('Occupied')">Occupied</button>
+                <button type="button" class="btn btn-outline-warning btn-sm text-dark" onclick="filterAdminRooms('Cleaning')">Cleaning</button>
+                <button type="button" class="btn btn-outline-info btn-sm" onclick="filterAdminRooms('Maintenance')">Maintenance</button>
+              </div>
+              <input type="text" id="roomSearchInput" class="form-control rounded-pill px-3" placeholder="Search room # or category..." style="width: 240px;" onkeyup="renderAdminRooms()">
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Room #</th>
+                    <th>Category</th>
+                    <th>Price / Night</th>
+                    <th>Status</th>
+                    <th>Active</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminRoomsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. CUSTOMER MANAGEMENT TAB -->
+        <div class="tab-pane fade" id="pane-customers">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">Registered Customer Records</h2>
+              <p class="text-muted mb-0">Manage customer profiles, inspect stay history, and reset guest passwords securely.</p>
+            </div>
+            <input type="text" id="custSearchInput" class="form-control rounded-pill px-3" placeholder="Search customer name, email, phone..." style="width: 280px;" onkeyup="renderAdminCustomers()">
+          </div>
+
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>ID</th>
+                    <th>Customer Name</th>
+                    <th>Email Address</th>
+                    <th>Phone</th>
+                    <th>Total Bookings</th>
+                    <th>Total Spent</th>
+                    <th>Registered Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminCustomersTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. STAFF MANAGEMENT TAB -->
+        <div class="tab-pane fade" id="pane-staff">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">Staff & Receptionist Management</h2>
+              <p class="text-muted mb-0">Create staff accounts, assign roles (Admin / Receptionist), and manage active permissions.</p>
+            </div>
+            <button class="btn btn-gold rounded-pill px-4 py-2" data-bs-toggle="modal" data-bs-target="#modalAddStaff">
+              <i class="fa-solid fa-user-plus me-2"></i> Add Staff Account
+            </button>
+          </div>
+
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Staff ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminStaffTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. RESERVATIONS TAB -->
+        <div class="tab-pane fade" id="pane-reservations">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">Master Reservations Database</h2>
+              <p class="text-muted mb-0">Inspect all guest bookings, edit dates/rooms with double-booking validation, and handle cancellations.</p>
+            </div>
+            <div class="d-flex gap-2">
+              <input type="text" id="resSearchInput" class="form-control rounded-pill px-3" placeholder="Search guest or room..." style="width: 220px;" onkeyup="renderAdminReservations()">
+              <select id="resFilterStatus" class="form-select rounded-pill" style="width: 160px;" onchange="renderAdminReservations()">
+                <option value="">All Statuses</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Checked-in">Checked-in</option>
+                <option value="Checked-out">Checked-out</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Res ID</th>
+                    <th>Guest Name</th>
+                    <th>Room #</th>
+                    <th>Dates</th>
+                    <th>Guests</th>
+                    <th>Special Requests</th>
+                    <th>Est. Total</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminReservationsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. HOTEL SERVICES CATALOG TAB -->
+        <div class="tab-pane fade" id="pane-services">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">Hotel Services Catalog</h2>
+              <p class="text-muted mb-0">Manage services, adjust prices, edit descriptions, and toggle availability.</p>
+            </div>
+            <button class="btn btn-gold rounded-pill px-4 py-2" data-bs-toggle="modal" data-bs-target="#modalAddService">
+              <i class="fa-solid fa-plus me-2"></i> Add Hotel Service
+            </button>
+          </div>
+
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Service ID</th>
+                    <th>Service Name</th>
+                    <th>Price</th>
+                    <th>Description</th>
+                    <th>Availability</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminServicesCatalogBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. SERVICE REQUESTS TAB -->
+        <div class="tab-pane fade" id="pane-service-requests">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">Guest Service Requests Board</h2>
+              <p class="text-muted mb-0">Monitor and fulfill room service orders placed by guests.</p>
+            </div>
+          </div>
+
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Req ID</th>
+                    <th>Room #</th>
+                    <th>Guest Name</th>
+                    <th>Service</th>
+                    <th>Quantity</th>
+                    <th>Total Price</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminServiceOrdersBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. HOUSEKEEPING BOARD TAB -->
+        <div class="tab-pane fade" id="pane-housekeeping">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">Housekeeping & Room Maintenance Board</h2>
+              <p class="text-muted mb-0">Auto-generated checkout tasks and manual room cleaning dispatches.</p>
+            </div>
+            <button class="btn btn-gold rounded-pill px-4 py-2" data-bs-toggle="modal" data-bs-target="#modalAddHousekeeping">
+              <i class="fa-solid fa-broom me-2"></i> Dispatch Task
+            </button>
+          </div>
+
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Task ID</th>
+                    <th>Room #</th>
+                    <th>Room Type</th>
+                    <th>Task Type</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminHousekeepingBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9. BILLS & INVOICES TAB -->
+        <div class="tab-pane fade" id="pane-bills">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">Financial Invoices & Billing Desk</h2>
+              <p class="text-muted mb-0">Audit guest bills, view itemized charges, and process payment status.</p>
+            </div>
+            <div class="d-flex gap-2">
+              <input type="text" id="billSearchInput" class="form-control rounded-pill px-3" placeholder="Search bill or guest..." style="width: 240px;" onkeyup="renderAdminBills()">
+              <select id="billFilterStatus" class="form-select rounded-pill" style="width: 150px;" onchange="renderAdminBills()">
+                <option value="">All Payments</option>
+                <option value="Paid">Paid</option>
+                <option value="Pending">Pending</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Bill ID</th>
+                    <th>Guest Name</th>
+                    <th>Room #</th>
+                    <th>Room Charge</th>
+                    <th>Service Charge</th>
+                    <th>Tax (5%)</th>
+                    <th>Total Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminBillsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 10. DBMS REPORTS TAB -->
+        <div class="tab-pane fade" id="pane-reports">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">PostgreSQL Analytical Reports & OLAP</h2>
+              <p class="text-muted mb-0">Reports computed via PostgreSQL views (<code>vw_revenue_summary</code>, <code>vw_customer_loyalty_ranking</code>, <code>vw_service_popularity</code>) & Materialized View (<code>mv_monthly_financial_report</code>).</p>
+            </div>
+          </div>
+
+          <!-- Revenue by Room Category -->
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white mb-4">
+            <h4 class="font-serif text-dark mb-3"><i class="fa-solid fa-chart-pie me-2 text-gold"></i> Financial Revenue by Room Category</h4>
+            <div class="table-responsive">
+              <table class="table table-bordered align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Room Category</th>
+                    <th>Total Bookings</th>
+                    <th>Room Tariff Collected</th>
+                    <th>Service Revenue</th>
+                    <th>Tax Collected</th>
+                    <th>Grand Total</th>
+                  </tr>
+                </thead>
+                <tbody id="adminReportsRevenueBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="row g-4 mb-4">
+            <!-- Customer Loyalty Leaderboard -->
+            <div class="col-md-6">
+              <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
+                <h4 class="font-serif text-dark mb-3"><i class="fa-solid fa-award me-2 text-warning"></i> Customer Loyalty & Spend Leaderboard</h4>
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Guest</th>
+                        <th>Bookings</th>
+                        <th>Lifetime Spend</th>
+                        <th>Tier</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminReportsLoyaltyBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Service Popularity Leaderboard -->
+            <div class="col-md-6">
+              <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
+                <h4 class="font-serif text-dark mb-3"><i class="fa-solid fa-fire me-2 text-danger"></i> Service & Amenity Popularity</h4>
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Service Item</th>
+                        <th>Orders</th>
+                        <th>Units</th>
+                        <th>Revenue</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminReportsServicePopularityBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monthly Financial Report -->
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <h4 class="font-serif text-dark mb-3"><i class="fa-solid fa-calendar-days me-2 text-primary"></i> Monthly Executive Financial Performance</h4>
+            <div class="table-responsive">
+              <table class="table table-bordered align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Billing Month</th>
+                    <th>Invoices Issued</th>
+                    <th>Gross Room Revenue</th>
+                    <th>Gross Service Revenue</th>
+                    <th>Tax Collected</th>
+                    <th>Net Revenue</th>
+                  </tr>
+                </thead>
+                <tbody id="adminReportsMonthlyBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 11. AUDIT LOGS TAB -->
+        <div class="tab-pane fade" id="pane-audit-logs">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">Enterprise Audit Trail & System Logs</h2>
+              <p class="text-muted mb-0">Real-time audit records populated by PostgreSQL trigger <code>trg_audit_reservations</code>, <code>trg_audit_bills</code>, and <code>trg_audit_rooms</code>.</p>
+            </div>
+            <button class="btn btn-outline-primary rounded-pill px-3" onclick="renderAdminAuditLogs()">
+              <i class="fa-solid fa-arrows-rotate me-1"></i> Refresh Logs
+            </button>
+          </div>
+
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Log ID</th>
+                    <th>Table Name</th>
+                    <th>Operation</th>
+                    <th>Record ID</th>
+                    <th>Executed By</th>
+                    <th>Timestamp</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody id="adminAuditLogsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 12. LOST & FOUND TAB -->
+        <div class="tab-pane fade" id="pane-lost-found">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="font-serif fs-2 mb-1 text-dark">Lost & Found Management</h2>
+              <p class="text-muted mb-0">Review guest lost item reports, coordinate recovery, and log resolutions directly to PostgreSQL.</p>
+            </div>
+            <div class="d-flex gap-2">
+              <a href="lost-and-found.html" class="btn btn-outline-navy rounded-pill px-3" target="_blank">
+                <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Guest Lost &amp; Found Portal
+              </a>
+              <button class="btn btn-gold rounded-pill px-3" onclick="renderAdminLostFound()">
+                <i class="fa-solid fa-rotate me-1"></i> Refresh Items
+              </button>
+            </div>
+          </div>
+
+          <!-- KPI Metric Cards -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-3">
+              <div class="card p-3 border-0 shadow-sm rounded-4 bg-white text-center">
+                <div class="text-muted small fw-semibold">Total Reports</div>
+                <h3 class="font-serif text-dark mb-0 mt-1" id="lfMetricTotal">0</h3>
+                <small class="text-muted">Recorded in DB</small>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card p-3 border-0 shadow-sm rounded-4 bg-white text-center">
+                <div class="text-muted small fw-semibold">Pending Search</div>
+                <h3 class="font-serif text-danger mb-0 mt-1" id="lfMetricPending">0</h3>
+                <small class="text-danger">Awaiting recovery</small>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card p-3 border-0 shadow-sm rounded-4 bg-white text-center">
+                <div class="text-muted small fw-semibold">Found (Not Yet Received)</div>
+                <h3 class="font-serif text-warning mb-0 mt-1" id="lfMetricFoundNotReceived">0</h3>
+                <small class="text-warning">Awaiting desk handover</small>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card p-3 border-0 shadow-sm rounded-4 bg-white text-center">
+                <div class="text-muted small fw-semibold">In Custody / Claimed</div>
+                <h3 class="font-serif text-success mb-0 mt-1" id="lfMetricClaimed">0</h3>
+                <small class="text-success">At Desk or Claimed</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter & Search Toolbar -->
+          <div class="card p-3 border-0 shadow-sm rounded-4 bg-white mb-4">
+            <div class="row g-3 align-items-center">
+              <div class="col-md-5">
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-0"><i class="fa-solid fa-search text-muted"></i></span>
+                  <input type="text" id="adminLfSearch" class="form-control border-0 bg-light" placeholder="Search by item, location, guest name or phone..." onkeyup="filterAdminLostFound()">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <select id="adminLfStatusFilter" class="form-select border-0 bg-light" onchange="filterAdminLostFound()">
+                  <option value="All">All Statuses (All Records)</option>
+                  <option value="Pending">Pending Recovery</option>
+                  <option value="Found (Not Yet Received)">Found (Not Yet Received)</option>
+                  <option value="Found">Located / Held at Front Desk</option>
+                  <option value="Claimed">Claimed by Guest</option>
+                  <option value="Returned">Returned to Owner</option>
+                  <option value="Investigating">Under Investigation</option>
+                  <option value="Discarded">Discarded / Closed</option>
+                </select>
+              </div>
+              <div class="col-md-3 text-end">
+                <span class="small text-muted" id="adminLfCountLabel">Showing all records</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lost & Found Data Table -->
+          <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Item ID</th>
+                    <th>Photo</th>
+                    <th>Item Name</th>
+                    <th>Reported By</th>
+                    <th>Lost Location</th>
+                    <th>Date / Time</th>
+                    <th>Status</th>
+                    <th>Resolution Notes</th>
+                    <th>Staff Action</th>
+                  </tr>
+                </thead>
+                <tbody id="adminLostFoundTableBody">
+                  <tr><td colspan="9" class="text-center py-4 text-muted">Loading lost &amp; found reports...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: ADD ROOM -->
+  <div class="modal fade" id="modalAddRoom" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-plus me-2"></i> Add New Room</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitAddRoom();">
+            <div class="mb-3">
+              <label class="form-label-custom">Room Number (Unique)</label>
+              <input type="text" id="arNumber" class="form-control form-control-luxury" placeholder="e.g. 302" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Room Type</label>
+              <select id="arType" class="form-select form-control-luxury" required>
+                <option value="Luxury Suite">Luxury Suite</option>
+                <option value="Standard AC Room">Standard AC Room</option>
+                <option value="AC Room with Balcony">AC Room with Balcony</option>
+                <option value="Family AC Room">Family AC Room</option>
+                <option value="Economy Non-AC Room">Economy Non-AC Room</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Price Per Night (Rs.)</label>
+              <input type="number" id="arPrice" class="form-control form-control-luxury" placeholder="1800" min="500" required>
+            </div>
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-check me-2"></i> Save Room to PostgreSQL
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT ROOM -->
+  <div class="modal fade" id="modalEditRoom" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-pen-to-square me-2"></i> Edit Room Details</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitEditRoom();">
+            <input type="hidden" id="erId">
+            <div class="mb-3">
+              <label class="form-label-custom">Room Number</label>
+              <input type="text" id="erNumber" class="form-control form-control-luxury" disabled>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Room Type</label>
+              <select id="erType" class="form-select form-control-luxury" required>
+                <option value="Luxury Suite">Luxury Suite</option>
+                <option value="Standard AC Room">Standard AC Room</option>
+                <option value="AC Room with Balcony">AC Room with Balcony</option>
+                <option value="Family AC Room">Family AC Room</option>
+                <option value="Economy Non-AC Room">Economy Non-AC Room</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Price Per Night (Rs.)</label>
+              <input type="number" id="erPrice" class="form-control form-control-luxury" min="500" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Status</label>
+              <select id="erStatus" class="form-select form-control-luxury" required>
+                <option value="Available">Available</option>
+                <option value="Occupied">Occupied</option>
+                <option value="Cleaning">Cleaning</option>
+                <option value="Maintenance">Maintenance</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-save me-2"></i> Update Room Details
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT CUSTOMER -->
+  <div class="modal fade" id="modalEditCustomer" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-user-pen me-2"></i> Edit Customer Profile</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitEditCustomer();">
+            <input type="hidden" id="ecId">
+            <div class="mb-3">
+              <label class="form-label-custom">Full Name</label>
+              <input type="text" id="ecName" class="form-control form-control-luxury" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Email Address</label>
+              <input type="email" id="ecEmail" class="form-control form-control-luxury" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Phone Number</label>
+              <input type="text" id="ecPhone" class="form-control form-control-luxury">
+            </div>
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-save me-2"></i> Save Profile Changes
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RESET CUSTOMER PASSWORD -->
+  <div class="modal fade" id="modalResetCustPass" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-key me-2"></i> Reset Guest Password</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitResetCustPass();">
+            <input type="hidden" id="rcpId">
+            <div class="mb-3">
+              <label class="form-label-custom">Guest Name</label>
+              <input type="text" id="rcpName" class="form-control form-control-luxury" disabled>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">New Password</label>
+              <input type="password" id="rcpPassword" class="form-control form-control-luxury" placeholder="Enter new password" required>
+            </div>
+            <button type="submit" class="btn btn-danger w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-lock me-2"></i> Reset Password
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD STAFF -->
+  <div class="modal fade" id="modalAddStaff" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-user-plus me-2"></i> Add New Staff Account</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitAddStaff();">
+            <div class="mb-3">
+              <label class="form-label-custom">Staff Full Name</label>
+              <input type="text" id="asName" class="form-control form-control-luxury" placeholder="e.g. Jane Doe" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Email Address (Unique)</label>
+              <input type="email" id="asEmail" class="form-control form-control-luxury" placeholder="jane@crowneplaza.com" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Initial Password</label>
+              <input type="password" id="asPassword" class="form-control form-control-luxury" value="staff123" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Assigned Role</label>
+              <select id="asRole" class="form-select form-control-luxury" required>
+                <option value="Receptionist">Receptionist</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-check me-2"></i> Create Staff Account
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT STAFF -->
+  <div class="modal fade" id="modalEditStaff" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-user-gear me-2"></i> Edit Staff Account</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitEditStaff();">
+            <input type="hidden" id="esId">
+            <div class="mb-3">
+              <label class="form-label-custom">Staff Full Name</label>
+              <input type="text" id="esName" class="form-control form-control-luxury" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Email Address</label>
+              <input type="email" id="esEmail" class="form-control form-control-luxury" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Assigned Role</label>
+              <select id="esRole" class="form-select form-control-luxury" required>
+                <option value="Receptionist">Receptionist</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Account Status</label>
+              <select id="esActive" class="form-select form-control-luxury" required>
+                <option value="true">Active Access</option>
+                <option value="false">Deactivated / Suspended</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-save me-2"></i> Save Staff Changes
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RESET STAFF PASSWORD -->
+  <div class="modal fade" id="modalResetStaffPass" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-key me-2"></i> Reset Staff Password</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitResetStaffPass();">
+            <input type="hidden" id="rspId">
+            <div class="mb-3">
+              <label class="form-label-custom">Staff Member</label>
+              <input type="text" id="rspName" class="form-control form-control-luxury" disabled>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">New Password</label>
+              <input type="password" id="rspPassword" class="form-control form-control-luxury" placeholder="Enter new password" required>
+            </div>
+            <button type="submit" class="btn btn-danger w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-lock me-2"></i> Reset Password
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT RESERVATION -->
+  <div class="modal fade" id="modalEditReservation" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-pen-to-square me-2"></i> Edit Reservation</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitEditReservation();">
+            <input type="hidden" id="eresId">
+            <div class="mb-3">
+              <label class="form-label-custom">Assigned Room Number</label>
+              <input type="text" id="eresRoomNumber" class="form-control form-control-luxury" required>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label-custom">Check-In Date</label>
+                <input type="date" id="eresCheckIn" class="form-control form-control-luxury" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label-custom">Check-Out Date</label>
+                <input type="date" id="eresCheckOut" class="form-control form-control-luxury" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Guests Count</label>
+              <input type="number" id="eresGuests" class="form-control form-control-luxury" min="1" max="10" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Special Requests</label>
+              <input type="text" id="eresRequests" class="form-control form-control-luxury">
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Status</label>
+              <select id="eresStatus" class="form-select form-control-luxury" required>
+                <option value="Confirmed">Confirmed</option>
+                <option value="Checked-in">Checked-in</option>
+                <option value="Checked-out">Checked-out</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-shield-halved me-2"></i> Update Reservation (Server Overlap Check)
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD SERVICE -->
+  <div class="modal fade" id="modalAddService" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-plus me-2"></i> Add Hotel Service</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitAddService();">
+            <div class="mb-3">
+              <label class="form-label-custom">Service Name</label>
+              <input type="text" id="asSvcName" class="form-control form-control-luxury" placeholder="e.g. Airport Shuttle Drop" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Price (Rs.)</label>
+              <input type="number" id="asSvcPrice" class="form-control form-control-luxury" placeholder="1500" min="0" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Description</label>
+              <input type="text" id="asSvcDesc" class="form-control form-control-luxury" placeholder="Private luxury vehicle transfer">
+            </div>
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-check me-2"></i> Add Service Catalog Item
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT SERVICE -->
+  <div class="modal fade" id="modalEditService" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-pen-to-square me-2"></i> Edit Hotel Service</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitEditService();">
+            <input type="hidden" id="esvcId">
+            <div class="mb-3">
+              <label class="form-label-custom">Service Name</label>
+              <input type="text" id="esvcName" class="form-control form-control-luxury" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Price (Rs.)</label>
+              <input type="number" id="esvcPrice" class="form-control form-control-luxury" min="0" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Description</label>
+              <input type="text" id="esvcDesc" class="form-control form-control-luxury">
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Availability Status</label>
+              <select id="esvcAvail" class="form-select form-control-luxury" required>
+                <option value="true">Available</option>
+                <option value="false">Disabled / Unavailable</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-save me-2"></i> Update Service Item
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD HOUSEKEEPING TASK -->
+  <div class="modal fade" id="modalAddHousekeeping" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-broom me-2"></i> Dispatch Housekeeping Task</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitAddHousekeeping();">
+            <div class="mb-3">
+              <label class="form-label-custom">Target Room Number</label>
+              <input type="text" id="ahkRoom" class="form-control form-control-luxury" placeholder="e.g. 102" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Task Type</label>
+              <select id="ahkType" class="form-select form-control-luxury" required>
+                <option value="Cleaning">Cleaning</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="Deep Sanitization">Deep Sanitization</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label-custom">Task Notes</label>
+              <input type="text" id="ahkNotes" class="form-control form-control-luxury" placeholder="e.g. Urgent guest request after checkout">
+            </div>
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-check me-2"></i> Dispatch Task
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CUSTOMER HISTORY -->
+  <div class="modal fade" id="modalCustHistory" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-clock-rotate-left me-2"></i> Customer Stay & Invoice History</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4" id="custHistoryModalBody">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ITEMIZE INVOICE BREAKDOWN -->
+  <div class="modal fade" id="modalViewInvoice" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-file-invoice me-2"></i> Itemized Financial Invoice Breakdown</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4" id="viewInvoiceModalBody">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: AUDIT LOG DETAILS -->
+  <div class="modal fade" id="modalViewAuditLog" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-database me-2"></i> PostgreSQL Audit Log State Diff</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4" id="viewAuditLogModalBody">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: UPDATE LOST & FOUND STATUS -->
+  <div class="modal fade" id="modalUpdateLostFound" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-clipboard-check me-2"></i> Update Lost &amp; Found Item Status</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form onsubmit="event.preventDefault(); submitUpdateLostFoundModal();">
+            <input type="hidden" id="ulfItemId">
+            
+            <div class="p-3 bg-light rounded-3 mb-3 border">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <strong id="ulfItemName" class="fs-6 text-dark">-</strong>
+                <span id="ulfItemBadge" class="badge bg-secondary">-</span>
+              </div>
+              <small class="text-muted d-block" id="ulfItemMeta">-</small>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label-custom">Select New Status</label>
+              <select id="ulfNewStatus" class="form-select form-control-luxury" required>
+                <option value="Found (Not Yet Received)">📍 Found (Not Yet Received) — Located by staff, awaiting handover to Front Desk</option>
+                <option value="Found">📦 Found (In Front Desk Custody) — Safely received &amp; logged at desk</option>
+                <option value="Claimed">🤝 Claimed — Handed over and verified with guest</option>
+                <option value="Returned">✨ Returned — Returned to original guest owner</option>
+                <option value="Investigating">🔍 Investigating — Staff actively checking cameras / areas</option>
+                <option value="Pending">⏳ Pending — Not yet located, search open</option>
+                <option value="Closed">🔒 Closed — Investigation completed / case closed</option>
+                <option value="Discarded">🗑️ Discarded — Unclaimed after statutory holding period</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label-custom">Resolution / Handover Notes</label>
+              <textarea id="ulfNotes" class="form-control form-control-luxury" rows="3" placeholder="e.g. Located on 2nd floor elevator by Housekeeping, awaiting handover to Front Desk..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-save me-2"></i> Save Status Update
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/ui-helpers.js"></script>
+  <script>
+    // Strict Admin authorization check
+    checkAuth('Admin');
+
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      document.getElementById('adminNameDisplay').textContent = currentUser.name;
+    }
+
+    let roomFilterStatus = 'All';
+
+    async function initAdminDashboard() {
+      await renderAdminOverview();
+      await renderAdminRooms();
+      await renderAdminCustomers();
+      await renderAdminStaff();
+      await renderAdminReservations();
+      await renderAdminServices();
+      await renderAdminServiceOrders();
+      await renderAdminHousekeeping();
+      await renderAdminBills();
+      await renderAdminReports();
+      await renderAdminAuditLogs();
+      await renderAdminLostFound();
+    }
+
+    // 1. OVERVIEW & ANALYTICS
+    async function renderAdminOverview() {
+      const analytics = await HotelDB.getAdminAnalyticsAsync();
+      const m = (analytics && analytics.metrics) ? analytics.metrics : {};
+
+      document.getElementById('ovTotalRooms').textContent = `${m.totalRooms || 0} Rooms`;
+      document.getElementById('ovOccupancyRate').textContent = `${m.occupancyRate || 0}% Occupancy Rate`;
+      document.getElementById('ovOccupiedVacant').textContent = `${m.occupiedRooms || 0} / ${m.availableRooms || 0}`;
+      document.getElementById('ovCleaningMaint').textContent = `${m.cleaningRooms || 0} Cleaning | ${m.maintenanceRooms || 0} Maintenance`;
+      document.getElementById('ovTotalCustomers').textContent = m.totalCustomers || 0;
+      document.getElementById('ovActiveReservations').textContent = `${m.activeReservations || 0} Active Bookings`;
+      document.getElementById('ovTotalRevenue').textContent = `Rs. ${(m.totalRevenue || 0).toLocaleString()}`;
+      document.getElementById('ovStaffCount').textContent = `${m.activeStaff || 0} Active Staff Accounts`;
+    }
+
+    // 2. ROOM MANAGEMENT
+    function filterAdminRooms(status) {
+      roomFilterStatus = status;
+      const group = document.getElementById('roomStatusFilterGroup');
+      if (group) {
+        Array.from(group.children).forEach(btn => {
+          btn.classList.remove('active');
+          if (btn.textContent.includes(status) || (status === 'All' && btn.textContent.includes('All'))) {
+            btn.classList.add('active');
+          }
+        });
+      }
+      renderAdminRooms();
+    }
+
+    async function renderAdminRooms() {
+      const rooms = await HotelDB.getRoomsAsync();
+      const search = (document.getElementById('roomSearchInput')?.value || '').toLowerCase();
+      const tbody = document.getElementById('adminRoomsTableBody');
+      if (!tbody) return;
+
+      const filtered = rooms.filter(r => {
+        const matchesSearch = String(r.number).toLowerCase().includes(search) || (r.category || '').toLowerCase().includes(search);
+        const matchesStatus = roomFilterStatus === 'All' || r.status === roomFilterStatus;
+        return matchesSearch && matchesStatus;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">No matching rooms found in inventory.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(r => `
+        <tr>
+          <td><strong class="text-navy fs-6">#${r.number}</strong></td>
+          <td>${r.category}</td>
+          <td><strong class="text-gold">Rs. ${r.price.toLocaleString()}</strong></td>
+          <td>
+            <span class="badge ${r.status === 'Available' ? 'bg-success' : (r.status === 'Occupied' ? 'bg-danger' : (r.status === 'Cleaning' ? 'bg-warning text-dark' : 'bg-info'))}">
+              ${r.status}
+            </span>
+          </td>
+          <td><span class="badge bg-secondary">Active</span></td>
+          <td>
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm btn-outline-navy rounded-pill px-2.5" onclick="openEditRoomModal(${r.id}, '${r.number}', '${r.category}', ${r.price}, '${r.status}')">
+                <i class="fa-solid fa-pen-to-square me-1"></i> Edit
+              </button>
+              <button class="btn btn-sm btn-outline-danger rounded-pill px-2.5" onclick="deactivateRoom(${r.id})">
+                <i class="fa-solid fa-trash-can me-1"></i> Deactivate
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function openEditRoomModal(id, number, type, price, status) {
+      document.getElementById('erId').value = id;
+      document.getElementById('erNumber').value = number;
+      document.getElementById('erType').value = type;
+      document.getElementById('erPrice').value = price;
+      document.getElementById('erStatus').value = status;
+      new bootstrap.Modal(document.getElementById('modalEditRoom')).show();
+    }
+
+    async function submitAddRoom() {
+      const roomNumber = document.getElementById('arNumber').value.trim();
+      const roomType = document.getElementById('arType').value;
+      const price = parseFloat(document.getElementById('arPrice').value);
+
+      try {
+        await HotelDB.addRoomAsync({ room_number: roomNumber, room_type: roomType, price_per_night: price });
+        bootstrap.Modal.getInstance(document.getElementById('modalAddRoom')).hide();
+        showToast(`Room #${roomNumber} created in PostgreSQL database!`, 'Room Created', 'success');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Database Error', 'danger');
+      }
+    }
+
+    async function submitEditRoom() {
+      const id = document.getElementById('erId').value;
+      const roomType = document.getElementById('erType').value;
+      const price = parseFloat(document.getElementById('erPrice').value);
+      const status = document.getElementById('erStatus').value;
+
+      try {
+        await HotelDB.updateRoomAsync(id, { room_type: roomType, price_per_night: price, status: status });
+        bootstrap.Modal.getInstance(document.getElementById('modalEditRoom')).hide();
+        showToast('Room details updated in PostgreSQL!', 'Room Updated', 'success');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Database Error', 'danger');
+      }
+    }
+
+    async function deactivateRoom(roomId) {
+      if (!confirm("Are you sure you want to deactivate this room?")) return;
+      try {
+        await HotelDB.deleteRoomAsync(roomId);
+        showToast("Room deactivated in PostgreSQL.", "Room Deactivated", "info");
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, "Cannot Deactivate Room", "danger");
+      }
+    }
+
+    // 3. CUSTOMER MANAGEMENT
+    async function renderAdminCustomers() {
+      const customers = await HotelDB.getAdminCustomersAsync();
+      const search = (document.getElementById('custSearchInput')?.value || '').toLowerCase();
+      const tbody = document.getElementById('adminCustomersTableBody');
+      if (!tbody) return;
+
+      const filtered = (customers || []).filter(c => 
+        (c.name || '').toLowerCase().includes(search) || 
+        (c.email || '').toLowerCase().includes(search) ||
+        (c.phone || '').toLowerCase().includes(search)
+      );
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">No matching customer records found in database.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(c => `
+        <tr>
+          <td><span class="badge bg-secondary">CUST-${c.customer_id}</span></td>
+          <td><strong>${c.name || 'Unnamed Guest'}</strong></td>
+          <td>${c.email || 'N/A'}</td>
+          <td>${c.phone || 'N/A'}</td>
+          <td><span class="badge bg-gold text-dark fw-bold">${c.total_bookings || 0} Bookings</span></td>
+          <td><strong class="text-success">Rs. ${parseFloat(c.total_spent || 0).toLocaleString()}</strong></td>
+          <td><span class="small text-muted">${c.created_at ? new Date(c.created_at).toLocaleDateString() : 'N/A'}</span></td>
+          <td>
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm btn-outline-navy rounded-pill px-2.5" onclick="openEditCustomerModal(${c.customer_id}, '${(c.name||'').replace(/'/g, "\\'")}', '${(c.email||'').replace(/'/g, "\\'")}', '${(c.phone||'').replace(/'/g, "\\\'")}')">
+                <i class="fa-solid fa-pen me-1"></i> Edit
+              </button>
+              <button class="btn btn-sm btn-outline-danger rounded-pill px-2.5" onclick="openResetCustPassModal(${c.customer_id}, '${(c.name||'').replace(/'/g, "\\\'")}')">
+                <i class="fa-solid fa-key me-1"></i> Reset Pass
+              </button>
+              <button class="btn btn-sm btn-outline-primary rounded-pill px-2.5" onclick="viewCustomerHistory(${c.customer_id})">
+                <i class="fa-solid fa-history me-1"></i> History
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function openEditCustomerModal(id, name, email, phone) {
+      document.getElementById('ecId').value = id;
+      document.getElementById('ecName').value = name;
+      document.getElementById('ecEmail').value = email;
+      document.getElementById('ecPhone').value = phone || '';
+      new bootstrap.Modal(document.getElementById('modalEditCustomer')).show();
+    }
+
+    async function submitEditCustomer() {
+      const id = document.getElementById('ecId').value;
+      const name = document.getElementById('ecName').value.trim();
+      const email = document.getElementById('ecEmail').value.trim();
+      const phone = document.getElementById('ecPhone').value.trim();
+
+      try {
+        await HotelDB.updateCustomerAsync(id, { name, email, phone });
+        bootstrap.Modal.getInstance(document.getElementById('modalEditCustomer')).hide();
+        showToast('Customer profile updated in PostgreSQL!', 'Profile Updated', 'success');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Database Error', 'danger');
+      }
+    }
+
+    function openResetCustPassModal(id, name) {
+      document.getElementById('rcpId').value = id;
+      document.getElementById('rcpName').value = name;
+      document.getElementById('rcpPassword').value = 'guest123';
+      new bootstrap.Modal(document.getElementById('modalResetCustPass')).show();
+    }
+
+    async function submitResetCustPass() {
+      const id = document.getElementById('rcpId').value;
+      const pass = document.getElementById('rcpPassword').value.trim();
+
+      try {
+        await HotelDB.resetCustomerPasswordAsync(id, pass);
+        bootstrap.Modal.getInstance(document.getElementById('modalResetCustPass')).hide();
+        showToast('Guest password has been reset with scrypt hash in PostgreSQL!', 'Password Reset', 'success');
+      } catch (err) {
+        showToast(err.message, 'Reset Error', 'danger');
+      }
+    }
+
+    async function viewCustomerHistory(customerId) {
+      const data = await HotelDB.getCustomerHistoryAsync(customerId);
+      const c = data.customer || {};
+      const resList = data.reservations || [];
+
+      const body = document.getElementById('custHistoryModalBody');
+      body.innerHTML = `
+        <div class="mb-3 pb-3 border-bottom">
+          <h5 class="font-serif text-dark mb-1">${c.name}</h5>
+          <div class="text-muted small">${c.email} &bull; ${c.phone || 'No Phone'}</div>
+        </div>
+        <h6 class="font-serif text-navy mb-2">Reservation & Invoice History (${resList.length})</h6>
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Res ID</th>
+                <th>Room #</th>
+                <th>Dates</th>
+                <th>Invoice Total</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${resList.length === 0 ? '<tr><td colspan="5" class="text-center text-muted">No reservations on record.</td></tr>' : 
+                resList.map(r => `
+                  <tr>
+                    <td>RES-${r.reservation_id}</td>
+                    <td><strong>#${r.room_number}</strong> (${r.room_type})</td>
+                    <td>${r.check_in} to ${r.check_out}</td>
+                    <td><strong class="text-gold">Rs. ${r.total_amount ? parseFloat(r.total_amount).toLocaleString() : 'Pending'}</strong></td>
+                    <td><span class="badge bg-dark">${r.status}</span></td>
+                  </tr>
+                `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      new bootstrap.Modal(document.getElementById('modalCustHistory')).show();
+    }
+
+    // 4. STAFF MANAGEMENT
+    async function renderAdminStaff() {
+      const staffList = await HotelDB.getAdminStaffAsync();
+      const tbody = document.getElementById('adminStaffTableBody');
+      if (!tbody) return;
+
+      tbody.innerHTML = staffList.map(s => `
+        <tr>
+          <td><span class="badge bg-secondary">STAFF-${s.staff_id}</span></td>
+          <td><strong>${s.name}</strong></td>
+          <td>${s.email}</td>
+          <td><span class="badge ${s.role === 'Admin' ? 'bg-danger' : 'bg-navy'}">${s.role}</span></td>
+          <td><span class="badge ${s.is_active ? 'bg-success' : 'bg-secondary'}">${s.is_active ? 'Active' : 'Inactive'}</span></td>
+          <td><span class="small text-muted">${new Date(s.created_at).toLocaleDateString()}</span></td>
+          <td>
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm btn-outline-navy rounded-pill px-2.5" onclick="openEditStaffModal(${s.staff_id}, '${s.name.replace(/'/g, "\\'")}', '${s.email.replace(/'/g, "\\'")}', '${s.role}', ${s.is_active})">
+                <i class="fa-solid fa-pen me-1"></i> Edit
+              </button>
+              <button class="btn btn-sm btn-outline-danger rounded-pill px-2.5" onclick="openResetStaffPassModal(${s.staff_id}, '${s.name.replace(/'/g, "\\'")}')">
+                <i class="fa-solid fa-key me-1"></i> Pass
+              </button>
+              <button class="btn btn-sm ${s.is_active ? 'btn-outline-warning' : 'btn-outline-success'} rounded-pill px-2.5" onclick="toggleStaffActive(${s.staff_id}, ${!s.is_active})">
+                ${s.is_active ? 'Deactivate' : 'Activate'}
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function openEditStaffModal(id, name, email, role, isActive) {
+      document.getElementById('esId').value = id;
+      document.getElementById('esName').value = name;
+      document.getElementById('esEmail').value = email;
+      document.getElementById('esRole').value = role;
+      document.getElementById('esActive').value = String(isActive);
+      new bootstrap.Modal(document.getElementById('modalEditStaff')).show();
+    }
+
+    async function submitEditStaff() {
+      const id = document.getElementById('esId').value;
+      const name = document.getElementById('esName').value.trim();
+      const email = document.getElementById('esEmail').value.trim();
+      const role = document.getElementById('esRole').value;
+      const isActive = document.getElementById('esActive').value === 'true';
+
+      try {
+        await HotelDB.updateStaffAsync(id, { name, email, role, is_active: isActive });
+        bootstrap.Modal.getInstance(document.getElementById('modalEditStaff')).hide();
+        showToast('Staff account updated in PostgreSQL!', 'Staff Updated', 'success');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Protection Warning', 'danger');
+      }
+    }
+
+    function openResetStaffPassModal(id, name) {
+      document.getElementById('rspId').value = id;
+      document.getElementById('rspName').value = name;
+      document.getElementById('rspPassword').value = 'staff123';
+      new bootstrap.Modal(document.getElementById('modalResetStaffPass')).show();
+    }
+
+    async function submitResetStaffPass() {
+      const id = document.getElementById('rspId').value;
+      const pass = document.getElementById('rspPassword').value.trim();
+
+      try {
+        await HotelDB.resetStaffPasswordAsync(id, pass);
+        bootstrap.Modal.getInstance(document.getElementById('modalResetStaffPass')).hide();
+        showToast('Staff password has been reset with werkzeug hash in PostgreSQL!', 'Password Reset', 'success');
+      } catch (err) {
+        showToast(err.message, 'Reset Error', 'danger');
+      }
+    }
+
+    async function toggleStaffActive(staffId, newActiveStatus) {
+      try {
+        await HotelDB.updateStaffAsync(staffId, { is_active: newActiveStatus });
+        showToast('Staff access status updated in PostgreSQL!', 'Staff Updated', 'info');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Action Blocked', 'danger');
+      }
+    }
+
+    async function submitAddStaff() {
+      const name = document.getElementById('asName').value.trim();
+      const email = document.getElementById('asEmail').value.trim();
+      const password = document.getElementById('asPassword').value.trim();
+      const role = document.getElementById('asRole').value;
+
+      try {
+        await HotelDB.addStaffAsync({ name, email, password, role });
+        bootstrap.Modal.getInstance(document.getElementById('modalAddStaff')).hide();
+        showToast(`Staff account created for ${name} (${role})!`, 'Staff Created', 'success');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Database Error', 'danger');
+      }
+    }
+
+    // 5. RESERVATION MANAGEMENT
+    async function renderAdminReservations() {
+      const bookings = await HotelDB.getBookingsAsync();
+      const search = (document.getElementById('resSearchInput')?.value || '').toLowerCase();
+      const filter = document.getElementById('resFilterStatus')?.value || '';
+      const tbody = document.getElementById('adminReservationsTableBody');
+      if (!tbody) return;
+
+      const filtered = bookings.filter(b => {
+        const matchesSearch = (b.guestName || '').toLowerCase().includes(search) || String(b.roomNumber).includes(search);
+        const matchesFilter = filter === '' || b.status === filter;
+        return matchesSearch && matchesFilter;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-3">No matching reservations found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(b => `
+        <tr>
+          <td><span class="badge bg-light text-dark font-monospace">${b.id}</span></td>
+          <td><strong>${b.guestName}</strong></td>
+          <td><strong class="text-navy">#${b.roomNumber}</strong></td>
+          <td><span class="small">${b.checkIn} &bull; ${b.checkOut}</span></td>
+          <td>${b.guestsCount || 1} Guests</td>
+          <td><span class="small text-muted">${b.specialRequests || 'None'}</span></td>
+          <td><strong class="text-gold">Rs. ${(b.totalAmount || 0).toLocaleString()}</strong></td>
+          <td><span class="badge ${b.status === 'Cancelled' ? 'bg-secondary' : (b.status === 'Checked-in' ? 'bg-success' : 'bg-primary')}">${b.status}</span></td>
+          <td>
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm btn-outline-navy rounded-pill px-2.5" onclick="openEditReservationModal('${b.id}', '${b.roomNumber}', '${b.checkIn}', '${b.checkOut}', ${b.guestsCount || 1}, '${(b.specialRequests || '').replace(/'/g, "\\'")}', '${b.status}')">
+                <i class="fa-solid fa-pen me-1"></i> Edit
+              </button>
+              ${b.status !== 'Cancelled' && b.status !== 'Checked-out' ? `
+                <button class="btn btn-sm btn-outline-danger rounded-pill px-2.5" onclick="cancelReservation(${b.reservationId})">
+                  <i class="fa-solid fa-ban me-1"></i> Cancel
+                </button>
+              ` : ''}
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function openEditReservationModal(resId, roomNum, checkIn, checkOut, guests, requests, status) {
+      document.getElementById('eresId').value = resId;
+      document.getElementById('eresRoomNumber').value = roomNum;
+      document.getElementById('eresCheckIn').value = checkIn;
+      document.getElementById('eresCheckOut').value = checkOut;
+      document.getElementById('eresGuests').value = guests;
+      document.getElementById('eresRequests').value = requests;
+      document.getElementById('eresStatus').value = status;
+      new bootstrap.Modal(document.getElementById('modalEditReservation')).show();
+    }
+
+    async function submitEditReservation() {
+      const resId = document.getElementById('eresId').value;
+      const roomNum = document.getElementById('eresRoomNumber').value.trim();
+      const checkIn = document.getElementById('eresCheckIn').value;
+      const checkOut = document.getElementById('eresCheckOut').value;
+      const guests = parseInt(document.getElementById('eresGuests').value, 10);
+      const requests = document.getElementById('eresRequests').value.trim();
+      const status = document.getElementById('eresStatus').value;
+
+      try {
+        await HotelDB.updateReservationAsync(resId, {
+          room_number: roomNum,
+          check_in: checkIn,
+          check_out: checkOut,
+          number_of_guests: guests,
+          special_requests: requests,
+          status: status
+        });
+        bootstrap.Modal.getInstance(document.getElementById('modalEditReservation')).hide();
+        showToast('Reservation updated cleanly in PostgreSQL!', 'Reservation Updated', 'success');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Overlap Conflict Error', 'danger');
+      }
+    }
+
+    async function cancelReservation(resId) {
+      if (!confirm("Are you sure you want to cancel this reservation?")) return;
+      try {
+        await fetch(`http://127.0.0.1:5000/api/reservations/${resId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'Cancelled' })
+        });
+        showToast("Reservation cancelled! PostgreSQL trigger reverted room to Available.", "Reservation Cancelled", "info");
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, "Cancellation Error", "danger");
+      }
+    }
+
+    // 6. HOTEL SERVICES & REQUESTS
+    async function renderAdminServices() {
+      const services = await HotelDB.getServicesCatalogAsync();
+      const catBody = document.getElementById('adminServicesCatalogBody');
+      if (!catBody) return;
+
+      catBody.innerHTML = services.map(s => `
+        <tr>
+          <td><span class="badge bg-secondary">SVC-${s.service_id}</span></td>
+          <td><strong>${s.service_name}</strong></td>
+          <td><strong class="text-gold">Rs. ${parseFloat(s.price).toLocaleString()}</strong></td>
+          <td><span class="small text-muted">${s.description || 'No description'}</span></td>
+          <td><span class="badge ${s.is_available !== false ? 'bg-success' : 'bg-secondary'}">${s.is_available !== false ? 'Available' : 'Disabled'}</span></td>
+          <td>
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm btn-outline-navy rounded-pill px-2.5" onclick="openEditServiceModal(${s.service_id}, '${s.service_name.replace(/'/g, "\\'")}', ${s.price}, '${(s.description || '').replace(/'/g, "\\'")}', ${s.is_available !== false})">
+                <i class="fa-solid fa-pen me-1"></i> Edit
+              </button>
+              <button class="btn btn-sm ${s.is_available !== false ? 'btn-outline-warning' : 'btn-outline-success'} rounded-pill px-2.5" onclick="toggleServiceAvailable(${s.service_id}, ${!(s.is_available !== false)})">
+                ${s.is_available !== false ? 'Disable' : 'Enable'}
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function openEditServiceModal(id, name, price, desc, isAvail) {
+      document.getElementById('esvcId').value = id;
+      document.getElementById('esvcName').value = name;
+      document.getElementById('esvcPrice').value = price;
+      document.getElementById('esvcDesc').value = desc;
+      document.getElementById('esvcAvail').value = String(isAvail);
+      new bootstrap.Modal(document.getElementById('modalEditService')).show();
+    }
+
+    async function submitEditService() {
+      const id = document.getElementById('esvcId').value;
+      const name = document.getElementById('esvcName').value.trim();
+      const price = parseFloat(document.getElementById('esvcPrice').value);
+      const desc = document.getElementById('esvcDesc').value.trim();
+      const isAvail = document.getElementById('esvcAvail').value === 'true';
+
+      try {
+        await HotelDB.updateServiceAsync(id, { service_name: name, price, description: desc, is_available: isAvail });
+        bootstrap.Modal.getInstance(document.getElementById('modalEditService')).hide();
+        showToast('Service catalog updated in PostgreSQL!', 'Catalog Updated', 'success');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Database Error', 'danger');
+      }
+    }
+
+    async function toggleServiceAvailable(serviceId, newStatus) {
+      await HotelDB.updateServiceAsync(serviceId, { is_available: newStatus });
+      showToast(`Service availability status updated in PostgreSQL!`, 'Catalog Updated', 'info');
+      await initAdminDashboard();
+    }
+
+    async function submitAddService() {
+      const name = document.getElementById('asSvcName').value.trim();
+      const price = parseFloat(document.getElementById('asSvcPrice').value);
+      const desc = document.getElementById('asSvcDesc').value.trim();
+
+      try {
+        await HotelDB.addServiceAsync({ service_name: name, price, description: desc });
+        bootstrap.Modal.getInstance(document.getElementById('modalAddService')).hide();
+        showToast(`Service "${name}" added to PostgreSQL catalog!`, 'Service Added', 'success');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Database Error', 'danger');
+      }
+    }
+
+    async function renderAdminServiceOrders() {
+      const requests = await HotelDB.getServiceRequestsAsync();
+      const reqBody = document.getElementById('adminServiceOrdersBody');
+      if (!reqBody) return;
+
+      if (requests.length === 0) {
+        reqBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">No service requests placed yet.</td></tr>`;
+        return;
+      }
+
+      reqBody.innerHTML = requests.map(r => `
+        <tr>
+          <td><span class="badge bg-secondary">${r.id}</span></td>
+          <td><strong class="text-navy">#${r.roomNumber}</strong></td>
+          <td><strong>${r.guestName}</strong></td>
+          <td>${r.serviceName}</td>
+          <td>${r.quantity}x</td>
+          <td><strong class="text-gold">Rs. ${(r.amount || 0).toLocaleString()}</strong></td>
+          <td><span class="badge ${r.status === 'Completed' ? 'bg-success' : 'bg-warning text-dark'}">${r.status}</span></td>
+          <td>
+            ${r.status !== 'Completed' ? `
+              <button class="btn btn-sm btn-success rounded-pill px-3" onclick="fulfillServiceAdmin('${r.id}')">
+                <i class="fa-solid fa-check me-1"></i> Fulfill
+              </button>
+            ` : '<span class="text-success small fw-bold"><i class="fa-solid fa-check-double me-1"></i> Completed</span>'}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function fulfillServiceAdmin(reqId) {
+      await HotelDB.updateServiceStatusAsync(reqId, 'Completed');
+      showToast('Order marked as Completed in PostgreSQL.', 'Order Fulfilled', 'success');
+      await initAdminDashboard();
+    }
+
+    // 7. HOUSEKEEPING BOARD
+    async function renderAdminHousekeeping() {
+      const tasks = await HotelDB.getHousekeepingAsync();
+      const tbody = document.getElementById('adminHousekeepingBody');
+      if (!tbody) return;
+
+      if (tasks.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">No active housekeeping tasks.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = tasks.map(t => `
+        <tr>
+          <td><span class="badge bg-secondary">TASK-${t.task_id}</span></td>
+          <td><strong class="text-navy">#${t.room_number}</strong></td>
+          <td>${t.room_type}</td>
+          <td><span class="badge bg-info text-dark">${t.task_type}</span></td>
+          <td>
+            <span class="badge ${t.status === 'Completed' ? 'bg-success' : (t.status === 'In Progress' ? 'bg-warning text-dark' : 'bg-danger')}">
+              ${t.status}
+            </span>
+          </td>
+          <td><span class="small text-muted">${t.notes || 'None'}</span></td>
+          <td><span class="small text-muted">${new Date(t.created_at).toLocaleString()}</span></td>
+          <td>
+            ${t.status !== 'Completed' ? `
+              <div class="d-flex gap-1">
+                ${t.status === 'Pending' ? `
+                  <button class="btn btn-sm btn-warning text-dark rounded-pill px-2.5" onclick="updateHousekeepingStatus(${t.task_id}, 'In Progress')">In Progress</button>
+                ` : ''}
+                <button class="btn btn-sm btn-success rounded-pill px-2.5" onclick="updateHousekeepingStatus(${t.task_id}, 'Completed')">Complete</button>
+              </div>
+            ` : '<span class="text-success small fw-bold"><i class="fa-solid fa-check-circle me-1"></i> Ready</span>'}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function updateHousekeepingStatus(taskId, status) {
+      try {
+        await HotelDB.updateHousekeepingStatusAsync(taskId, status);
+        showToast(`Task updated to ${status}! Room status set to Available.`, 'Housekeeping Updated', 'success');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Update Error', 'danger');
+      }
+    }
+
+    async function submitAddHousekeeping() {
+      const roomNum = document.getElementById('ahkRoom').value.trim();
+      const taskType = document.getElementById('ahkType').value;
+      const notes = document.getElementById('ahkNotes').value.trim();
+
+      try {
+        await HotelDB.addHousekeepingTaskAsync({ room_number: roomNum, task_type: taskType, notes });
+        bootstrap.Modal.getInstance(document.getElementById('modalAddHousekeeping')).hide();
+        showToast(`Housekeeping task dispatched for Room #${roomNum}!`, 'Task Dispatched', 'success');
+        await initAdminDashboard();
+      } catch (err) {
+        showToast(err.message, 'Dispatch Error', 'danger');
+      }
+    }
+
+    // 8. BILLS & INVOICES
+    async function renderAdminBills() {
+      const bills = await HotelDB.getBillsAsync();
+      const search = (document.getElementById('billSearchInput')?.value || '').toLowerCase();
+      const filter = document.getElementById('billFilterStatus')?.value || '';
+      const tbody = document.getElementById('adminBillsTableBody');
+      if (!tbody) return;
+
+      const filtered = bills.filter(b => {
+        const matchesSearch = (b.guest_name || '').toLowerCase().includes(search) || String(b.room_number).includes(search);
+        const matchesFilter = filter === '' || b.payment_status === filter;
+        return matchesSearch && matchesFilter;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-3">No matching billing invoices found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(b => `
+        <tr>
+          <td><span class="badge bg-dark">INV-${b.bill_id}</span></td>
+          <td><strong>${b.guest_name}</strong></td>
+          <td><strong class="text-navy">#${b.room_number}</strong></td>
+          <td>Rs. ${parseFloat(b.room_charge).toLocaleString()}</td>
+          <td>Rs. ${parseFloat(b.service_charge).toLocaleString()}</td>
+          <td>Rs. ${parseFloat(b.tax).toLocaleString()}</td>
+          <td><strong class="text-gold">Rs. ${parseFloat(b.total_amount).toLocaleString()}</strong></td>
+          <td><span class="badge ${b.payment_status === 'Paid' ? 'bg-success' : 'bg-danger'}">${b.payment_status}</span></td>
+          <td>
+            <div class="d-flex gap-1">
+              <button class="btn btn-sm btn-outline-navy rounded-pill px-2.5" onclick="viewInvoiceDetails(${b.bill_id})">
+                <i class="fa-solid fa-file-invoice me-1"></i> Breakdown
+              </button>
+              ${b.payment_status === 'Pending' ? `
+                <button class="btn btn-sm btn-success rounded-pill px-2.5" onclick="payBillAdmin(${b.bill_id})">Mark Paid</button>
+              ` : ''}
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function viewInvoiceDetails(billId) {
+      const data = await HotelDB.getAdminBillDetailsAsync(billId);
+      if (!data || !data.bill) {
+        showToast('Bill details unavailable.', 'Error', 'danger');
+        return;
+      }
+      const b = data.bill;
+      const items = data.serviceItems || [];
+
+      const modalBody = document.getElementById('viewInvoiceModalBody');
+      modalBody.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+          <div>
+            <h5 class="font-serif text-dark mb-0">Invoice INV-${b.bill_id}</h5>
+            <small class="text-muted">Reservation RES-${b.reservation_id} &bull; Room #${b.room_number} (${b.room_type})</small>
+          </div>
+          <span class="badge ${b.payment_status === 'Paid' ? 'bg-success fs-6' : 'bg-danger fs-6'}">${b.payment_status}</span>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-6">
+            <strong>Guest Name:</strong> ${b.guest_name}<br>
+            <strong>Email:</strong> ${b.guest_email}<br>
+            <strong>Phone:</strong> ${b.guest_phone || 'N/A'}
+          </div>
+          <div class="col-6 text-end">
+            <strong>Check-In:</strong> ${b.check_in}<br>
+            <strong>Check-Out:</strong> ${b.check_out}<br>
+            <strong>Guests:</strong> ${b.number_of_guests || 1}
+          </div>
+        </div>
+
+        <h6 class="font-serif text-navy mt-3 mb-2">Financial Tariff Breakdown</h6>
+        <table class="table table-bordered align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Description</th>
+              <th class="text-end">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Room Tariff Charge (${b.room_type})</td>
+              <td class="text-end">Rs. ${parseFloat(b.room_charge).toLocaleString()}</td>
+            </tr>
+            ${items.map(i => `
+              <tr>
+                <td>Service: ${i.service_name} (${i.quantity}x @ Rs. ${parseFloat(i.unit_price).toLocaleString()})</td>
+                <td class="text-end">Rs. ${parseFloat(i.item_total).toLocaleString()}</td>
+              </tr>
+            `).join('')}
+            <tr>
+              <td>Total Add-On Service Charges</td>
+              <td class="text-end">Rs. ${parseFloat(b.service_charge).toLocaleString()}</td>
+            </tr>
+            <tr>
+              <td>State & Hotel Luxury Tax (5%)</td>
+              <td class="text-end">Rs. ${parseFloat(b.tax).toLocaleString()}</td>
+            </tr>
+            <tr class="table-dark">
+              <td><strong>Grand Total Payable</strong></td>
+              <td class="text-end"><strong class="text-gold fs-5">Rs. ${parseFloat(b.total_amount).toLocaleString()}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      `;
+
+      new bootstrap.Modal(document.getElementById('modalViewInvoice')).show();
+    }
+
+    async function payBillAdmin(billId) {
+      await HotelDB.payBillAsync(billId);
+      showToast(`Bill INV-${billId} marked as Paid in PostgreSQL!`, 'Payment Cleared', 'success');
+      await initAdminDashboard();
+    }
+
+    // 9. REPORTS & ANALYTICS
+    async function renderAdminReports() {
+      const analytics = await HotelDB.getAdminAnalyticsAsync();
+      if (!analytics) return;
+
+      // Revenue breakdown
+      const revBody = document.getElementById('adminReportsRevenueBody');
+      if (revBody) {
+        revBody.innerHTML = (analytics.revenueByRoomType || []).map(r => `
+          <tr>
+            <td><strong>${r.room_type}</strong></td>
+            <td>${r.total_bookings} Bookings</td>
+            <td>Rs. ${parseFloat(r.total_room_revenue).toLocaleString()}</td>
+            <td>Rs. ${parseFloat(r.total_service_revenue).toLocaleString()}</td>
+            <td>Rs. ${parseFloat(r.total_tax_collected || 0).toLocaleString()}</td>
+            <td><strong class="text-gold">Rs. ${parseFloat(r.grand_total_revenue).toLocaleString()}</strong></td>
+          </tr>
+        `).join('');
+      }
+
+      // Loyalty leaderboard
+      const loyaltyBody = document.getElementById('adminReportsLoyaltyBody');
+      if (loyaltyBody) {
+        loyaltyBody.innerHTML = (analytics.customerLoyaltyRanking || []).map(l => `
+          <tr>
+            <td><strong>${l.guest_name}</strong><br><small class="text-muted">${l.guest_email}</small></td>
+            <td>${l.lifetime_reservations}</td>
+            <td><strong class="text-success">Rs. ${parseFloat(l.lifetime_expenditure).toLocaleString()}</strong></td>
+            <td><span class="badge ${l.loyalty_tier === 'Platinum VIP' ? 'bg-danger' : (l.loyalty_tier === 'Gold Preferred' ? 'bg-gold text-dark' : 'bg-secondary')}">${l.loyalty_tier}</span></td>
+          </tr>
+        `).join('');
+      }
+
+      // Service popularity leaderboard
+      const svcPopBody = document.getElementById('adminReportsServicePopularityBody');
+      if (svcPopBody) {
+        svcPopBody.innerHTML = (analytics.servicePopularity || []).map(s => `
+          <tr>
+            <td><strong>${s.service_name}</strong></td>
+            <td>${s.total_orders_placed}</td>
+            <td>${s.total_units_consumed} units</td>
+            <td><strong class="text-gold">Rs. ${parseFloat(s.total_revenue_generated).toLocaleString()}</strong></td>
+          </tr>
+        `).join('');
+      }
+
+      // Monthly financial report
+      const monthlyBody = document.getElementById('adminReportsMonthlyBody');
+      if (monthlyBody) {
+        const monthly = analytics.monthlyReports || [];
+        if (monthly.length === 0) {
+          monthlyBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No monthly financial records available.</td></tr>`;
+        } else {
+          monthlyBody.innerHTML = monthly.map(m => `
+            <tr>
+              <td><strong>${m.billing_month}</strong></td>
+              <td>${m.total_invoices} Invoices</td>
+              <td>Rs. ${parseFloat(m.gross_room_revenue || 0).toLocaleString()}</td>
+              <td>Rs. ${parseFloat(m.gross_service_revenue || 0).toLocaleString()}</td>
+              <td>Rs. ${parseFloat(m.gross_tax_collected || 0).toLocaleString()}</td>
+              <td><strong class="text-gold">Rs. ${parseFloat(m.net_revenue || 0).toLocaleString()}</strong></td>
+            </tr>
+          `).join('');
+        }
+      }
+    }
+
+    // 10. AUDIT LOGS
+    async function renderAdminAuditLogs() {
+      const logs = await HotelDB.getAuditLogsAsync();
+      const tbody = document.getElementById('adminAuditLogsTableBody');
+      if (!tbody) return;
+
+      if (logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-3">No PostgreSQL audit log entries generated yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = logs.map(l => `
+        <tr>
+          <td><span class="badge bg-secondary">LOG-${l.log_id}</span></td>
+          <td><code class="text-dark fw-bold">${l.table_name}</code></td>
+          <td>
+            <span class="badge ${l.operation === 'INSERT' ? 'bg-success' : (l.operation === 'UPDATE' ? 'bg-warning text-dark' : 'bg-danger')}">
+              ${l.operation}
+            </span>
+          </td>
+          <td><strong>ID #${l.record_id}</strong></td>
+          <td><span class="small">${l.changed_by || 'postgres'}</span></td>
+          <td><span class="small text-muted">${new Date(l.changed_at).toLocaleString()}</span></td>
+          <td>
+            <button class="btn btn-sm btn-outline-navy rounded-pill px-2.5" onclick="viewAuditLogDiff(${l.log_id})">
+              <i class="fa-solid fa-code me-1"></i> View Diff
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      window.currentAuditLogs = logs;
+    }
+
+    function viewAuditLogDiff(logId) {
+      const log = (window.currentAuditLogs || []).find(l => l.log_id === logId);
+      if (!log) return;
+
+      const body = document.getElementById('viewAuditLogModalBody');
+      body.innerHTML = `
+        <div class="mb-3">
+          <strong>Log ID:</strong> LOG-${log.log_id} &bull; 
+          <strong>Table:</strong> ${log.table_name} &bull; 
+          <strong>Operation:</strong> <span class="badge bg-dark">${log.operation}</span> &bull; 
+          <strong>User:</strong> ${log.changed_by}
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-2">
+            <h6 class="text-danger"><i class="fa-solid fa-arrow-left me-1"></i> Pre-Operation State (Old Data)</h6>
+            <div class="json-box">${log.old_data ? JSON.stringify(log.old_data, null, 2) : 'null (INSERT)'}</div>
+          </div>
+          <div class="col-md-6 mb-2">
+            <h6 class="text-success"><i class="fa-solid fa-arrow-right me-1"></i> Post-Operation State (New Data)</h6>
+            <div class="json-box">${log.new_data ? JSON.stringify(log.new_data, null, 2) : 'null (DELETE)'}</div>
+          </div>
+        </div>
+      `;
+
+      new bootstrap.Modal(document.getElementById('modalViewAuditLog')).show();
+    }
+
+    // 11. LOST & FOUND MANAGEMENT
+    let adminLostFoundItems = [];
+
+    async function renderAdminLostFound() {
+      const tbody = document.getElementById('adminLostFoundTableBody');
+      if (!tbody) return;
+
+      try {
+        const res = await fetch('http://127.0.0.1:5000/api/lost-and-found');
+        if (!res.ok) throw new Error('Failed to retrieve lost & found reports');
+        const data = await res.json();
+        adminLostFoundItems = data.items || [];
+
+        // Update KPI metrics
+        const total = adminLostFoundItems.length;
+        const pending = adminLostFoundItems.filter(i => i.status === 'Pending' || i.status === 'Reported').length;
+        const foundNotRec = adminLostFoundItems.filter(i => i.status === 'Found (Not Yet Received)' || i.status === 'Found - Not Yet Received').length;
+        const inCustodyOrClaimed = adminLostFoundItems.filter(i => i.status === 'Found' || i.status === 'Claimed' || i.status === 'Returned').length;
+
+        const elTotal = document.getElementById('lfMetricTotal');
+        const elPending = document.getElementById('lfMetricPending');
+        const elFoundNotRec = document.getElementById('lfMetricFoundNotReceived');
+        const elClaimed = document.getElementById('lfMetricClaimed');
+        if (elTotal) elTotal.textContent = total;
+        if (elPending) elPending.textContent = pending;
+        if (elFoundNotRec) elFoundNotRec.textContent = foundNotRec;
+        if (elClaimed) elClaimed.textContent = inCustodyOrClaimed;
+
+        filterAdminLostFound();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4"><i class="fa-solid fa-triangle-exclamation me-1"></i> Error loading Lost & Found items: ${err.message}</td></tr>`;
+      }
+    }
+
+    function filterAdminLostFound() {
+      const query = (document.getElementById('adminLfSearch')?.value || '').toLowerCase().trim();
+      const statusFilter = document.getElementById('adminLfStatusFilter')?.value || 'All';
+      const tbody = document.getElementById('adminLostFoundTableBody');
+      if (!tbody) return;
+
+      const filtered = adminLostFoundItems.filter(item => {
+        let matchesStatus = false;
+        if (statusFilter === 'All') {
+          matchesStatus = true;
+        } else if (statusFilter === 'Found (Not Yet Received)') {
+          matchesStatus = (item.status === 'Found (Not Yet Received)' || item.status === 'Found - Not Yet Received');
+        } else {
+          matchesStatus = item.status === statusFilter;
+        }
+        const searchStr = `${item.item_name} ${item.location} ${item.description || ''} ${item.customer_name || ''} ${item.customer_phone || ''} ${item.customer_email || ''}`.toLowerCase();
+        const matchesQuery = !query || searchStr.includes(query);
+        return matchesStatus && matchesQuery;
+      });
+
+      const countLabel = document.getElementById('adminLfCountLabel');
+      if (countLabel) {
+        countLabel.textContent = `Showing ${filtered.length} of ${adminLostFoundItems.length} records`;
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">No matching Lost &amp; Found records found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => {
+        const isFoundNotReceived = item.status === 'Found (Not Yet Received)' || item.status === 'Found - Not Yet Received';
+        const statusBadge = 
+          item.status === 'Pending' ? '<span class="badge bg-danger">Pending</span>' :
+          isFoundNotReceived ? '<span class="badge bg-warning text-dark"><i class="fa-solid fa-clock-rotate-left me-1"></i>Found (Not Yet Received)</span>' :
+          item.status === 'Found' ? '<span class="badge bg-primary text-white"><i class="fa-solid fa-box-archive me-1"></i>Found (In Custody)</span>' :
+          item.status === 'Returned' ? '<span class="badge bg-success">Returned</span>' :
+          item.status === 'Claimed' ? '<span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i>Claimed</span>' :
+          item.status === 'Investigating' ? '<span class="badge bg-info text-dark">Investigating</span>' :
+          item.status === 'Closed' ? '<span class="badge bg-secondary">Closed</span>' :
+          item.status === 'Reported' ? '<span class="badge bg-warning text-dark">Reported</span>' :
+          '<span class="badge bg-secondary">' + item.status + '</span>';
+
+        const photoHtml = item.image_data 
+          ? `<img src="${item.image_data}" alt="${item.item_name}" class="rounded-3 shadow-sm" style="width:48px;height:48px;object-fit:cover;cursor:pointer;" onclick="window.open('${item.image_data}')">`
+          : `<div class="rounded-3 bg-light d-flex align-items-center justify-content-center text-muted" style="width:48px;height:48px;"><i class="fa-solid fa-image"></i></div>`;
+
+        const reporter = item.customer_name 
+          ? `<div><strong>${item.customer_name}</strong><br><small class="text-muted">${item.customer_email || ''} ${item.customer_phone ? ' &bull; ' + item.customer_phone : ''}</small></div>`
+          : `<span class="text-muted fst-italic">Anonymous Guest</span>`;
+
+        return `
+          <tr>
+            <td><span class="badge bg-secondary">LF-${item.item_id}</span></td>
+            <td>${photoHtml}</td>
+            <td>
+              <strong>${item.item_name}</strong>
+              <div class="small text-muted text-truncate" style="max-width:220px;" title="${item.description || ''}">${item.description || 'No description provided'}</div>
+            </td>
+            <td>${reporter}</td>
+            <td><i class="fa-solid fa-location-dot text-danger me-1"></i>${item.location}</td>
+            <td><small class="text-muted">${new Date(item.lost_at || item.created_at).toLocaleString()}</small></td>
+            <td>${statusBadge}</td>
+            <td><small class="text-muted">${item.resolution_notes || '<span class="fst-italic">None</span>'}</small></td>
+            <td>
+              <div class="d-flex flex-wrap gap-1 align-items-center">
+                <!-- Dropdown Menu with all selectable options -->
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-outline-navy rounded-pill dropdown-toggle px-2.5 py-1" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa-solid fa-pen-to-square me-1"></i> Update Status
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
+                    <li>
+                      <a class="dropdown-item py-1.5 ${isFoundNotReceived ? 'active fw-bold' : ''}" href="javascript:void(0)" onclick="openUpdateLostFoundModal(${item.item_id}, 'Found (Not Yet Received)')">
+                        <i class="fa-solid fa-clock-rotate-left text-warning me-2"></i><strong>Found (Not Yet Received)</strong>
+                        <small class="d-block text-muted ps-4">Located by staff, awaiting desk handover</small>
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item py-1.5 ${item.status === 'Found' ? 'active fw-bold' : ''}" href="javascript:void(0)" onclick="openUpdateLostFoundModal(${item.item_id}, 'Found')">
+                        <i class="fa-solid fa-box-archive text-primary me-2"></i><strong>Found (In Custody)</strong>
+                        <small class="d-block text-muted ps-4">Safely received at Front Desk</small>
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item py-1.5 ${item.status === 'Claimed' ? 'active fw-bold' : ''}" href="javascript:void(0)" onclick="openUpdateLostFoundModal(${item.item_id}, 'Claimed')">
+                        <i class="fa-solid fa-circle-check text-success me-2"></i><strong>Claimed by Guest</strong>
+                        <small class="d-block text-muted ps-4">Guest verified &amp; item returned</small>
+                      </a>
+                    </li>
+                    <li><hr class="dropdown-divider my-1"></li>
+                    <li>
+                      <a class="dropdown-item py-1.5 ${item.status === 'Investigating' ? 'active' : ''}" href="javascript:void(0)" onclick="openUpdateLostFoundModal(${item.item_id}, 'Investigating')">
+                        <i class="fa-solid fa-magnifying-glass text-info me-2"></i>Investigating
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item py-1.5 ${item.status === 'Returned' ? 'active' : ''}" href="javascript:void(0)" onclick="openUpdateLostFoundModal(${item.item_id}, 'Returned')">
+                        <i class="fa-solid fa-hand-holding-heart text-success me-2"></i>Returned to Owner
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item py-1.5 ${item.status === 'Pending' ? 'active' : ''}" href="javascript:void(0)" onclick="openUpdateLostFoundModal(${item.item_id}, 'Pending')">
+                        <i class="fa-solid fa-hourglass-half text-danger me-2"></i>Pending Recovery
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item py-1.5 ${item.status === 'Closed' ? 'active' : ''}" href="javascript:void(0)" onclick="openUpdateLostFoundModal(${item.item_id}, 'Closed')">
+                        <i class="fa-solid fa-lock text-secondary me-2"></i>Closed Case
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- One-click Quick Status Action buttons -->
+                ${(item.status === 'Pending' || item.status === 'Reported') ? `
+                  <button class="btn btn-sm btn-outline-warning rounded-pill px-2 py-1" onclick="openUpdateLostFoundModal(${item.item_id}, 'Found (Not Yet Received)')" title="Item located, awaiting physical handover to desk">
+                    <i class="fa-solid fa-clock-rotate-left me-1"></i> Found (Not Yet Received)
+                  </button>
+                ` : ''}
+
+                ${isFoundNotReceived ? `
+                  <button class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1" onclick="openUpdateLostFoundModal(${item.item_id}, 'Found')" title="Mark as physically received at Front Desk">
+                    <i class="fa-solid fa-box-archive me-1"></i> Mark Received
+                  </button>
+                ` : ''}
+
+                ${item.status === 'Found' ? `
+                  <button class="btn btn-sm btn-outline-success rounded-pill px-2 py-1" onclick="openUpdateLostFoundModal(${item.item_id}, 'Claimed')" title="Mark as claimed by verified guest">
+                    <i class="fa-solid fa-handshake me-1"></i> Mark Claimed
+                  </button>
+                ` : ''}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openUpdateLostFoundModal(itemId, preselectedStatus = null) {
+      const item = adminLostFoundItems.find(i => (i.item_id == itemId || i.report_id == itemId));
+      if (!item) return;
+
+      document.getElementById('ulfItemId').value = itemId;
+      document.getElementById('ulfItemName').textContent = `LF-${itemId}: ${item.item_name}`;
+      document.getElementById('ulfItemBadge').textContent = item.status;
+      document.getElementById('ulfItemBadge').className = `badge ${
+        item.status === 'Pending' ? 'bg-danger' :
+        (item.status === 'Found (Not Yet Received)' || item.status === 'Found - Not Yet Received') ? 'bg-warning text-dark' :
+        item.status === 'Found' ? 'bg-primary' :
+        item.status === 'Claimed' ? 'bg-success' : 'bg-secondary'
+      }`;
+      document.getElementById('ulfItemMeta').innerHTML = `<i class="fa-solid fa-location-dot text-danger me-1"></i> Location: <strong>${item.location || item.location_lost}</strong> &bull; Reporter: <strong>${item.customer_name || item.reporter_name || 'Guest'}</strong>`;
+
+      const statusSelect = document.getElementById('ulfNewStatus');
+      if (statusSelect) {
+        statusSelect.value = preselectedStatus || item.status || 'Found (Not Yet Received)';
+      }
+
+      const notesInput = document.getElementById('ulfNotes');
+      if (notesInput) {
+        if (preselectedStatus === 'Found (Not Yet Received)') {
+          notesInput.value = `Item located by staff; awaiting physical handover to Front Desk.`;
+        } else if (preselectedStatus === 'Found') {
+          notesInput.value = `Item physically received and secured in Front Desk Lost & Found custody.`;
+        } else if (preselectedStatus === 'Claimed') {
+          notesInput.value = `Item claimed and returned to guest upon identity verification.`;
+        } else {
+          notesInput.value = item.resolution_notes || item.staff_notes || '';
+        }
+      }
+
+      const modal = new bootstrap.Modal(document.getElementById('modalUpdateLostFound'));
+      modal.show();
+    }
+
+    async function submitUpdateLostFoundModal() {
+      const itemId = document.getElementById('ulfItemId').value;
+      const newStatus = document.getElementById('ulfNewStatus').value;
+      const notes = document.getElementById('ulfNotes').value.trim();
+
+      const modalEl = document.getElementById('modalUpdateLostFound');
+      const modalInstance = bootstrap.Modal.getInstance(modalEl);
+      if (modalInstance) modalInstance.hide();
+
+      await updateAdminLostFoundStatus(itemId, newStatus, notes);
+    }
+
+    async function updateAdminLostFoundStatus(itemId, newStatus, customNotes = null) {
+      const user = getCurrentUser();
+      const staffId = (user && (user.staff_id || user.id)) ? (user.staff_id || user.id) : 1;
+      const notes = customNotes !== null ? customNotes : `Status updated to ${newStatus} by ${user?.name || 'Admin'}.`;
+
+      try {
+        const res = await fetch(`http://127.0.0.1:5000/api/lost-and-found/${itemId}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-Role': 'admin',
+            'X-Staff-Id': String(staffId)
+          },
+          body: JSON.stringify({
+            status: newStatus,
+            staff_id: staffId,
+            resolution_notes: notes,
+            role: 'admin'
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update item status');
+
+        showToast(`Item LF-${itemId} status updated to "${newStatus}"!`, 'Lost & Found Updated', 'success');
+        await renderAdminLostFound();
+      } catch (err) {
+        showToast(err.message, 'Update Failed', 'danger');
+      }
+    }
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+      initAdminDashboard();
+    });
+  </script>
+</body>
+</html>

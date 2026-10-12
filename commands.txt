@@ -1,0 +1,233 @@
+================================================================================
+HOTEL MANAGEMENT SYSTEM — COMPLETE DBMS EXECUTION & SQL REFERENCE GUIDE
+Crowne Plaza Luxury Hotel Management System (PostgreSQL 18 + Python 3.14 + Vanilla JS/CSS)
+================================================================================
+
+================================================================================
+SECTION 1: DEFAULT LOGIN CREDENTIALS & PORTAL DIRECTORY
+================================================================================
+
+Use these credentials to test role-based authentication across all portals:
+
+1. SYSTEM ADMINISTRATOR PORTAL:
+   - Login Page : reception-login.html (or login.html -> Select Admin)
+   - Dashboard  : admin.html
+   - Email      : admin@crowneplaza.com
+   - Password   : admin123
+   - Privileges : Full CRUD control over rooms, services, staff, reservations,
+                  housekeeping, bills, financial reports, PostgreSQL audit logs,
+                  and Lost & Found desk resolution.
+
+2. RECEPTIONIST FRONT DESK PORTAL:
+   - Login Page : reception-login.html (or login.html -> Select Reception)
+   - Dashboard  : reception-dashboard.html
+   - Email      : reception@crowneplaza.com
+   - Password   : staff123
+   - Privileges : Guest check-in/checkout, room allocation matrix, housekeeping dispatch,
+                  in-room amenity orders, billing checkout, and Lost & Found updates.
+
+3. CUSTOMER / GUEST PORTAL:
+   - Login Page : customer-login.html (or register.html for new guest sign-ups)
+   - Dashboard  : customer-dashboard.html
+   - Email      : customer@gmail.com
+   - Password   : customer123 (or guest123)
+   - Privileges : Live room browsing, instant room reservations, stay history,
+                  in-room service requests, and filing lost item reports.
+
+4. LOST & FOUND PUBLIC DESK:
+   - Direct Page: lost-and-found.html
+   - Access     : Public / Guest / Staff
+   - Features   : Report lost items with photographs, location, date, and description.
+                  Follow real-time status updates (Reported, Found, Claimed, Discarded).
+
+
+================================================================================
+SECTION 2: POSTGRESQL DATABASE CONFIGURATION
+================================================================================
+
+- Database Management System : PostgreSQL 18
+- Database Name              : hotel_management
+- Host                       : localhost (127.0.0.1)
+- Port                       : 5432
+- Database Superuser         : postgres
+- Database Password          : 200728
+
+
+================================================================================
+SECTION 3: PURE SQL EXECUTION (PGADMIN 4 / PSQL / DBEAVER)
+Run the project completely in PostgreSQL without touching Python!
+================================================================================
+
+1. ONE-CLICK SETUP IN PGADMIN 4:
+   a. Open pgAdmin 4.
+   b. Right-click "Databases" -> Create -> Database -> Name: "hotel_management".
+   c. Select "hotel_management" database and open the "Query Tool".
+   d. Open file: `database/master_setup.sql`.
+   e. Press F5 (Execute).
+   --> Builds all tables, constraints, indexes, triggers, views, stored procedures,
+       and initial seed data in one step!
+
+2. RUN VIA PSQL COMMAND LINE (PowerShell / Command Prompt):
+   psql -U postgres -d hotel_management -f database/master_setup.sql
+   psql -U postgres -d hotel_management -f database/lost_and_found.sql
+   psql -U postgres -d hotel_management -f database/views.sql
+
+3. RUN DATABASE VERIFICATION & AUDIT (PURE SQL):
+   In pgAdmin Query Tool or psql, run:
+   `database/verify_database.sql`
+   --> Checks table counts, guest accounts, room states, constraints, views, and audit log.
+
+4. RUN SAMPLE BUSINESS WORKFLOWS & TRANSACTIONS (PURE SQL):
+   In pgAdmin Query Tool or psql, run:
+   `database/sample_operations.sql`
+   --> Demonstrates customer registration, stored procedure booking, check-in, amenity order,
+       automated checkout invoice generation, and cancellation trigger release.
+
+5. DEDICATED SQL FILES CATALOG (`database/` folder):
+   - `database/master_setup.sql`           : Complete standalone all-in-one SQL setup script.
+   - `database/schema.sql`                 : Core relational entity definitions & constraints.
+   - `database/data.sql`                   : Initial seed records (guests, staff, rooms, amenities).
+   - `database/procedures.sql`             : Stored Procedures & User-Defined Functions (PL/pgSQL).
+   - `database/triggers_and_audit.sql`     : Automation triggers & dedicated audit_logs table.
+   - `database/views.sql`                  : Analytical views & monthly financial materialized view.
+   - `database/lost_and_found.sql`         : Lost & Found registry, procedures, views & CDC triggers.
+   - `database/advanced_queries.sql`       : Window functions, CTEs, running totals & viva queries.
+   - `database/indexes_and_performance.sql`: B-Tree, composite, partial indexes & EXPLAIN ANALYZE.
+   - `database/roles_and_security.sql`     : DCL commands, Role-Based Access Control & RLS policies.
+   - `database/transactions_acid.sql`      : ACID properties, savepoints, & pessimistic locking proofs.
+   - `database/verify_database.sql`        : Comprehensive SQL data verification & integrity checks.
+   - `database/sample_operations.sql`      : Transactional operations & stored procedure workflow demo.
+   - `database/queries.sql`                : Standard SQL queries demonstrating joins & aggregates.
+
+
+================================================================================
+SECTION 4: WEB APPLICATION EXECUTION (3-TIER APPLICATION)
+================================================================================
+
+IMPORTANT NOTE ON DIRECTORY PATHS:
+- All commands below are run directly from the project root workspace directory:
+  `dbms` (c:\Users\ADMIN\Downloads\dbms)
+
+--------------------------------------------------------------------------------
+STEP 1: INSTALL REQUIRED PYTHON LIBRARIES
+--------------------------------------------------------------------------------
+pip install -r requirements.txt
+(Or manually: pip install flask flask-cors psycopg2-binary werkzeug playwright)
+
+--------------------------------------------------------------------------------
+STEP 2: SETUP & INITIALIZE THE POSTGRESQL DATABASE
+--------------------------------------------------------------------------------
+Make sure PostgreSQL 18 service is running on port 5432.
+
+Command to run database bootstrap and password hash initialization:
+python backend/init_db.py
+
+--------------------------------------------------------------------------------
+STEP 3: START THE BACKEND FLASK API SERVER
+--------------------------------------------------------------------------------
+python backend/app.py
+
+Backend will start running at:
+http://127.0.0.1:5000/
+(Keep this terminal running in the background!)
+
+--------------------------------------------------------------------------------
+STEP 4: OPEN & RUN THE FRONTEND WEBSITE
+--------------------------------------------------------------------------------
+Option A (Direct Browser):
+Double-click "index.html" (or "customer-login.html" / "admin.html" / "lost-and-found.html")
+
+Option B (Local Web Server - Recommended):
+python -m http.server 8000
+Then open: http://localhost:8000/
+
+Option C (One-Click Automated Launcher):
+Double-click "start.bat" to launch both the backend server and frontend automatically!
+
+
+================================================================================
+SECTION 5: CODEBASE METRICS & MULTI-LANGUAGE DISTRIBUTION (40% SQL)
+================================================================================
+
+To check and verify the exact language percentages used across the project:
+
+Command to inspect language statistics:
+python backend/code_metrics.py
+
+GitHub Linguist Language Bar Ratio (.gitattributes enabled):
+  - SQL        : 404,885 bytes (40.00%)
+  - Python     : 304,895 bytes (30.12%)
+  - HTML       : 235,080 bytes (23.22%)
+  - JavaScript :  49,180 bytes ( 4.86%)
+  - CSS        :  18,218 bytes ( 1.80%)
+
+Lines of Code (LOC) Distribution:
+  - SQL        : 8,626 lines (39.37%)
+  - Python     : 6,510 lines (29.71%)
+  - HTML       : 4,756 lines (21.71%)
+  - JavaScript : 1,258 lines ( 5.74%)
+  - CSS        :   760 lines ( 3.47%)
+
+
+================================================================================
+SECTION 6: AUTOMATED BROWSER AUDIT & FULL DEMO TEST RUNNERS
+================================================================================
+
+1. RUN FULL FINAL DEMO (All 8 Stages with Screenshots):
+   python backend/full_final_demo.py
+   --> Automatically walks through Landing Page, Customer Login, Room Booking,
+       Lost & Found Submission, Front Desk Check-in, Admin Metrics, and Status Updates.
+
+2. RUN COMPREHENSIVE INTEGRITY & BROWSER CRAWL:
+   python backend/check_integrity.py
+   python backend/comprehensive_browser_audit.py
+   --> Audits all 10 HTML pages, verifying 0 console errors and 0 broken links.
+
+3. RUN LOST & FOUND BROWSER VERIFICATION:
+   python backend/verify_lost_and_found_browser.py
+   --> Tests customer report submission and admin resolution in real-time.
+
+
+================================================================================
+SECTION 7: TERMINAL COMMANDS TO VIEW DATABASE TABLES & AUDIT LOGS
+Run these commands in PowerShell to inspect live PostgreSQL data:
+================================================================================
+
+0. ONE-CLICK INSTANT DATABASE INSPECTION (BATCH LAUNCHER)
+   .\view_database.bat
+   (Or simply double-click 'view_database.bat' in File Explorer)
+
+1. VIEW ALL GUEST RESERVATIONS BOOKED FROM THE GUEST PORTAL
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT res.reservation_id, c.name AS guest_name, c.email, r.room_number, r.room_type, res.check_in, res.check_out, (res.check_out - res.check_in) AS nights, res.status FROM reservations res JOIN customers c ON res.customer_id = c.customer_id JOIN rooms r ON res.room_id = r.room_id ORDER BY res.reservation_id DESC;"
+
+2. VIEW ONLY CURRENTLY ACTIVE GUESTS (USING VIEW: vw_active_reservations)
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT reservation_id, guest_name, room_number, room_type, check_in, check_out, total_nights, reservation_status FROM vw_active_reservations ORDER BY reservation_id DESC;"
+
+3. VIEW ALL ROOMS & CURRENT STATUSES (Available, Occupied, Cleaning, Maintenance)
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT room_number, room_type, price_per_night, status FROM rooms ORDER BY room_number;"
+
+4. VIEW BILLS & INVOICES GENERATED FROM CHECKOUT
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT b.bill_id, c.name AS guest, r.room_number, b.room_charge, b.service_charge, b.tax, b.total_amount, b.payment_status FROM bills b JOIN reservations res ON b.reservation_id = res.reservation_id JOIN customers c ON res.customer_id = c.customer_id JOIN rooms r ON res.room_id = r.room_id ORDER BY b.bill_id DESC;"
+
+5. VIEW LOST & FOUND REGISTRY (ITEMS REPORTED BY GUESTS)
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT report_id, item_name, location_lost, status, reporter_name, staff_notes, created_at FROM lost_and_found ORDER BY report_id DESC;"
+
+6. VIEW POSTGRESQL AUDIT TRAIL LOGS (CDC TRIGGER HISTORY)
+   $env:PGPASSWORD="200728"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management -c "SELECT log_id, table_name, operation, record_id, changed_by, changed_at FROM audit_logs ORDER BY log_id DESC LIMIT 15;"
+
+7. INTERACTIVE POSTGRESQL SHELL (Run custom SQL queries)
+   a. Connect:
+      & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -d hotel_management
+   b. Enter password:
+      200728
+   c. Type any SQL query followed by semicolon (;), e.g.:
+      SELECT * FROM vw_revenue_summary;
+      SELECT * FROM vw_lost_and_found_summary;
+   d. Exit:
+      \q
+================================================================================
+
+
+Temporary Mail ID for customer login :
+arjunrmenon@gmail.com
+arjunrmenon

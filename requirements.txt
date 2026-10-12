@@ -1,0 +1,5 @@
+Flask>=3.0.0
+flask-cors>=4.0.0
+psycopg2-binary>=2.9.9
+Werkzeug>=3.0.0
+playwright>=1.40.0

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guest Portal - Crowne Plaza Hotel</title>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom Luxury Stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body style="background-color: #f8fafc;">
+
+  <!-- Guest Header Navbar -->
+  <nav class="dashboard-navbar">
+    <a href="index.html" class="dashboard-brand">
+      <i class="fa-solid fa-crown text-warning me-2"></i>
+      <span>Crowne Plaza &bull; Guest Portal</span>
+    </a>
+    <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2 text-white small">
+        <div class="rounded-circle bg-gold text-dark font-weight-bold d-flex align-items-center justify-content-center" style="width:36px; height:36px;">
+          G
+        </div>
+        <div>
+          <strong class="d-block text-white" id="navGuestName">Valued Guest</strong>
+          <span class="badge bg-success text-white" style="font-size:0.65rem;" id="navGuestRoom">Room #101</span>
+        </div>
+      </div>
+      <a href="lost-and-found.html" class="btn btn-sm btn-outline-warning rounded-pill px-3 ms-2">
+        <i class="fa-solid fa-box-archive me-1"></i> Lost & Found
+      </a>
+      <button onclick="logoutUser()" class="btn btn-sm btn-outline-light rounded-pill px-3 ms-1">
+        <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
+      </button>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    
+    <!-- Active Stay Card Banner -->
+    <div class="card p-4 border-0 shadow-sm rounded-4 bg-navy text-white mb-4" style="background: linear-gradient(135deg, #0b1329 0%, #1a294d 100%);">
+      <div class="row align-items-center g-3">
+        <div class="col-lg-8">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge bg-gold text-dark px-3 py-1 rounded-pill fw-bold" id="activeStayBadge">ACTIVE STAY</span>
+            <span class="text-gold small"><i class="fa-solid fa-star"></i> VIP Guest Service</span>
+          </div>
+          <h2 class="font-serif fs-2 text-white mb-1" id="activeSuiteTitle">Crowne Executive Suite (#101)</h2>
+          <p class="text-slate-300 mb-3" id="activeDates">Check-In: Jul 28, 2026 &bull; Check-Out: Aug 02, 2026</p>
+          
+          <div class="d-flex flex-wrap gap-4 pt-2 border-top border-secondary">
+            <div>
+              <span class="text-slate-400 small d-block">Digital Key Access Code</span>
+              <strong class="text-gold fs-5 font-monospace" id="digitalKeyCode"><i class="fa-solid fa-key me-1"></i> CP-8842</strong>
+            </div>
+            <div>
+              <span class="text-slate-400 small d-block">High-Speed Wi-Fi (SSID: CrownePlaza_WiFi)</span>
+              <strong class="text-white fs-6">
+                <i class="fa-solid fa-wifi text-success me-1"></i> 
+                <span id="wifiPasswordText">hotelmanagement</span>
+              </strong>
+            </div>
+            <div>
+              <span class="text-slate-400 small d-block">Breakfast Plan</span>
+              <strong class="text-white fs-6" id="stayFeaturesSummary"><i class="fa-solid fa-utensils text-warning me-1"></i> Executive Buffet Included</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4 text-lg-end">
+          <button class="btn btn-gold py-2 px-4 rounded-pill shadow mb-2 w-100" onclick="document.getElementById('guestServiceForm').scrollIntoView({behavior: 'smooth'})">
+            <i class="fa-solid fa-bell-concierge me-2"></i> Request Room Service
+          </button>
+          <button class="btn btn-outline-light py-2 px-4 rounded-pill w-100 mb-2" onclick="scrollToRooms()">
+            <i class="fa-solid fa-plus me-1"></i> Book Another Suite
+          </button>
+          <a href="lost-and-found.html" class="btn btn-sm btn-outline-warning py-1.5 px-3 rounded-pill w-100">
+            <i class="fa-solid fa-box-archive me-1"></i> Lost & Found Desk
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Suite Reservations Hub -->
+    <div class="mb-5" id="roomsSection">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <div>
+          <h3 class="font-serif fs-3 text-dark mb-1">Explore & Reserve Luxury Suites</h3>
+          <p class="text-muted mb-0">Select from our signature rooms and book your upcoming stay with real-time confirmation.</p>
+        </div>
+        <div class="d-flex gap-2">
+          <select id="roomFilterType" class="form-select form-select-sm rounded-pill" style="width: 170px;" onchange="renderRoomsCatalog()">
+            <option value="">All Categories</option>
+            <option value="Suite">Suites</option>
+            <option value="AC with Balcony">AC with Balcony</option>
+            <option value="AC Family">Family AC Rooms</option>
+            <option value="AC">Standard AC Rooms</option>
+            <option value="Non-AC">Economy Non-AC</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row g-4" id="roomsCatalogGrid">
+        <!-- Rooms Catalog Rendered via JS -->
+      </div>
+    </div>
+
+    <!-- In-Room Services & History Split -->
+    <div class="row g-4 mb-4">
+      
+      <!-- Room Service Quick Order Form -->
+      <div class="col-lg-5">
+        <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
+          <h3 class="font-serif fs-4 mb-1 text-dark">
+            <i class="fa-solid fa-utensils text-gold me-2"></i> In-Room Dining & Amenities
+          </h3>
+          <p class="text-muted small mb-4">Order dining or request housekeeping delivered straight to your suite.</p>
+
+          <form id="guestServiceForm" onsubmit="event.preventDefault(); handleGuestServiceOrder();">
+            <div class="mb-3">
+              <label class="form-label-custom">Select Service Item</label>
+              <select id="svcName" class="form-select form-control-luxury" required>
+                <option value="Gourmet Breakfast Basket|1200">Gourmet Breakfast Basket (Rs. 1200)</option>
+                <option value="Champagne & Fruit Platter|2500">Champagne & Fruit Platter (Rs. 2500)</option>
+                <option value="Luxury Spa Aromatherapy|3500">Luxury Spa Aromatherapy (Rs. 3500)</option>
+                <option value="Extra Goose Down Pillows|0">Extra Goose Down Pillows (Complimentary)</option>
+                <option value="Express Housekeeping & Towels|0">Express Housekeeping & Towels (Complimentary)</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label-custom">Special Delivery Notes</label>
+              <textarea id="svcNotes" class="form-control form-control-luxury" rows="2" placeholder="e.g. Please deliver at 8:30 AM..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-navy w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-paper-plane me-2"></i> Submit Service Order to Desk
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- My Booking History & Charges -->
+      <div class="col-lg-7">
+        <div class="card p-4 border-0 shadow-sm rounded-4 bg-white h-100">
+          <h3 class="font-serif fs-4 mb-1 text-dark">
+            <i class="fa-solid fa-receipt text-gold me-2"></i> Stay History & Service Orders
+          </h3>
+          <p class="text-muted small mb-3">View all your current and past reservations and service charges.</p>
+
+          <div class="table-luxury-wrapper mb-3">
+            <table class="table-luxury">
+              <thead>
+                <tr>
+                  <th>Item / Stay</th>
+                  <th>Dates / Time</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="guestHistoryTableBody">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
+            <span class="text-muted small">Total Folio Charge Accrued:</span>
+            <strong class="text-navy fs-5 font-serif" id="guestTotalFolio">Rs. 0</strong>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Book Suite Modal -->
+  <div class="modal fade" id="bookModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow-lg">
+        <div class="modal-header bg-navy text-white rounded-top-4" style="background: var(--primary-navy);">
+          <h5 class="modal-title font-serif text-gold"><i class="fa-solid fa-calendar-check me-2"></i> Reserve Suite</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <form id="bookSuiteForm" onsubmit="event.preventDefault(); handleConfirmBooking();">
+            <input type="hidden" id="bmRoomNumber">
+            
+            <div class="mb-3">
+              <label class="form-label-custom">Selected Suite</label>
+              <input type="text" id="bmRoomCategory" class="form-control form-control-luxury bg-light" readonly>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label-custom">Check-In Date</label>
+                <input type="date" id="bmCheckIn" class="form-control form-control-luxury" onchange="onCheckInDateChange()" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label-custom">Check-Out Date</label>
+                <input type="date" id="bmCheckOut" class="form-control form-control-luxury" onchange="calculateModalTotal()" required>
+              </div>
+            </div>
+
+            <!-- Complimentary Features & Special Add-ons -->
+            <div class="mb-3">
+              <label class="form-label-custom d-flex justify-content-between align-items-center mb-1">
+                <span><i class="fa-solid fa-gift text-gold me-1"></i> Complimentary Features & Add-ons</span>
+                <span class="badge bg-gold text-dark" style="font-size:0.65rem;">Customized Stay</span>
+              </label>
+              
+              <div class="card p-3 bg-light border-0 rounded-3 mb-2">
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="featBreakfast" checked>
+                  <label class="form-check-label small fw-semibold" for="featBreakfast">
+                    <i class="fa-solid fa-utensils text-warning me-1"></i> Complimentary Executive Breakfast Buffet (Included)
+                  </label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="featAirport">
+                  <label class="form-check-label small" for="featAirport">
+                    <i class="fa-solid fa-plane-arrival text-primary me-1"></i> Airport Chauffeur Pickup & Drop
+                  </label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="featView">
+                  <label class="form-check-label small" for="featView">
+                    <i class="fa-solid fa-mountain-sun text-info me-1"></i> High Floor / City Panoramic View
+                  </label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="featWelcome">
+                  <label class="form-check-label small" for="featWelcome">
+                    <i class="fa-solid fa-wine-glass text-danger me-1"></i> Welcome Fruit Basket & Sparkling Drink
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="featLateCheckout">
+                  <label class="form-check-label small" for="featLateCheckout">
+                    <i class="fa-solid fa-clock text-secondary me-1"></i> Priority Late Check-Out (Until 2:00 PM)
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label class="form-label-custom small mb-1">Special Requests & Dietary Requirements</label>
+                <textarea id="bmSpecialNotes" class="form-control form-control-luxury small" rows="2" placeholder="e.g. Vegetarian buffet, quiet corner suite, extra pillows..."></textarea>
+              </div>
+            </div>
+
+            <div class="p-3 bg-gold bg-opacity-10 border border-gold rounded-3 text-center mb-4">
+              <span class="text-muted small d-block">Estimated Total Tariff</span>
+              <strong class="text-gold fs-3 font-serif" id="bmEstimatedTotal">Rs. 0</strong>
+            </div>
+
+            <button type="submit" class="btn btn-gold w-100 py-3 font-weight-bold">
+              <i class="fa-solid fa-credit-card me-2"></i> Confirm Reservation
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/ui-helpers.js"></script>
+  <script>
+    // Route Guard
+    checkAuth('customer');
+
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      document.getElementById('navGuestName').textContent = currentUser.name;
+    }
+
+    function scrollToRooms() {
+      document.getElementById('roomsSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function renderGuestDashboard() {
+      await renderActiveStay();
+      await renderRoomsCatalog();
+      await renderGuestHistory();
+    }
+
+    async function renderActiveStay() {
+      const bookings = await HotelDB.getBookingsAsync();
+      const userEmail = (currentUser?.email || '').toLowerCase().trim();
+      
+      // Match guest's reservations from PostgreSQL
+      const userBookings = bookings.filter(b => (b.guestEmail || '').toLowerCase().trim() === userEmail);
+      const active = userBookings.find(b => b.status === 'Checked-in' || b.status === 'Occupied')
+                  || userBookings.find(b => b.status === 'Confirmed' || b.status === 'Booked')
+                  || userBookings[0];
+
+      if (active) {
+        const isLive = active.status === 'Checked-in' || active.status === 'Occupied';
+        document.getElementById('activeStayBadge').textContent = isLive ? 'ACTIVE STAY' : 'CONFIRMED BOOKING';
+        document.getElementById('activeStayBadge').className = isLive ? 'badge bg-success text-white px-3 py-1 rounded-pill fw-bold' : 'badge bg-gold text-dark px-3 py-1 rounded-pill fw-bold';
+        document.getElementById('activeSuiteTitle').textContent = `${active.category} (#${active.roomNumber})`;
+        document.getElementById('activeDates').textContent = `Check-In: ${active.checkIn} \u2022 Check-Out: ${active.checkOut} (${active.status})`;
+        document.getElementById('navGuestRoom').textContent = `Room #${active.roomNumber}`;
+        document.getElementById('digitalKeyCode').innerHTML = `<i class="fa-solid fa-key me-1"></i> CP-${active.roomNumber}`;
+        document.getElementById('wifiPasswordText').textContent = active.wifiPassword || 'hotelmanagement';
+        
+        // Update breakfast & features badge
+        const bkBadge = document.getElementById('stayFeaturesSummary');
+        if (bkBadge) {
+          const req = active.specialRequests || '';
+          if (req.includes('Breakfast')) {
+            bkBadge.innerHTML = '<i class="fa-solid fa-utensils text-warning me-1"></i> Complimentary Buffet Included';
+          } else if (req) {
+            bkBadge.innerHTML = `<i class="fa-solid fa-star text-gold me-1"></i> ${req.split('|')[0]}`;
+          } else {
+            bkBadge.innerHTML = '<i class="fa-solid fa-utensils text-secondary me-1"></i> Standard Room Only';
+          }
+        }
+      } else {
+        document.getElementById('activeStayBadge').textContent = 'READY TO BOOK';
+        document.getElementById('activeStayBadge').className = 'badge bg-secondary text-white px-3 py-1 rounded-pill fw-bold';
+        document.getElementById('activeSuiteTitle').textContent = 'Welcome to Crowne Plaza';
+        document.getElementById('activeDates').textContent = 'You have no active stays. Select any available luxury suite below to book your stay.';
+        document.getElementById('navGuestRoom').textContent = 'No Room Assigned';
+        document.getElementById('digitalKeyCode').innerHTML = '<i class="fa-solid fa-lock me-1"></i> Available Upon Booking';
+        document.getElementById('wifiPasswordText').textContent = 'Provided upon check-in';
+      }
+    }
+
+    async function renderRoomsCatalog() {
+      const rooms = await HotelDB.getRoomsAsync();
+      const typeFilter = document.getElementById('roomFilterType').value;
+      const filtered = rooms.filter(r => typeFilter === '' || r.type === typeFilter);
+
+      const grid = document.getElementById('roomsCatalogGrid');
+      grid.innerHTML = filtered.map(r => {
+        const isFamily = r.category === 'Family AC Room';
+        const cardClass = isFamily ? 'room-card card-spotlight-family h-100 d-flex flex-column justify-content-between' : 'room-card h-100 d-flex flex-column justify-content-between';
+        return `
+          <div class="col-md-6 col-lg-4">
+            <div class="${cardClass}">
+              <div>
+                <img src="${r.image}" class="room-card-img" alt="${r.category}">
+                <div class="room-card-body">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge ${r.status === 'Available' ? 'badge-available' : 'badge-gold'}">${r.status}</span>
+                    <span class="text-muted small"><i class="fa-solid fa-user me-1"></i> Up to ${r.capacity} Guests</span>
+                  </div>
+                  ${isFamily ? `<div class="mb-2"><span class="badge badge-family-deal">Best Family Deal</span></div>` : ''}
+                  <h4 class="font-serif fs-5 text-dark mb-1">${r.category}</h4>
+                  <p class="text-muted small mb-2"><i class="fa-solid fa-bed me-1 text-gold"></i> ${r.bed} &bull; ${r.view}</p>
+                  <div class="d-flex flex-wrap gap-1 mb-3">
+                    ${r.amenities.map(a => `<span class="badge bg-light text-secondary border font-weight-normal">${a}</span>`).join('')}
+                  </div>
+                </div>
+              </div>
+              <div class="p-3 border-top bg-light d-flex align-items-center justify-content-between">
+                <div>
+                  <span class="room-card-price">Rs. ${r.price}</span>
+                  <span class="text-muted small">/ night</span>
+                </div>
+                <button class="btn btn-sm btn-gold rounded-pill px-3 py-2" onclick="openBookModal('${r.number}', '${r.category}', ${r.price})">
+                  <i class="fa-solid fa-calendar-plus me-1"></i> Book Now
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    let selectedRoomPrice = 1500;
+
+    function openBookModal(roomNumber, category, price) {
+      selectedRoomPrice = price;
+      document.getElementById('bmRoomNumber').value = roomNumber;
+      document.getElementById('bmRoomCategory').value = `${category} (#${roomNumber})`;
+      
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      const tomorrow = new Date();
+      tomorrow.setDate(today.getDate() + 3);
+      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+      const ciInput = document.getElementById('bmCheckIn');
+      const coInput = document.getElementById('bmCheckOut');
+      ciInput.min = todayStr;
+      ciInput.value = todayStr;
+
+      const nextDay = new Date(today);
+      nextDay.setDate(nextDay.getDate() + 1);
+      coInput.min = nextDay.toISOString().split('T')[0];
+      coInput.value = tomorrowStr;
+      
+      calculateModalTotal();
+      const modal = new bootstrap.Modal(document.getElementById('bookModal'));
+      modal.show();
+    }
+
+    function onCheckInDateChange() {
+      const ciVal = document.getElementById('bmCheckIn').value;
+      if (!ciVal) return;
+
+      const ciDate = new Date(ciVal);
+      const minCo = new Date(ciDate);
+      minCo.setDate(minCo.getDate() + 1);
+
+      const minCoStr = minCo.toISOString().split('T')[0];
+      const coInput = document.getElementById('bmCheckOut');
+      coInput.min = minCoStr;
+
+      const currentCoVal = coInput.value;
+      if (!currentCoVal || new Date(currentCoVal) <= ciDate) {
+        const autoCo = new Date(ciDate);
+        autoCo.setDate(autoCo.getDate() + 3);
+        coInput.value = autoCo.toISOString().split('T')[0];
+      }
+
+      calculateModalTotal();
+    }
+
+    function calculateModalTotal() {
+      const ciVal = document.getElementById('bmCheckIn').value;
+      const coVal = document.getElementById('bmCheckOut').value;
+      if (!ciVal || !coVal) return;
+
+      const ci = new Date(ciVal);
+      const co = new Date(coVal);
+      if (isNaN(ci.getTime()) || isNaN(co.getTime()) || co <= ci) {
+        document.getElementById('bmEstimatedTotal').textContent = `Invalid Dates`;
+        return;
+      }
+      const nights = Math.max(1, Math.ceil((co - ci) / (1000 * 60 * 60 * 24)));
+      const total = selectedRoomPrice * nights;
+      document.getElementById('bmEstimatedTotal').textContent = `Rs. ${total.toLocaleString()}`;
+    }
+
+    async function handleConfirmBooking() {
+      const roomNumber = document.getElementById('bmRoomNumber').value;
+      const checkIn = document.getElementById('bmCheckIn').value;
+      const checkOut = document.getElementById('bmCheckOut').value;
+      const category = document.getElementById('bmRoomCategory').value.split(' (')[0];
+      
+      const ci = new Date(checkIn);
+      const co = new Date(checkOut);
+      if (co <= ci) {
+        showToast('Check-out date must be after check-in date.', 'Booking Validation Error', 'danger');
+        return;
+      }
+
+      const nights = Math.max(1, Math.ceil((co - ci) / (1000 * 60 * 60 * 24)));
+
+      // Collect selected complimentary features & special notes
+      const selectedFeatures = [];
+      if (document.getElementById('featBreakfast')?.checked) selectedFeatures.push('Complimentary Breakfast');
+      if (document.getElementById('featAirport')?.checked) selectedFeatures.push('Airport Pickup');
+      if (document.getElementById('featView')?.checked) selectedFeatures.push('High Floor View');
+      if (document.getElementById('featWelcome')?.checked) selectedFeatures.push('Welcome Wine & Fruits');
+      if (document.getElementById('featLateCheckout')?.checked) selectedFeatures.push('Late Check-Out');
+
+      const customNotes = (document.getElementById('bmSpecialNotes')?.value || '').trim();
+      let specialRequests = selectedFeatures.join(', ');
+      if (customNotes) {
+        specialRequests = specialRequests ? `${specialRequests} | Notes: ${customNotes}` : `Notes: ${customNotes}`;
+      }
+
+      try {
+        await HotelDB.createBookingAsync({
+          roomNumber,
+          guestName: currentUser?.name || 'Valued Guest',
+          guestEmail: currentUser?.email || 'customer@gmail.com',
+          guestPhone: currentUser?.phone || '9876543210',
+          checkIn,
+          checkOut,
+          guestsCount: 2,
+          specialRequests
+        });
+
+        const modalEl = document.getElementById('bookModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+
+        showToast(`Room #${roomNumber} reserved successfully for ${nights} nights! Saved to PostgreSQL.`, 'Reservation Confirmed', 'success');
+        await renderGuestDashboard();
+      } catch (err) {
+        const msg = err.message || '';
+        if (msg.includes('Double Booking') || msg.includes('booked')) {
+          showToast(msg, 'Double Booking Conflict', 'warning');
+        } else if (msg.includes('password authentication failed') || msg.includes('connection')) {
+          showToast('PostgreSQL authentication failed for user "postgres". Please set your PostgreSQL password in backend/database.py (DB_PASS).', 'PostgreSQL Connection Error', 'danger');
+        } else {
+          showToast(msg || 'Room is unavailable for selected dates.', 'Booking Error', 'danger');
+        }
+      }
+    }
+
+    async function handleGuestServiceOrder() {
+      const serviceId = document.getElementById('svcName').value.split('|')[0] || 1;
+      const notes = document.getElementById('svcNotes').value.trim();
+
+      const activeBookings = await HotelDB.getBookingsAsync();
+      const userRes = activeBookings.find(b => b.guestEmail === (currentUser?.email || 'customer@gmail.com')) || activeBookings[0];
+
+      if (!userRes) {
+        showToast('No active room reservation found to request room service.', 'Request Error', 'warning');
+        return;
+      }
+
+      try {
+        await HotelDB.addServiceRequestAsync({
+          reservationId: userRes.reservationId || 1,
+          serviceId: parseInt(serviceId, 10),
+          quantity: 1
+        });
+
+        showToast(`Room service order submitted to Front Desk & PostgreSQL!`, 'Room Service Requested', 'success');
+        document.getElementById('svcNotes').value = '';
+        await renderGuestDashboard();
+      } catch (err) {
+        showToast(err.message, 'Service Request Error', 'danger');
+      }
+    }
+
+    async function renderGuestHistory() {
+      const bookings = (await HotelDB.getBookingsAsync()).filter(b => b.guestEmail === (currentUser?.email || 'customer@gmail.com'));
+      const services = await HotelDB.getServiceRequestsAsync();
+      const bills = await HotelDB.getBillsAsync();
+
+      const tbody = document.getElementById('guestHistoryTableBody');
+      let html = '';
+      let totalFolio = 0;
+
+      bookings.forEach(b => {
+        totalFolio += (b.totalAmount || 0);
+        const featuresTag = b.specialRequests ? `<div class="small text-gold mt-1"><i class="fa-solid fa-gift me-1"></i>${b.specialRequests}</div>` : '';
+        html += `
+          <tr>
+            <td>
+              <strong>${b.category}</strong> (#${b.roomNumber})
+              ${featuresTag}
+              <button class="btn btn-sm text-gold p-0 ms-1" onclick="openInvoiceModal('${b.id}')" title="View Folio">
+                <i class="fa-solid fa-file-invoice me-1"></i> Folio
+              </button>
+            </td>
+            <td>${b.checkIn} &bull; ${b.checkOut}</td>
+            <td class="fw-bold text-gold">Rs. ${b.totalAmount.toLocaleString()}</td>
+            <td><span class="badge-luxury badge-gold">${b.status}</span></td>
+          </tr>
+        `;
+      });
+
+      bills.forEach(b => {
+        if (b.guest_email === (currentUser?.email || 'customer@gmail.com')) {
+          html += `
+            <tr class="table-light">
+              <td><strong>Tax Invoice (INV-${b.bill_id})</strong></td>
+              <td>${b.check_in} to ${b.check_out}</td>
+              <td class="fw-bold text-success">Rs. ${parseFloat(b.total_amount).toLocaleString()}</td>
+              <td><span class="badge ${b.payment_status === 'Paid' ? 'bg-success' : 'bg-danger'}">${b.payment_status}</span></td>
+            </tr>
+          `;
+        }
+      });
+
+      if (!html) {
+        html = `<tr><td colspan="4" class="text-center text-muted py-3">No stay history found.</td></tr>`;
+      }
+
+      tbody.innerHTML = html;
+      document.getElementById('guestTotalFolio').textContent = `Rs. ${totalFolio.toLocaleString()}`;
+    }
+
+    // Initial render
+    document.addEventListener('DOMContentLoaded', () => {
+      renderGuestDashboard();
+    });
+  </script>
+</body>
+</html>
