@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+
+# Uploads and temporary files
+backend/uploads/
+*.zip
+
+# OS files
+.DS_Store
+Thumbs.db
